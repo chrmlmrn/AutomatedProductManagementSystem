@@ -1,10 +1,9 @@
 package admin.product;
 
-import javax.swing.*;
-
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 
+import javax.swing.*;
 import java.awt.*;
 
 public class UpdateProduct {
@@ -26,7 +25,7 @@ public class UpdateProduct {
         containerPanel.setBackground(new Color(30, 144, 255));
         containerPanel.setPreferredSize(new Dimension(800, 800)); // Increased width size
         containerPanel.setLayout(new GridBagLayout());
-        containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding
+        containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 150, 20, 20)); // Padding
 
         // Create constraints for layout inside the blue container
         GridBagConstraints gbc = new GridBagConstraints();
@@ -85,6 +84,7 @@ public class UpdateProduct {
             gbc.gridy = i * 2 + 1;
             gbc.gridwidth = 1;
             gbc.anchor = GridBagConstraints.LINE_START;
+
             containerPanel.add(label, gbc);
 
             currentTextFields[i] = new JTextField(20);
@@ -130,7 +130,7 @@ public class UpdateProduct {
         updateButton.setBackground(Color.WHITE);
         updateButton.setForeground(Color.BLACK);
         updateButton.setFocusPainted(false);
-        updateButton.setPreferredSize(new Dimension(150, 40));
+        updateButton.setPreferredSize(new Dimension(300, 40));
         updateButton.addActionListener(e -> System.out.println("Update button clicked"));
 
         RoundedButton cancelButton = new RoundedButton("Cancel");
@@ -138,7 +138,7 @@ public class UpdateProduct {
         cancelButton.setBackground(Color.WHITE);
         cancelButton.setForeground(Color.BLACK);
         cancelButton.setFocusPainted(false);
-        cancelButton.setPreferredSize(new Dimension(150, 40));
+        cancelButton.setPreferredSize(new Dimension(300, 40));
         cancelButton.addActionListener(e -> {
             System.out.println("Cancel button clicked");
             frame.dispose(); // Close the current frame
@@ -146,12 +146,18 @@ public class UpdateProduct {
             ProductPage.main(new String[] {});
         });
 
-        // Create button panel with horizontal box layout
-        JPanel buttonPanel = new JPanel();
+        // Create button panel with GridBagLayout
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setBackground(new Color(30, 144, 255));
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        buttonPanel.add(updateButton);
-        buttonPanel.add(cancelButton);
+        GridBagConstraints gbcButton = new GridBagConstraints();
+        gbcButton.insets = new Insets(10, 5, 10, 5);
+        gbcButton.gridx = 0;
+        gbcButton.gridy = 0;
+        gbcButton.anchor = GridBagConstraints.CENTER;
+        buttonPanel.add(updateButton, gbcButton);
+
+        gbcButton.gridx = 1;
+        buttonPanel.add(cancelButton, gbcButton);
 
         // Add the button panel to the container
         gbc.gridx = 0;
