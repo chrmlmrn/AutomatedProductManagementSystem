@@ -62,21 +62,22 @@ public class ProductPage {
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFocusPainted(false);
-            button.setFont(new Font("Arial", Font.BOLD, 16));
+            button.setFont(new Font("Arial", Font.PLAIN, 16));
             button.setBorder(BorderFactory.createEmptyBorder());
-
-            if (buttonLabels[i].equals("Add Product")) {
-                button.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        System.out.println(button.getText() + " button clicked");
-                        frame.dispose(); // Close the current frame
-                        // Open Product Page
+            button.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    System.out.println(button.getText() + " button clicked");
+                    frame.dispose(); // Close the current frame
+                    if (button.getText().equals("Add Product")) {
+                        // Open AddProduct
                         AddProduct.main(new String[] {});
+                    } else if (button.getText().equals("Update Product")) {
+                        // Open UpdateProduct
+                        UpdateProduct.main(new String[] {});
                     }
-                });
-            }
-
+                }
+            });
             panel.add(button);
         }
 
@@ -92,6 +93,7 @@ public class ProductPage {
 
         // Add a key listener to close the application
         frame.addKeyListener(new java.awt.event.KeyAdapter() {
+
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {

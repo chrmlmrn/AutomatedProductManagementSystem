@@ -14,6 +14,8 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 public class AddProduct {
@@ -81,7 +83,9 @@ public class AddProduct {
         JDateChooser expirationDateChooser = new JDateChooser();
         expirationDateChooser.setPreferredSize(new Dimension(200, 30));
 
+        List<JTextField> textFields = new ArrayList<>();
         RoundedTextField barcodeTextField = null;
+
         for (int i = 0; i < labels.length; i++) {
             JLabel label = new JLabel(labels[i]);
             label.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -109,6 +113,7 @@ public class AddProduct {
             } else {
                 RoundedTextField textField = new RoundedTextField(5, 20); // Adjust the radius and columns as needed
                 textField.setPreferredSize(new Dimension(500, 30)); // Adjusted width and height to fit new container
+                textFields.add(textField);
                 if (i == 0) {
                     barcodeTextField = textField;
                 }
@@ -128,7 +133,11 @@ public class AddProduct {
         addButton.setForeground(Color.BLACK);
         addButton.setFocusPainted(false);
         addButton.setPreferredSize(new Dimension(300, 40));
-        addButton.addActionListener(e -> System.out.println("Add button clicked"));
+        addButton.addActionListener(e -> {
+            if (validateFields(textFields)) {
+                System.out.println("Add button clicked");
+            }
+        });
 
         // Barcode Generation Button
         RoundedButton generateBarcodeButton = new RoundedButton("Generate Barcode");
@@ -209,6 +218,17 @@ public class AddProduct {
 
         // Display the frame
         frame.setVisible(true);
+    }
+
+    private static boolean validateFields(List<JTextField> textFields) {
+        for (JTextField textField : textFields) {
+            if (textField.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "All fields must be filled.", "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+        }
+        return true;
     }
 
     private static void showBarcodeDialog(BufferedImage barcodeImage) {
@@ -298,5 +318,4 @@ public class AddProduct {
         dialog.setLocationRelativeTo(frame);
         dialog.setVisible(true);
     }
-
 }

@@ -174,7 +174,6 @@ public class BarcodeGenerator {
     // Method to draw EAN-13 formatted number below the barcode
     private static void drawEAN13Number(Graphics2D g2d, FontMetrics fm, String data, int barcodeWidth,
             int leftQuietZone, int rightQuietZone, int textY) {
-        int totalWidth = fm.stringWidth(data);
         int startX = leftQuietZone - fm.stringWidth(data.charAt(0) + "");
 
         // Draw number system digit
