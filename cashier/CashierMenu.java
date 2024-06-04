@@ -33,7 +33,7 @@ public class CashierMenu {
         String[] buttonLabels = { "Scan Product", "Generate Sales", "Help", "About", "Logout" };
         int buttonWidth = 300;
         int buttonHeight = 50;
-        int startY = 150; // Starting Y position for the first button
+        int startY = 300; // Starting Y position for the first button
         int gap = 20; // Gap between buttons
 
         for (int i = 0; i < buttonLabels.length; i++) {
