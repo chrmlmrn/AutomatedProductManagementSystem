@@ -1,4 +1,4 @@
-package customcomponents;
+package src.customcomponents;
 
 import javax.swing.*;
 import java.awt.*;

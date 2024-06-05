@@ -1,10 +1,11 @@
-package admin.product;
+package src.admin.product;
 
 import com.toedter.calendar.JDateChooser;
-import customcomponents.RoundedButton;
-import customcomponents.RoundedPanel;
-import customcomponents.RoundedTextField;
-import admin.product.barcode.BarcodeGenerator;
+
+import src.admin.product.barcode.BarcodeGenerator;
+import src.customcomponents.RoundedButton;
+import src.customcomponents.RoundedPanel;
+import src.customcomponents.RoundedTextField;
 
 import javax.swing.*;
 import javax.swing.border.Border;

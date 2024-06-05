@@ -1,12 +1,12 @@
-package login;
+package src.login;
 
 import javax.swing.*;
 
 import java.awt.event.MouseEvent;
 
-import customcomponents.RoundedButton;
-import customcomponents.RoundedPanel;
-import register.Signup;
+import src.customcomponents.RoundedButton;
+import src.customcomponents.RoundedPanel;
+import src.register.Signup;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

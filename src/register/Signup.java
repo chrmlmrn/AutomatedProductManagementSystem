@@ -1,11 +1,11 @@
-package register;
+package src.register;
 
 import javax.swing.*;
 
-import customcomponents.RoundedPanel;
-import customcomponents.RoundedButton;
+import src.customcomponents.RoundedButton;
+import src.customcomponents.RoundedPanel;
+import src.login.Login;
 
-import login.Login;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

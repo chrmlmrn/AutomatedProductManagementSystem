@@ -1,9 +1,10 @@
-package admin.product;
-
-import customcomponents.RoundedButton;
-import customcomponents.RoundedPanel;
+package src.admin.product;
 
 import javax.swing.*;
+
+import src.customcomponents.RoundedButton;
+import src.customcomponents.RoundedPanel;
+
 import java.awt.*;
 
 public class UpdateProduct {

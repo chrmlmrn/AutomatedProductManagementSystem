@@ -1,11 +1,12 @@
-package admin.maintenance;
-
-import customcomponents.RoundedButton;
-import customcomponents.RoundedPanel;
-import customcomponents.RoundedTextField;
+package src.admin.maintenance;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+import src.customcomponents.RoundedButton;
+import src.customcomponents.RoundedPanel;
+import src.customcomponents.RoundedTextField;
+
 import java.awt.*;
 
 public class UserMaintenance {

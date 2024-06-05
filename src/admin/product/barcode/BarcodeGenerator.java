@@ -1,4 +1,4 @@
-package admin.product.barcode;
+package src.admin.product.barcode;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

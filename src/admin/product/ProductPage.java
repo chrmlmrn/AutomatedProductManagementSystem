@@ -1,10 +1,10 @@
-package admin.product;
+package src.admin.product;
 
 // ProductPage.java
 import javax.swing.*;
 
-import admin.AdminMenu;
-import customcomponents.RoundedButton;
+import src.admin.AdminMenu;
+import src.customcomponents.RoundedButton;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

@@ -1,17 +1,18 @@
-package cashier;
+package src.admin;
 
 import javax.swing.*;
 
-import customcomponents.RoundedButton;
+import src.admin.product.ProductPage;
+import src.customcomponents.RoundedButton;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class CashierMenu {
+public class AdminMenu {
     public static void main(String[] args) {
         // frame
-        JFrame frame = new JFrame("Cashier Menu");
+        JFrame frame = new JFrame("Admin Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(1600, 900); // Set frame size to 1600 x 900
         frame.setUndecorated(true); // Remove window borders and title bar
@@ -23,17 +24,18 @@ public class CashierMenu {
         panel.setBackground(Color.WHITE);
 
         // Title Label
-        JLabel titleLabel = new JLabel("Cashier Menu");
+        JLabel titleLabel = new JLabel("Admin Menu");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setBounds(70, 30, 200, 30); // Adjusted y-coordinate from 10 to 30
         titleLabel.setForeground(new Color(24, 26, 78));
         panel.add(titleLabel);
 
         // Buttons
-        String[] buttonLabels = { "Scan Product", "Generate Sales", "Help", "About", "Logout" };
+        String[] buttonLabels = { "Product", "Inventory", "Reports", "Records", "Return", "Maintenance", "Help",
+                "About", "Logout" };
         int buttonWidth = 300;
         int buttonHeight = 50;
-        int startY = 300; // Starting Y position for the first button
+        int startY = 150; // Starting Y position for the first button
         int gap = 20; // Gap between buttons
 
         for (int i = 0; i < buttonLabels.length; i++) {
@@ -44,38 +46,47 @@ public class CashierMenu {
             button.setFont(new Font("Arial", Font.BOLD, 16));
             button.setBorder(BorderFactory.createEmptyBorder());
 
-            // Add action listener for the buttons
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     System.out.println(button.getText() + " button clicked");
-                    frame.dispose(); // Close the current frame
 
                     switch (button.getText()) {
-                        case "Scan Product":
+                        case "Product":
                             // Open Scan Product Page
                             // ScanProductPage.main(new String[] {});
+                            frame.dispose(); // Close the current frame
+                            // Open Product Page
+                            ProductPage.main(new String[] {});
                             break;
-                        case "Generate Sales":
+                        case "Inventory":
                             // Open Generate Sales Page
                             // GenerateSalesPage.main(new String[] {});
                             break;
-                        case "Help":
+                        case "Reports":
                             // Open Help Page
                             // HelpPage.main(new String[] {});
                             break;
-                        case "About":
+                        case "Records":
                             // Open About Page
                             // AboutPage.main(new String[] {});
                             break;
-                        case "Logout":
+                        case "Return":
                             // Logout and close the application
-                            System.exit(0);
+                            break;
+                        case "Maintenance":
+                            break;
+                        case "Help":
+                            break;
+                        case "About":
+                            break;
+                        case "Logout":
+                            frame.dispose();
                             break;
                     }
+
                 }
             });
-
             panel.add(button);
         }
 
