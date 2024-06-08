@@ -65,7 +65,7 @@ public class AddProduct {
         // Create labels and text fields for the form
         String[] labels = {
                 "Product Barcode", "Product Code", "Product Name", "Product Category",
-                "Product Price", "Product Size", "Product Stocks", "Batch Number", "Product Expiration Date",
+                "Product Price", "Product Size", "Product Quantity", "Batch Number", "Product Expiration Date",
                 "Product Status", "Product Type", "Supplier Name"
         };
 
