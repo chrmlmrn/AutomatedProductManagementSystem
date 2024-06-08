@@ -38,7 +38,7 @@ public class AddProduct {
         // Create the blue container panel with rounded corners
         RoundedPanel containerPanel = new RoundedPanel(30); // Adjust the radius as needed
         containerPanel.setBackground(new Color(30, 144, 255));
-        containerPanel.setPreferredSize(new Dimension(650, 850)); // Increased width and height size
+        containerPanel.setPreferredSize(new Dimension(650, 800)); // Increased width and height size
         containerPanel.setLayout(new GridBagLayout());
         containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding
 
@@ -65,8 +65,8 @@ public class AddProduct {
         // Create labels and text fields for the form
         String[] labels = {
                 "Product Barcode", "Product Code", "Product Name", "Product Category",
-                "Product Price", "Product Size", "Product Quantity", "Batch Number", "Product Expiration Date",
-                "Product Status", "Product Type", "Supplier Name"
+                "Product Price", "Product Size", "Product Quantity", "Product Expiration Date",
+                "Product Type", "Supplier Name"
         };
 
         // Create option lists for the combo boxes
@@ -96,21 +96,31 @@ public class AddProduct {
             gbc.gridwidth = 1;
             containerPanel.add(label, gbc);
 
-            if (i == 3 || i == 9 || i == 10) { // Check if it's one of the option fields
-                JComboBox<String> comboBox = (i == 3) ? categoryComboBox : (i == 9) ? statusComboBox : typeComboBox;
+            if (i == 3 || i == 8) { // Check if it's one of the option fields
+                JComboBox<String> comboBox = (i == 3) ? categoryComboBox : typeComboBox;
                 gbc.gridx = 0;
                 gbc.gridy = i * 2 + 2;
                 gbc.gridwidth = 2;
                 gbc.weightx = 1;
                 gbc.fill = GridBagConstraints.HORIZONTAL;
                 containerPanel.add(comboBox, gbc);
-            } else if (i == 8) { // Product Expiration Date
+            } else if (i == 7) { // Product Expiration Date
                 gbc.gridx = 0;
                 gbc.gridy = i * 2 + 2;
                 gbc.gridwidth = 2;
                 gbc.weightx = 1;
                 gbc.fill = GridBagConstraints.HORIZONTAL;
                 containerPanel.add(expirationDateChooser, gbc);
+            } else if (i == 10) { // Supplier Name
+                JTextField textField = new JTextField(); // Text field for supplier name
+                textField.setPreferredSize(new Dimension(500, 30)); // Adjusted width and height to fit new container
+                textFields.add(textField);
+                gbc.gridx = 0;
+                gbc.gridy = i * 2 + 2;
+                gbc.gridwidth = 2;
+                gbc.weightx = 1;
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                containerPanel.add(textField, gbc);
             } else {
                 RoundedTextField textField = new RoundedTextField(5, 20); // Adjust the radius and columns as needed
                 textField.setPreferredSize(new Dimension(500, 30)); // Adjusted width and height to fit new container
