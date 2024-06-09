@@ -16,11 +16,12 @@ public class Signup extends JFrame {
 
         private JPanel mainPanel, formPanel;
         private JLabel registerLabel, detailsLabel, firstNameLabel, lastNameLabel, usernameLabel, passwordLabel,
-                        termsLabel, haveAccountLabel, clickHereLabel;
-        private JTextField firstNameField, lastNameField, usernameField;
+                        termsLabel, securityQuestionLabel, securityAnswerLabel, haveAccountLabel, clickHereLabel;
+        private JTextField firstNameField, lastNameField, usernameField, securityAnswerField;
         private JPasswordField passwordField;
         private JButton cashierButton, signInButton, adminButton;
         private JCheckBox termsCheckBox;
+        private JComboBox<String> securityQuestionComboBox;
 
         public Signup() {
                 initComponents();
@@ -49,7 +50,7 @@ public class Signup extends JFrame {
         private JPanel createFormPanel() {
                 RoundedPanel panel = new RoundedPanel(30);
                 panel.setBackground(new Color(30, 144, 255));
-                panel.setPreferredSize(new Dimension(400, 500));
+                panel.setPreferredSize(new Dimension(400, 600));
 
                 // Create labels and fields
                 registerLabel = createLabel("Register", new Font("Arial", Font.BOLD, 30));
@@ -64,6 +65,10 @@ public class Signup extends JFrame {
                 usernameLabel.setForeground(Color.WHITE);
                 passwordLabel = createLabel("Password", new Font("Arial", Font.PLAIN, 12));
                 passwordLabel.setForeground(Color.WHITE);
+                securityQuestionLabel = createLabel("Security Question", new Font("Arial", Font.PLAIN, 12));
+                securityQuestionLabel.setForeground(Color.WHITE);
+                securityAnswerLabel = createLabel("Answer", new Font("Arial", Font.PLAIN, 12));
+                securityAnswerLabel.setForeground(Color.WHITE);
                 termsLabel = createLabel("I agree to the Terms and Conditions", new Font("Arial", Font.PLAIN, 12));
                 termsLabel.setForeground(Color.WHITE);
 
@@ -76,7 +81,14 @@ public class Signup extends JFrame {
                 lastNameField = new JTextField();
                 usernameField = new JTextField();
                 passwordField = new JPasswordField();
+                securityAnswerField = new JTextField();
                 termsCheckBox = new JCheckBox("I accept the Terms and Conditions");
+
+                securityQuestionComboBox = new JComboBox<>(new String[] {
+                                "What was the name of your first pet?",
+                                "What is your mother's maiden name?",
+                                "What was the name of your first school?"
+                });
 
                 // Create buttons
                 cashierButton = new RoundedButton("Cashier");
@@ -94,6 +106,15 @@ public class Signup extends JFrame {
                         @Override
                         public void mouseClicked(MouseEvent e) {
                                 goToLoginPage();
+                        }
+                });
+
+                // Setup termsLabel to open terms and conditions
+                termsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                termsLabel.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                                showTermsAndConditions();
                         }
                 });
 
@@ -119,11 +140,14 @@ public class Signup extends JFrame {
                                                                                                 .addGroup(layout.createParallelGroup(
                                                                                                                 GroupLayout.Alignment.LEADING,
                                                                                                                 false)
-                                                                                                                .addComponent(firstNameField)
                                                                                                                 .addComponent(firstNameLabel,
                                                                                                                                 GroupLayout.DEFAULT_SIZE,
                                                                                                                                 GroupLayout.DEFAULT_SIZE,
-                                                                                                                                Short.MAX_VALUE))
+                                                                                                                                Short.MAX_VALUE)
+                                                                                                                .addComponent(firstNameField,
+                                                                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                                                                175,
+                                                                                                                                GroupLayout.PREFERRED_SIZE))
                                                                                                 .addPreferredGap(
                                                                                                                 LayoutStyle.ComponentPlacement.RELATED)
                                                                                                 .addGroup(layout.createParallelGroup(
@@ -131,7 +155,7 @@ public class Signup extends JFrame {
                                                                                                                 .addComponent(lastNameLabel)
                                                                                                                 .addComponent(lastNameField,
                                                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                                                368,
+                                                                                                                                180,
                                                                                                                                 GroupLayout.PREFERRED_SIZE)))
                                                                                 .addComponent(usernameLabel)
                                                                                 .addComponent(usernameField,
@@ -140,6 +164,16 @@ public class Signup extends JFrame {
                                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                                 .addComponent(passwordLabel)
                                                                                 .addComponent(passwordField,
+                                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                                368,
+                                                                                                GroupLayout.PREFERRED_SIZE)
+                                                                                .addComponent(securityQuestionLabel)
+                                                                                .addComponent(securityQuestionComboBox,
+                                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                                368,
+                                                                                                GroupLayout.PREFERRED_SIZE)
+                                                                                .addComponent(securityAnswerLabel)
+                                                                                .addComponent(securityAnswerField,
                                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                                 368,
                                                                                                 GroupLayout.PREFERRED_SIZE)
@@ -206,6 +240,22 @@ public class Signup extends JFrame {
                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                 .addPreferredGap(
                                                                                 LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addComponent(securityQuestionLabel)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(securityQuestionComboBox,
+                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                GroupLayout.DEFAULT_SIZE,
+                                                                                GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(
+                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addComponent(securityAnswerLabel)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(securityAnswerField,
+                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                GroupLayout.DEFAULT_SIZE,
+                                                                                GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(
+                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
                                                                 .addComponent(termsLabel)
                                                                 .addPreferredGap(
                                                                                 LayoutStyle.ComponentPlacement.UNRELATED)
@@ -247,6 +297,11 @@ public class Signup extends JFrame {
                 button.setForeground(Color.WHITE);
                 button.setBackground(new Color(0, 102, 204));
                 return button;
+        }
+
+        private void showTermsAndConditions() {
+                JOptionPane.showMessageDialog(this, "Here are the terms and conditions...", "Terms and Conditions",
+                                JOptionPane.INFORMATION_MESSAGE);
         }
 
         private void goToLoginPage() {

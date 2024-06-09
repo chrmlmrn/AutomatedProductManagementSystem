@@ -38,3 +38,5 @@ CREATE TABLE discounts (
     discount_type VARCHAR(100) NOT NULL,
     discount_value DECIMAL(10, 2) NOT NULL
 );
+--@block
+SHOW TABLES;
