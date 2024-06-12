@@ -12,7 +12,7 @@
             "server": "localhost",
             "port": 3306,
             "driver": "MySQL",
-            "name": "lavega_store",
+            "name": "lavega_store_db",
             "database": "lavega_store",
             "username": "root",
             "password": "Cm031182*"
