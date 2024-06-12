@@ -2,16 +2,21 @@ package src.login;
 
 import javax.swing.*;
 
+import database.DatabaseUtil;
+import src.SHA256.Sha256Util;
 import src.customcomponents.RoundedButton;
-
-
 import src.customcomponents.RoundedPanel;
+import src.userlogs.UserLogUtil;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class ForgotPassword extends JFrame {
 
@@ -20,8 +25,8 @@ public class ForgotPassword extends JFrame {
             confirmPasswordLabel, backToLoginLabel;
     private JTextField usernameField, answerField;
     private JPasswordField newPasswordField, confirmPasswordField;
-    private JComboBox<String> questionComboBox;
-    private JButton resetButton;
+    private JLabel questionTextLabel;
+    private JButton resetButton, fetchQuestionButton;
 
     public ForgotPassword() {
         initComponents();
@@ -57,7 +62,7 @@ public class ForgotPassword extends JFrame {
         forgotPasswordLabel.setForeground(Color.WHITE);
         usernameLabel = createLabel("Username", new Font("Arial", Font.PLAIN, 12));
         usernameLabel.setForeground(Color.WHITE);
-        questionLabel = createLabel("Select a Question", new Font("Arial", Font.PLAIN, 12));
+        questionLabel = createLabel("Your Security Question", new Font("Arial", Font.PLAIN, 12));
         questionLabel.setForeground(Color.WHITE);
         answerLabel = createLabel("Answer", new Font("Arial", Font.PLAIN, 12));
         answerLabel.setForeground(Color.WHITE);
@@ -67,14 +72,19 @@ public class ForgotPassword extends JFrame {
         confirmPasswordLabel.setForeground(Color.WHITE);
 
         usernameField = new JTextField();
-        questionComboBox = new JComboBox<>(new String[] {
-                "What was your first pet's name?",
-                "What is your mother's maiden name?",
-                "What was the name of your first school?"
-        });
+        questionTextLabel = createLabel("", new Font("Arial", Font.PLAIN, 12));
+        questionTextLabel.setForeground(Color.WHITE);
         answerField = new JTextField();
         newPasswordField = new JPasswordField();
         confirmPasswordField = new JPasswordField();
+
+        // Create fetch question button
+        fetchQuestionButton = new RoundedButton("Verify");
+        fetchQuestionButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fetchSecurityQuestion();
+            }
+        });
 
         // Create reset button
         resetButton = new RoundedButton("Reset Password");
@@ -113,9 +123,10 @@ public class ForgotPassword extends JFrame {
                                         .addComponent(usernameLabel)
                                         .addComponent(usernameField, GroupLayout.PREFERRED_SIZE, 350,
                                                 GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(questionLabel)
-                                        .addComponent(questionComboBox, GroupLayout.PREFERRED_SIZE, 350,
+                                        .addComponent(fetchQuestionButton, GroupLayout.PREFERRED_SIZE, 350,
                                                 GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(questionLabel)
+                                        .addComponent(questionTextLabel)
                                         .addComponent(answerLabel)
                                         .addComponent(answerField, GroupLayout.PREFERRED_SIZE, 350,
                                                 GroupLayout.PREFERRED_SIZE)
@@ -141,10 +152,12 @@ public class ForgotPassword extends JFrame {
                                 .addComponent(usernameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
                                         GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
+                                .addComponent(fetchQuestionButton, GroupLayout.PREFERRED_SIZE, 37,
+                                        GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
                                 .addComponent(questionLabel)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(questionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-                                        GroupLayout.PREFERRED_SIZE)
+                                .addComponent(questionTextLabel)
                                 .addGap(18, 18, 18)
                                 .addComponent(answerLabel)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -180,15 +193,38 @@ public class ForgotPassword extends JFrame {
         return label;
     }
 
+    private void fetchSecurityQuestion() {
+        String username = usernameField.getText();
+        String query = "SELECT sq.security_question FROM security_question sq " +
+                "JOIN security_answer sa ON sq.security_question_id = sa.security_question_id " +
+                "JOIN user u ON sa.user_id = u.user_id WHERE u.username = ?";
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, username);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String securityQuestion = resultSet.getString("security_question");
+                questionTextLabel.setText(securityQuestion);
+            } else {
+                questionTextLabel.setText("No security question found for this username.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            questionTextLabel.setText("Error fetching security question.");
+        }
+    }
+
     private void handleResetPassword() {
         String username = usernameField.getText();
-        String selectedQuestion = (String) questionComboBox.getSelectedItem();
         String answer = answerField.getText();
         String newPassword = new String(newPasswordField.getPassword());
         String confirmPassword = new String(confirmPasswordField.getPassword());
 
+        // Hash the provided security answer
+        String hashedAnswer = Sha256Util.hash(answer);
+
         // Validate the security question answer
-        boolean isAnswerCorrect = validateAnswer(username, selectedQuestion, answer);
+        boolean isAnswerCorrect = validateAnswer(username, questionTextLabel.getText(), hashedAnswer);
 
         if (!isAnswerCorrect) {
             JOptionPane.showMessageDialog(this, "Security answer incorrect. Please try again.");
@@ -200,16 +236,88 @@ public class ForgotPassword extends JFrame {
             return;
         }
 
-        // Implement your logic to reset the password
-        // This is just a placeholder for demonstration purposes
-        JOptionPane.showMessageDialog(this, "Password has been reset successfully!");
-        goToLoginPage();
+        // Reset the password
+        if (resetPassword(username, newPassword)) {
+            // Log password reset attempt
+            try {
+                UserLogUtil.logUserAction(getUserIdByUsername(username), "Password reset successful");
+            } catch (IllegalArgumentException ex) {
+                System.err.println("Error logging user action: " + ex.getMessage());
+            }
+
+            JOptionPane.showMessageDialog(this, "Password has been reset successfully!");
+            goToLoginPage();
+        } else {
+
+            // Log failed password reset attempt
+            try {
+                UserLogUtil.logUserAction(getUserIdByUsername(username), "Password reset failed");
+            } catch (IllegalArgumentException ex) {
+                System.err.println("Error logging user action: " + ex.getMessage());
+            }
+
+            JOptionPane.showMessageDialog(this, "Failed to reset password. Please try again later.");
+        }
     }
 
     private boolean validateAnswer(String username, String question, String answer) {
-        // Implement your logic to validate the security answer
-        // This is just a placeholder for demonstration purposes
-        return "correctAnswer".equalsIgnoreCase(answer);
+        // Query the database to fetch the stored answer for the provided username and
+        // question
+        String query = "SELECT sa.security_answer FROM security_answer sa " +
+                "JOIN user u ON sa.user_id = u.user_id " +
+                "JOIN security_question sq ON sa.security_question_id = sq.security_question_id " +
+                "WHERE u.username = ? AND sq.security_question = ?";
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, username);
+            statement.setString(2, question);
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                String correctAnswer = resultSet.getString("security_answer");
+                // Compare the provided answer with the stored answer (case-insensitive)
+                return correctAnswer.equalsIgnoreCase(answer);
+            } else {
+                // No matching record found, answer is incorrect
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private boolean resetPassword(String username, String newPassword) {
+        String hashedPassword = Sha256Util.hash(newPassword);
+        String query = "UPDATE user SET password = ? WHERE username = ?";
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, hashedPassword);
+            statement.setString(2, username);
+            int rowsAffected = statement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private int getUserIdByUsername(String username) {
+        String query = "SELECT user_id FROM user WHERE username = ?";
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, username);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("user_id");
+                } else {
+                    System.err.println("User not found for username: " + username);
+                    return -1; // Return -1 indicating user not found
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return -1; // Return -1 indicating an error occurred
+        }
     }
 
     private void goToLoginPage() {

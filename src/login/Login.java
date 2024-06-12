@@ -2,15 +2,22 @@ package src.login;
 
 import javax.swing.*;
 
+import database.DatabaseUtil;
+import src.SHA256.Sha256Util;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 import src.register.Signup;
+import src.userlogs.UserLogUtil;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Login extends JFrame {
 
@@ -21,8 +28,14 @@ public class Login extends JFrame {
         private JButton signInButton;
         private JPanel mainPanel, centerPanel;
 
+        private int loginAttempts = 0;
+        private final int maxAttempts = 3;
+        private Timer loginTimer;
+        private JLabel timerLabel;
+
         public Login() {
                 initComponents();
+                initTimer();
         }
 
         private void initComponents() {
@@ -31,9 +44,9 @@ public class Login extends JFrame {
 
                 setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 setTitle("Login Page");
-                setSize(1600, 900); // Set the size of the window to 1920x1080 pixels
-                setUndecorated(true); // Remove window borders and title bar
-                setLocationRelativeTo(null); // Center the frame on the screen
+                setSize(1600, 900);
+                setUndecorated(true);
+                setLocationRelativeTo(null);
 
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.gridx = 0;
@@ -42,7 +55,36 @@ public class Login extends JFrame {
                 mainPanel.add(centerPanel, gbc);
 
                 add(mainPanel);
-                // pack(); // No need to call pack since setSize sets the size explicitly
+        }
+
+        private void initTimer() {
+                loginTimer = new Timer(1000, new ActionListener() {
+                        int counter = 30; // 30 seconds countdown
+                        boolean timerStarted = false;
+
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                                if (loginAttempts >= maxAttempts) {
+                                        timerLabel.setVisible(true);
+                                        if (!timerStarted) {
+                                                counter = 30; // Reset the counter
+                                                timerStarted = true;
+                                                loginTimer.start();
+                                        }
+                                        timerLabel.setText("Please try again later. Timer: " + counter + " seconds");
+                                        counter--;
+                                        if (counter < 0) {
+                                                timerLabel.setText("Timer expired. You can now try again."); // Reset
+                                                                                                             // timer
+                                                                                                             // label
+                                                loginAttempts = 0; // Reset login attempts
+                                                signInButton.setEnabled(true); // Re-enable the sign-in button
+                                                timerStarted = false;
+                                                loginTimer.stop();
+                                        }
+                                }
+                        }
+                });
         }
 
         private JPanel createCenterPanel() {
@@ -70,7 +112,6 @@ public class Login extends JFrame {
                         }
                 });
 
-                // Add mouse listener to forgotPasswordLabel to open ForgotPassword page
                 forgotPasswordLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                 forgotPasswordLabel.addMouseListener(new MouseAdapter() {
                         @Override
@@ -93,6 +134,9 @@ public class Login extends JFrame {
                                 signInButtonActionPerformed(evt);
                         }
                 });
+
+                timerLabel = createLabel("", new Font("Arial", Font.PLAIN, 14), Color.RED);
+                timerLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
                 layoutCenterPanel(panel);
 
@@ -130,7 +174,11 @@ public class Login extends JFrame {
                                                                                                 .addComponent(noAccountLabel)
                                                                                                 .addPreferredGap(
                                                                                                                 LayoutStyle.ComponentPlacement.RELATED)
-                                                                                                .addComponent(registerLabel)))
+                                                                                                .addComponent(registerLabel))
+                                                                                .addComponent(timerLabel,
+                                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                                342,
+                                                                                                GroupLayout.PREFERRED_SIZE))
                                                                 .addGap(29, 29, 29)));
 
                 layout.setVerticalGroup(
@@ -159,6 +207,10 @@ public class Login extends JFrame {
                                                                 .addGap(18, 18, 18)
                                                                 .addComponent(signInButton, GroupLayout.PREFERRED_SIZE,
                                                                                 40, GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(
+                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addComponent(timerLabel, GroupLayout.PREFERRED_SIZE,
+                                                                                20, GroupLayout.PREFERRED_SIZE)
                                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addGroup(layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.BASELINE)
@@ -181,12 +233,72 @@ public class Login extends JFrame {
         }
 
         private void signInButtonActionPerformed(ActionEvent evt) {
-                // Handle sign in action
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
-                // TODO: Implement your authentication logic here
-                System.out.println("Username: " + username);
-                System.out.println("Password: " + password);
+                boolean isAuthenticated = authenticateUser(username, password);
+
+                if (isAuthenticated) {
+                        System.out.println("Authentication successful. Opening main application window...");
+                        // Proceed to open main application window or perform any other action
+                        // Reset login attempts
+                        loginAttempts = 0;
+                        // Log successful login attempt
+                        UserLogUtil.logUserAction(getUserIdByUsername(username), "User logged in");
+                        timerLabel.setText("");
+                        if (loginTimer.isRunning()) {
+                                loginTimer.stop();
+                        }
+                } else {
+                        loginAttempts++;
+                        if (loginAttempts >= maxAttempts) {
+                                timerLabel.setVisible(true);
+                                if (!loginTimer.isRunning()) {
+                                        loginTimer.start(); // Start the timer if not already running
+                                }
+                                signInButton.setEnabled(false); // Disable sign-in button
+                        } else {
+                                JOptionPane.showMessageDialog(this, "Invalid username or password",
+                                                "Authentication Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        // Log failed login attempt
+                        UserLogUtil.logUserAction(getUserIdByUsername(username), "User login failed");
+                }
+        }
+
+        private boolean authenticateUser(String username, String password) {
+                String query = "SELECT * FROM user WHERE username = ? AND password = ?";
+
+                try (Connection connection = DatabaseUtil.getConnection();
+                                PreparedStatement statement = connection.prepareStatement(query)) {
+                        statement.setString(1, username);
+                        statement.setString(2, Sha256Util.hash(password));
+
+                        try (ResultSet resultSet = statement.executeQuery()) {
+                                return resultSet.next();
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                        return false;
+                }
+        }
+
+        private int getUserIdByUsername(String username) {
+                String query = "SELECT user_id FROM user WHERE username = ?";
+                try (Connection connection = DatabaseUtil.getConnection();
+                                PreparedStatement statement = connection.prepareStatement(query)) {
+                        statement.setString(1, username);
+                        try (ResultSet resultSet = statement.executeQuery()) {
+                                if (resultSet.next()) {
+                                        return resultSet.getInt("user_id");
+                                } else {
+                                        System.err.println("User not found for username: " + username);
+                                        return -1; // Return -1 indicating user not found
+                                }
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                        return -1; // Return -1 indicating an error occurred
+                }
         }
 
         private void openSignUpPage() {

@@ -2,18 +2,27 @@ package src.register;
 
 import javax.swing.*;
 
+import database.DatabaseUtil;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 import src.login.Login;
+import src.userlogs.UserLogUtil;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class Signup extends JFrame {
-
         private JPanel mainPanel, formPanel;
         private JLabel registerLabel, detailsLabel, firstNameLabel, lastNameLabel, usernameLabel, passwordLabel,
                         termsLabel, securityQuestionLabel, securityAnswerLabel, haveAccountLabel, clickHereLabel;
@@ -22,6 +31,8 @@ public class Signup extends JFrame {
         private JButton cashierButton, signInButton, adminButton;
         private JCheckBox termsCheckBox;
         private JComboBox<String> securityQuestionComboBox;
+        private boolean isAdminSelected = false;
+        private boolean isCashierSelected = false;
 
         public Signup() {
                 initComponents();
@@ -69,8 +80,6 @@ public class Signup extends JFrame {
                 securityQuestionLabel.setForeground(Color.WHITE);
                 securityAnswerLabel = createLabel("Answer", new Font("Arial", Font.PLAIN, 12));
                 securityAnswerLabel.setForeground(Color.WHITE);
-                termsLabel = createLabel("I agree to the Terms and Conditions", new Font("Arial", Font.PLAIN, 12));
-                termsLabel.setForeground(Color.WHITE);
 
                 haveAccountLabel = createLabel("Already have an account?", new Font("Arial", Font.PLAIN, 12));
                 haveAccountLabel.setForeground(Color.WHITE);
@@ -82,21 +91,56 @@ public class Signup extends JFrame {
                 usernameField = new JTextField();
                 passwordField = new JPasswordField();
                 securityAnswerField = new JTextField();
-                termsCheckBox = new JCheckBox("I accept the Terms and Conditions");
+                termsCheckBox = new JCheckBox("I accept the");
+                termsCheckBox.setOpaque(false); // Make the checkbox non-opaque
+                termsCheckBox.setContentAreaFilled(false);
+                termsCheckBox.setBorderPainted(false);
+                termsCheckBox.setFocusPainted(false);
+                termsCheckBox.setForeground(Color.WHITE); // Set the foreground color to white to match the text
+                termsLabel = createLabel("Terms and Conditions", new Font("Arial", Font.PLAIN, 12));
+                termsLabel.setForeground(Color.BLUE);
 
+                // Add mouse listener to the terms link label
+                termsLabel.addMouseListener(new MouseAdapter() {
+                        @Override
+                        public void mouseClicked(MouseEvent e) {
+                                showTermsAndConditions();
+                        }
+                });
                 securityQuestionComboBox = new JComboBox<>(new String[] {
-                                "What was the name of your first pet?",
                                 "What is your mother's maiden name?",
+                                "What is the name of your first pet?",
+                                "In what city were you born?",
+                                "What is your favorite movie?",
+                                "In what year did you graduate from high school?",
                                 "What was the name of your first school?"
                 });
 
                 // Create buttons
                 cashierButton = new RoundedButton("Cashier");
+
+                // Action listener for the cashier button
+                cashierButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                                isAdminSelected = false;
+                                isCashierSelected = true;
+                        }
+                });
+
                 adminButton = new RoundedButton("Admin");
+
+                // Action listener for the admin button
+                adminButton.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                                isAdminSelected = true;
+                                isCashierSelected = false;
+                        }
+                });
+
                 signInButton = new RoundedButton("Sign Up");
                 signInButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
-                                goToLoginPage();
+                                saveUserDetails();
                         }
                 });
 
@@ -109,22 +153,17 @@ public class Signup extends JFrame {
                         }
                 });
 
-                // Setup termsLabel to open terms and conditions
-                termsLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                termsLabel.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                                showTermsAndConditions();
-                        }
-                });
+                // Add new label above admin button
+                JLabel roleSelectionLabel = createLabel("Select Your Role", new Font("Arial", Font.PLAIN, 12));
+                roleSelectionLabel.setForeground(Color.WHITE);
 
                 // Layout the form panel
-                layoutFormPanel(panel);
+                layoutFormPanel(panel, roleSelectionLabel);
 
                 return panel;
         }
 
-        private void layoutFormPanel(JPanel panel) {
+        private void layoutFormPanel(JPanel panel, JLabel roleSelectionLabel) {
                 GroupLayout layout = new GroupLayout(panel);
                 panel.setLayout(layout);
 
@@ -177,7 +216,7 @@ public class Signup extends JFrame {
                                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                                 368,
                                                                                                 GroupLayout.PREFERRED_SIZE)
-                                                                                .addComponent(termsLabel)
+                                                                                .addComponent(roleSelectionLabel)
                                                                                 .addGroup(layout.createSequentialGroup()
                                                                                                 .addComponent(adminButton,
                                                                                                                 GroupLayout.PREFERRED_SIZE,
@@ -189,11 +228,15 @@ public class Signup extends JFrame {
                                                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                                                 160,
                                                                                                                 GroupLayout.PREFERRED_SIZE))
+                                                                                .addGroup(layout.createSequentialGroup()
+                                                                                                .addComponent(termsCheckBox)
+                                                                                                .addPreferredGap(
+                                                                                                                LayoutStyle.ComponentPlacement.RELATED)
+                                                                                                .addComponent(termsLabel))
                                                                                 .addComponent(signInButton,
                                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                                 326,
                                                                                                 GroupLayout.PREFERRED_SIZE)
-                                                                                .addComponent(termsCheckBox)
                                                                                 .addGroup(layout.createSequentialGroup()
                                                                                                 .addComponent(haveAccountLabel)
                                                                                                 .addPreferredGap(
@@ -256,26 +299,34 @@ public class Signup extends JFrame {
                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                 .addPreferredGap(
                                                                                 LayoutStyle.ComponentPlacement.UNRELATED)
-                                                                .addComponent(termsLabel)
+                                                                .addComponent(roleSelectionLabel)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addGroup(layout.createParallelGroup(
+                                                                                GroupLayout.Alignment.BASELINE)
+                                                                                .addComponent(adminButton,
+                                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                                40,
+                                                                                                GroupLayout.PREFERRED_SIZE)
+                                                                                .addComponent(cashierButton,
+                                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                                40,
+                                                                                                GroupLayout.PREFERRED_SIZE))
                                                                 .addPreferredGap(
                                                                                 LayoutStyle.ComponentPlacement.UNRELATED)
                                                                 .addGroup(layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.BASELINE)
-                                                                                .addComponent(adminButton)
-                                                                                .addComponent(cashierButton))
+                                                                                .addComponent(termsCheckBox)
+                                                                                .addComponent(termsLabel))
                                                                 .addGap(18, 18, 18)
-                                                                .addComponent(termsCheckBox)
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addComponent(signInButton, GroupLayout.PREFERRED_SIZE,
+                                                                                40, GroupLayout.PREFERRED_SIZE)
+                                                                .addGap(18, 18, 18)
                                                                 .addGroup(layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.BASELINE)
                                                                                 .addComponent(haveAccountLabel)
                                                                                 .addComponent(clickHereLabel))
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
-                                                                .addComponent(signInButton, GroupLayout.PREFERRED_SIZE,
-                                                                                37, GroupLayout.PREFERRED_SIZE)
-                                                                .addGap(38, 38, 38)));
+                                                                .addContainerGap(31, Short.MAX_VALUE)));
+
         }
 
         private JLabel createLabel(String text, Font font) {
@@ -291,14 +342,6 @@ public class Signup extends JFrame {
                 return label;
         }
 
-        private JButton createButton(String text) {
-                JButton button = new JButton(text);
-                button.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-                button.setForeground(Color.WHITE);
-                button.setBackground(new Color(0, 102, 204));
-                return button;
-        }
-
         private void showTermsAndConditions() {
                 JOptionPane.showMessageDialog(this, "Here are the terms and conditions...", "Terms and Conditions",
                                 JOptionPane.INFORMATION_MESSAGE);
@@ -310,7 +353,194 @@ public class Signup extends JFrame {
                 dispose(); // Close the current frame
         }
 
-        public static void main(String args[]) {
+        private void saveUserDetails() {
+                // Debug print statements
+                System.out.println("First Name: " + firstNameField.getText().trim());
+                System.out.println("Last Name: " + lastNameField.getText().trim());
+                System.out.println("Username: " + usernameField.getText().trim());
+                System.out.println("Password: " + new String(passwordField.getPassword()).trim());
+                System.out.println("Security Answer: " + securityAnswerField.getText().trim());
+                System.out.println("Terms Accepted: " + termsCheckBox.isSelected());
+                System.out.println("Admin Selected: " + isAdminSelected);
+                System.out.println("Cashier Selected: " + isCashierSelected);
+
+                // Validation checks
+                System.out.println("Performing validation checks...");
+                if (firstNameField.getText().trim().isEmpty() ||
+                                lastNameField.getText().trim().isEmpty() ||
+                                usernameField.getText().trim().isEmpty() ||
+                                new String(passwordField.getPassword()).trim().isEmpty() ||
+                                securityAnswerField.getText().trim().isEmpty() ||
+                                !termsCheckBox.isSelected() ||
+                                (!isAdminSelected && !isCashierSelected)) {
+
+                        JOptionPane.showMessageDialog(this,
+                                        "Please fill in all required fields and accept the terms and conditions",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                        return; // Exit the method if any required field is missing
+                }
+                System.out.println("Validation checks passed.");
+
+                String firstName = firstNameField.getText().trim();
+                String lastName = lastNameField.getText().trim();
+                String username = usernameField.getText().trim();
+                String password = new String(passwordField.getPassword()).trim();
+                String securityAnswer = securityAnswerField.getText().trim();
+                String userRoleId = isAdminSelected ? "A" : "C"; // Assuming "A" for Admin and "C" for Cashier
+
+                // Check username length
+                System.out.println("Checking username length...");
+                if (username.length() < 5) {
+                        JOptionPane.showMessageDialog(this, "Username must be at least 5 characters long.", "Error",
+                                        JOptionPane.ERROR_MESSAGE);
+                        return;
+                }
+                System.out.println("Username length check passed.");
+
+                // Check password length and complexity
+                System.out.println("Performing password complexity check...");
+                if (password.length() < 8 || password.length() > 12 || !isPasswordComplex(password)) {
+                        JOptionPane.showMessageDialog(this,
+                                        "Password must be 8 to 12 characters long and contain numbers, special characters, and be case-sensitive.",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                }
+                System.out.println("Password complexity check passed.");
+
+                // Encrypt password using SHA-256
+                System.out.println("Encrypting password...");
+                String encryptedPassword = hashSHA256(password);
+                System.out.println("Password encrypted.");
+
+                // Encrypt security answer using SHA-256
+                System.out.println("Encrypting security answer...");
+                String encryptedSecurityAnswer = hashSHA256(securityAnswer);
+                System.out.println("Security answer encrypted.");
+
+                // SQL query to insert user details into the database
+                String insertUserQuery = "INSERT INTO user (user_role_id, user_first_name, user_last_name, username, password, user_account_status_id) "
+                                + "VALUES(?, ?, ?, ?, ?, 'ACT')";
+
+                // SQL query to insert security answer into the database
+                String insertSecurityAnswerQuery = "INSERT INTO security_answer (user_id, security_question_id, security_answer) "
+                                + "VALUES (?, ?, ?)";
+
+                // Get the selected security question
+                String selectedSecurityQuestion = (String) securityQuestionComboBox.getSelectedItem();
+                int securityQuestionId = getSecurityQuestionId(selectedSecurityQuestion);
+
+                try {
+                        // Establish database connection
+                        Connection connection = DatabaseUtil.getConnection();
+                        if (connection != null) {
+                                // Insert user details
+                                PreparedStatement insertUserStatement = connection.prepareStatement(insertUserQuery,
+                                                Statement.RETURN_GENERATED_KEYS);
+                                insertUserStatement.setString(1, userRoleId);
+                                insertUserStatement.setString(2, firstName);
+                                insertUserStatement.setString(3, lastName);
+                                insertUserStatement.setString(4, username);
+                                insertUserStatement.setString(5, encryptedPassword);
+                                insertUserStatement.executeUpdate();
+
+                                // Get the generated user ID
+                                ResultSet generatedKeys = insertUserStatement.getGeneratedKeys();
+                                int userId = -1;
+                                if (generatedKeys.next()) {
+                                        userId = generatedKeys.getInt(1);
+                                }
+
+                                // Log user registration action
+                                UserLogUtil.logUserAction(userId, "User registered");
+
+                                // Insert security answer
+                                PreparedStatement insertSecurityAnswerStatement = connection
+                                                .prepareStatement(insertSecurityAnswerQuery);
+                                insertSecurityAnswerStatement.setInt(1, userId);
+                                insertSecurityAnswerStatement.setInt(2, securityQuestionId);
+                                insertSecurityAnswerStatement.setString(3, encryptedSecurityAnswer);
+                                insertSecurityAnswerStatement.executeUpdate();
+
+                                JOptionPane.showMessageDialog(this, "User registered successfully!", "Success",
+                                                JOptionPane.INFORMATION_MESSAGE);
+
+                                // Close database connection
+                                connection.close();
+
+                                // Navigate to login page
+                                goToLoginPage();
+                        } else {
+                                JOptionPane.showMessageDialog(this, "Failed to connect to the database", "Error",
+                                                JOptionPane.ERROR_MESSAGE);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Error occurred while registering user", "Error",
+                                        JOptionPane.ERROR_MESSAGE);
+                }
+        }
+
+        private String hashSHA256(String input) {
+                try {
+                        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+                        byte[] encodedHash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+                        StringBuilder hexString = new StringBuilder(2 * encodedHash.length);
+                        for (byte b : encodedHash) {
+                                String hex = Integer.toHexString(0xff & b);
+                                if (hex.length() == 1) {
+                                        hexString.append('0');
+                                }
+                                hexString.append(hex);
+                        }
+                        return hexString.toString();
+                } catch (NoSuchAlgorithmException e) {
+                        e.printStackTrace();
+                        return null;
+                }
+        }
+
+        private int getSecurityQuestionId(String question) {
+                // This method would retrieve the ID of the selected security question from the
+                // database
+                // For demonstration purposes, let's assume a simple mapping
+                if (question.equals("What is your mother's maiden name?")) {
+                        return 1;
+                } else if (question.equals("What is the name of your first pet?")) {
+                        return 2;
+                } else if (question.equals("In what city were you born?")) {
+                        return 3;
+                } else if (question.equals("What is your favorite movie?")) {
+                        return 4;
+                } else if (question.equals("In what year did you graduate from high school?")) {
+                        return 5;
+                } else if (question.equals("What was the name of your first school?")) {
+                        return 6;
+                } else {
+                        return -1; // Invalid question
+                }
+        }
+
+        private boolean isPasswordComplex(String password) {
+                // Check if password length is between 8 and 12 characters
+                if (password.length() < 8 || password.length() > 12) {
+                        System.out.println("Password length check failed.");
+                        return false;
+                }
+
+                // Check if password contains at least one digit
+                boolean containsDigit = password.matches(".*\\d.*");
+                System.out.println("Contains digit: " + containsDigit);
+
+                // Check if password contains both lowercase and uppercase letters
+                boolean containsLowerCase = !password.equals(password.toUpperCase());
+                boolean containsUpperCase = !password.equals(password.toLowerCase());
+                System.out.println("Contains lowercase: " + containsLowerCase);
+                System.out.println("Contains uppercase: " + containsUpperCase);
+
+                return containsDigit && containsLowerCase && containsUpperCase;
+        }
+
+        public static void main(String[] args) {
                 EventQueue.invokeLater(new Runnable() {
                         public void run() {
                                 new Signup().setVisible(true);
