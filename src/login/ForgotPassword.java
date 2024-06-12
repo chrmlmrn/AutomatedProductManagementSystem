@@ -197,7 +197,7 @@ public class ForgotPassword extends JFrame {
         String username = usernameField.getText();
         String query = "SELECT sq.security_question FROM security_question sq " +
                 "JOIN security_answer sa ON sq.security_question_id = sa.security_question_id " +
-                "JOIN user u ON sa.user_id = u.user_id WHERE u.username = ?";
+                "JOIN users u ON sa.user_id = u.user_id WHERE u.username = ?";
         try (Connection connection = DatabaseUtil.getConnection();
                 PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, username);
@@ -264,7 +264,7 @@ public class ForgotPassword extends JFrame {
         // Query the database to fetch the stored answer for the provided username and
         // question
         String query = "SELECT sa.security_answer FROM security_answer sa " +
-                "JOIN user u ON sa.user_id = u.user_id " +
+                "JOIN users u ON sa.user_id = u.user_id " +
                 "JOIN security_question sq ON sa.security_question_id = sq.security_question_id " +
                 "WHERE u.username = ? AND sq.security_question = ?";
         try (Connection connection = DatabaseUtil.getConnection();
@@ -288,7 +288,7 @@ public class ForgotPassword extends JFrame {
 
     private boolean resetPassword(String username, String newPassword) {
         String hashedPassword = Sha256Util.hash(newPassword);
-        String query = "UPDATE user SET password = ? WHERE username = ?";
+        String query = "UPDATE users SET password_hash = ? WHERE username = ?";
         try (Connection connection = DatabaseUtil.getConnection();
                 PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, hashedPassword);
@@ -302,7 +302,7 @@ public class ForgotPassword extends JFrame {
     }
 
     private int getUserIdByUsername(String username) {
-        String query = "SELECT user_id FROM user WHERE username = ?";
+        String query = "SELECT user_id FROM users WHERE username = ?";
         try (Connection connection = DatabaseUtil.getConnection();
                 PreparedStatement statement = connection.prepareStatement(query)) {
             statement.setString(1, username);

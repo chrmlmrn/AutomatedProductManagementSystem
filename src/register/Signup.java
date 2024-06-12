@@ -418,7 +418,7 @@ public class Signup extends JFrame {
                 System.out.println("Security answer encrypted.");
 
                 // SQL query to insert user details into the database
-                String insertUserQuery = "INSERT INTO user (user_role_id, user_first_name, user_last_name, username, password, user_account_status_id) "
+                String insertUserQuery = "INSERT INTO users (user_role_id, user_first_name, user_last_name, username, password_hash, user_account_status_id) "
                                 + "VALUES(?, ?, ?, ?, ?, 'ACT')";
 
                 // SQL query to insert security answer into the database

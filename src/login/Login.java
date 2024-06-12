@@ -266,7 +266,7 @@ public class Login extends JFrame {
         }
 
         private boolean authenticateUser(String username, String password) {
-                String query = "SELECT * FROM user WHERE username = ? AND password = ?";
+                String query = "SELECT * FROM users WHERE username = ? AND password_hash = ?";
 
                 try (Connection connection = DatabaseUtil.getConnection();
                                 PreparedStatement statement = connection.prepareStatement(query)) {
@@ -283,7 +283,7 @@ public class Login extends JFrame {
         }
 
         private int getUserIdByUsername(String username) {
-                String query = "SELECT user_id FROM user WHERE username = ?";
+                String query = "SELECT user_id FROM users WHERE username = ?";
                 try (Connection connection = DatabaseUtil.getConnection();
                                 PreparedStatement statement = connection.prepareStatement(query)) {
                         statement.setString(1, username);

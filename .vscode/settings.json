@@ -11,10 +11,12 @@
       "port": 33060,
       "driver": "MySQL",
       "name": "Local Instance MySQL80",
-      "database": "lavega_store",
+      "database": "lavega_store_db",
       "username": "root",
       "password": "Cm031182*",
       "connectionTimeout": 30
     }
-  ]
+  ],
+  "java.debug.settings.onBuildFailureProceed": true,
+  "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable"
 }
