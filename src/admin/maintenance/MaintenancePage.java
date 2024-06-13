@@ -11,7 +11,6 @@ public class MaintenancePage {
         // Create the frame
         JFrame frame = new JFrame("Maintenance Page");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // frame.setSize(1600, 900);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null); // Center the frame
         frame.setUndecorated(false); // Remove window borders and title bar
@@ -43,8 +42,10 @@ public class MaintenancePage {
         String[] buttonLabels = { "User Maintenance", "System Maintenance", "User Logs" };
         int buttonWidth = 300;
         int buttonHeight = 50;
-        int startY = 150; // Starting Y position for the first button
         int gap = 20; // Gap between buttons
+
+        int totalButtonHeight = buttonLabels.length * buttonHeight + (buttonLabels.length - 1) * gap;
+        int startY = (750 - totalButtonHeight) / 2; // Center vertically
 
         for (int i = 0; i < buttonLabels.length; i++) {
             RoundedButton button = new RoundedButton(buttonLabels[i]);

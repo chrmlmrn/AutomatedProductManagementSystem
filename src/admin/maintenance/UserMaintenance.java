@@ -2,11 +2,9 @@ package src.admin.maintenance;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 import src.customcomponents.RoundedTextField;
-
 import java.awt.*;
 
 public class UserMaintenance {
@@ -16,6 +14,7 @@ public class UserMaintenance {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         // frame.setSize(1600, 900);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         frame.setLocationRelativeTo(null); // Center the frame
         frame.setLayout(new BorderLayout());
 
@@ -30,8 +29,8 @@ public class UserMaintenance {
         headerPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         // Add back arrow button
-        JButton backButton = new JButton("\u2190");
-        backButton.setFont(new Font("Arial", Font.PLAIN, 24));
+        JButton backButton = new JButton("<");
+        backButton.setFont(new Font("Arial", Font.BOLD, 24));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
@@ -72,7 +71,7 @@ public class UserMaintenance {
         containerPanel.add(searchField, gbc);
 
         // Create a table to display user information
-        String[] columnNames = { "Full name", "Email", "Contact no.", "Age", "Status", "Member since" };
+        String[] columnNames = { "First Name", "Last Name", "Username", "Status" };
         Object[][] data = {}; // No sample data
 
         DefaultTableModel model = new DefaultTableModel(data, columnNames);
@@ -80,6 +79,7 @@ public class UserMaintenance {
         userTable.setFont(new Font("Arial", Font.PLAIN, 16));
         userTable.setRowHeight(30);
         userTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+        userTable.getTableHeader().setReorderingAllowed(false); // Make columns undraggable
         JScrollPane scrollPane = new JScrollPane(userTable);
         scrollPane.setPreferredSize(new Dimension(1100, 100)); // Adjusted table size
 
@@ -98,6 +98,14 @@ public class UserMaintenance {
         updateButton.setPreferredSize(new Dimension(150, 40));
         updateButton.addActionListener(e -> System.out.println("Update button clicked"));
 
+        RoundedButton resetPasswordButton = new RoundedButton("Reset Password");
+        resetPasswordButton.setFont(new Font("Arial", Font.BOLD, 16));
+        resetPasswordButton.setBackground(Color.WHITE);
+        resetPasswordButton.setForeground(Color.BLACK);
+        resetPasswordButton.setFocusPainted(false);
+        resetPasswordButton.setPreferredSize(new Dimension(170, 40));
+        resetPasswordButton.addActionListener(e -> System.out.println("Reset Password button clicked"));
+
         RoundedButton cancelButton = new RoundedButton("Cancel");
         cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
         cancelButton.setBackground(Color.WHITE);
@@ -111,6 +119,7 @@ public class UserMaintenance {
         buttonPanel.setBackground(new Color(30, 144, 255));
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
         buttonPanel.add(updateButton);
+        buttonPanel.add(resetPasswordButton);
         buttonPanel.add(cancelButton);
 
         gbc.gridy = 3;
