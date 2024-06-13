@@ -25,8 +25,9 @@ public class ScanProduct {
         // Create the frame
         JFrame frame = new JFrame("Scan Products");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1600, 900); // Set frame size
-        frame.setUndecorated(true); // Remove window borders and title bar
+        // frame.setSize(1600, 900);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setUndecorated(false); // Remove window borders and title bar
         frame.setLocationRelativeTo(null); // Center the frame on the screen
 
         // Initialize subTotalLabel and totalLabel

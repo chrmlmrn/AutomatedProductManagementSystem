@@ -8,7 +8,8 @@ public class ReturnPage {
         // Create the frame
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1600, 900);
+        // frame.setSize(1600, 900);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null); // Center the frame
 
         // Create a main panel for centering the blue container

@@ -11,7 +11,8 @@ public class MaintenancePage {
         // Create the frame
         JFrame frame = new JFrame("Maintenance Page");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1600, 900);
+        // frame.setSize(1600, 900);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null); // Center the frame
         frame.setUndecorated(false); // Remove window borders and title bar
 

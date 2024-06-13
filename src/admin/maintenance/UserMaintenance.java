@@ -14,7 +14,8 @@ public class UserMaintenance {
         // Create the frame
         JFrame frame = new JFrame("Maintenance");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1600, 900); // Screen size to match AddProduct's size
+        // frame.setSize(1600, 900);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null); // Center the frame
         frame.setLayout(new BorderLayout());
 
