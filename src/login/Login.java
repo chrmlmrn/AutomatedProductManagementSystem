@@ -4,6 +4,8 @@ import javax.swing.*;
 
 import database.DatabaseUtil;
 import src.SHA256.Sha256Util;
+import src.admin.AdminMenu;
+import src.cashier.CashierMenu;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 import src.register.Signup;
@@ -44,8 +46,9 @@ public class Login extends JFrame {
 
                 setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
                 setTitle("Login Page");
-                setSize(1600, 900);
-                setUndecorated(true);
+                // setSize(1600, 900);
+                setExtendedState(JFrame.MAXIMIZED_BOTH);
+                setUndecorated(false);
                 setLocationRelativeTo(null);
 
                 GridBagConstraints gbc = new GridBagConstraints();
@@ -238,8 +241,17 @@ public class Login extends JFrame {
                 boolean isAuthenticated = authenticateUser(username, password);
 
                 if (isAuthenticated) {
-                        System.out.println("Authentication successful. Opening main application window...");
-                        // Proceed to open main application window or perform any other action
+                        String role = getUserRole(username);
+                        System.out.println("Authentication successful. Role: " + role);
+
+                        // Proceed to open main application window or perform any other action based on
+                        // role
+                        if ("A".equals(role)) {
+                                openAdminPage();
+                        } else if ("C".equals(role)) {
+                                openCashierPage();
+                        }
+
                         // Reset login attempts
                         loginAttempts = 0;
                         // Log successful login attempt
@@ -299,6 +311,41 @@ public class Login extends JFrame {
                         e.printStackTrace();
                         return -1; // Return -1 indicating an error occurred
                 }
+        }
+
+        private String getUserRole(String username) {
+                String query = "SELECT user_role_id FROM users WHERE username = ?";
+                try (Connection connection = DatabaseUtil.getConnection();
+                                PreparedStatement statement = connection.prepareStatement(query)) {
+                        statement.setString(1, username);
+                        try (ResultSet resultSet = statement.executeQuery()) {
+                                if (resultSet.next()) {
+                                        return resultSet.getString("user_role_id");
+                                } else {
+                                        System.err.println("User not found for username: " + username);
+                                        return ""; // Return empty string indicating user not found
+                                }
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                        return ""; // Return empty string indicating an error occurred
+                }
+        }
+
+        private void openAdminPage() {
+                // Replace with code to open the admin window
+                System.out.println("Opening admin window...");
+                AdminMenu adminMenuPage = new AdminMenu();
+                adminMenuPage.setVisible(true);
+                dispose();
+                // dispose(); // Close the current login frame
+        }
+
+        private void openCashierPage() {
+                System.out.println("Opening cashier window...");
+                CashierMenu cashierMenuPage = new CashierMenu();
+                cashierMenuPage.setVisible(true);
+                dispose();
         }
 
         private void openSignUpPage() {

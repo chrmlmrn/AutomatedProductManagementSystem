@@ -4,19 +4,26 @@ import javax.swing.*;
 
 import src.admin.product.ProductPage;
 import src.customcomponents.RoundedButton;
+import src.login.Login;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class AdminMenu {
-    public static void main(String[] args) {
+public class AdminMenu extends JFrame {
+
+    public AdminMenu() {
+        initComponents();
+    }
+
+    private void initComponents() {
         // frame
-        JFrame frame = new JFrame("Admin Menu");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1600, 900); // Set frame size to 1600 x 900
-        frame.setUndecorated(true); // Remove window borders and title bar
-        frame.setLocationRelativeTo(null); // Center the frame on the screen
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // setSize(1600, 900);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        setUndecorated(false); // Remove window borders and title bar
+        setLocationRelativeTo(null); // Center the frame on the screen
 
         // a panel to hold the buttons
         JPanel panel = new JPanel();
@@ -53,35 +60,44 @@ public class AdminMenu {
 
                     switch (button.getText()) {
                         case "Product":
-                            // Open Scan Product Page
-                            // ScanProductPage.main(new String[] {});
-                            frame.dispose(); // Close the current frame
                             // Open Product Page
-                            ProductPage.main(new String[] {});
+                            ProductPage productPage = new ProductPage();
+                            productPage.setVisible(true);
+                            dispose(); // Close the current frame
                             break;
                         case "Inventory":
-                            // Open Generate Sales Page
-                            // GenerateSalesPage.main(new String[] {});
+                            // Open Inventory Page
+                            // Replace with appropriate functionality
                             break;
                         case "Reports":
-                            // Open Help Page
-                            // HelpPage.main(new String[] {});
+                            // Open Reports Page
+                            // Replace with appropriate functionality
                             break;
                         case "Records":
-                            // Open About Page
-                            // AboutPage.main(new String[] {});
+                            // Open Records Page
+                            // Replace with appropriate functionality
                             break;
                         case "Return":
                             // Logout and close the application
+                            dispose();
+                            Login.main(new String[] {}); // Open login window again
                             break;
                         case "Maintenance":
+                            // Open Maintenance Page
+                            // Replace with appropriate functionality
                             break;
                         case "Help":
+                            // Open Help Page
+                            // Replace with appropriate functionality
                             break;
                         case "About":
+                            // Open About Page
+                            // Replace with appropriate functionality
                             break;
                         case "Logout":
-                            frame.dispose();
+                            // Logout and close the application
+                            dispose();
+                            Login.main(new String[] {}); // Open login window again
                             break;
                     }
 
@@ -91,18 +107,23 @@ public class AdminMenu {
         }
 
         // Add panel to the frame
-        frame.getContentPane().add(panel);
-
-        // Make the frame visible
-        frame.setVisible(true);
+        getContentPane().add(panel);
 
         // Add a key listener to close the application
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
+        addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
                     System.exit(0);
                 }
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new AdminMenu().setVisible(true);
             }
         });
     }

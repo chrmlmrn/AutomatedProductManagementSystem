@@ -39,8 +39,9 @@ public class ForgotPassword extends JFrame {
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setTitle("Forgot Password Page");
-        setSize(1600, 900); // Set the size of the window to 1600x900 pixels
-        setUndecorated(true); // Remove window borders and title bar
+        // setSize(1600, 900);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(false); // Remove window borders and title bar
         setLocationRelativeTo(null); // Center the frame on the screen
 
         GridBagConstraints gbc = new GridBagConstraints();

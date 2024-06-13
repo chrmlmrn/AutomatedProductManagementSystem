@@ -9,15 +9,23 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class CashierMenu {
-    public static void main(String[] args) {
-        // frame
-        JFrame frame = new JFrame("Cashier Menu");
+
+    private JFrame frame;
+
+    public CashierMenu() {
+        initialize();
+    }
+
+    private void initialize() {
+        // Create the frame
+        frame = new JFrame("Cashier Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1600, 900); // Set frame size to 1600 x 900
-        frame.setUndecorated(true); // Remove window borders and title bar
+        // frame.setSize(1600, 900);
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        frame.setUndecorated(false); // Remove window borders and title bar
         frame.setLocationRelativeTo(null); // Center the frame on the screen
 
-        // a panel to hold the buttons
+        // Create a panel to hold the buttons
         JPanel panel = new JPanel();
         panel.setLayout(null);
         panel.setBackground(Color.WHITE);
@@ -49,24 +57,23 @@ public class CashierMenu {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     System.out.println(button.getText() + " button clicked");
-                    frame.dispose(); // Close the current frame
 
                     switch (button.getText()) {
                         case "Scan Product":
                             // Open Scan Product Page
-                            // ScanProductPage.main(new String[] {});
+                            openScanProductPage();
                             break;
                         case "Generate Sales":
                             // Open Generate Sales Page
-                            // GenerateSalesPage.main(new String[] {});
+                            openGenerateSalesPage();
                             break;
                         case "Help":
                             // Open Help Page
-                            // HelpPage.main(new String[] {});
+                            openHelpPage();
                             break;
                         case "About":
                             // Open About Page
-                            // AboutPage.main(new String[] {});
+                            openAboutPage();
                             break;
                         case "Logout":
                             // Logout and close the application
@@ -82,9 +89,6 @@ public class CashierMenu {
         // Add panel to the frame
         frame.getContentPane().add(panel);
 
-        // Make the frame visible
-        frame.setVisible(true);
-
         // Add a key listener to close the application
         frame.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
@@ -92,6 +96,47 @@ public class CashierMenu {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
                     System.exit(0);
                 }
+            }
+        });
+    }
+
+    public void setVisible(boolean visible) {
+        frame.setVisible(visible);
+    }
+
+    private void openScanProductPage() {
+        // Replace with code to open the Scan Product Page
+        System.out.println("Opening Scan Product Page...");
+        // Example: ScanProductPage scanProductPage = new ScanProductPage();
+        // scanProductPage.setVisible(true);
+    }
+
+    private void openGenerateSalesPage() {
+        // Replace with code to open the Generate Sales Page
+        System.out.println("Opening Generate Sales Page...");
+        // Example: GenerateSalesPage generateSalesPage = new GenerateSalesPage();
+        // generateSalesPage.setVisible(true);
+    }
+
+    private void openHelpPage() {
+        // Replace with code to open the Help Page
+        System.out.println("Opening Help Page...");
+        // Example: HelpPage helpPage = new HelpPage();
+        // helpPage.setVisible(true);
+    }
+
+    private void openAboutPage() {
+        // Replace with code to open the About Page
+        System.out.println("Opening About Page...");
+        // Example: AboutPage aboutPage = new AboutPage();
+        // aboutPage.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                CashierMenu cashierMenu = new CashierMenu();
+                cashierMenu.setVisible(true);
             }
         });
     }

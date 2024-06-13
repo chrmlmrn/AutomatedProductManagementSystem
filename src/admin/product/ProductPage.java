@@ -1,6 +1,5 @@
 package src.admin.product;
 
-// ProductPage.java
 import javax.swing.*;
 
 import src.admin.AdminMenu;
@@ -10,14 +9,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ProductPage {
-    public static void main(String[] args) {
-        // Create the frame
-        JFrame frame = new JFrame("Product");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(1600, 900); // Set frame size to 1600 x 900
-        frame.setUndecorated(true); // Remove window borders and title bar
-        frame.setLocationRelativeTo(null); // Center the frame on the screen
+public class ProductPage extends JFrame {
+
+    public ProductPage() {
+        initComponents();
+    }
+
+    private void initComponents() {
+        // Set up the frame
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // setSize(1600, 900);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(false);
+        setLocationRelativeTo(null);
 
         // Create a panel to hold the buttons and the back arrow
         JPanel panel = new JPanel();
@@ -36,9 +40,9 @@ public class ProductPage {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Back button clicked");
-                frame.dispose(); // Close the current frame
+                dispose(); // Close the current frame
                 // Open Admin Menu
-                AdminMenu.main(new String[] {});
+                new AdminMenu().setVisible(true); // Replace "admin" with actual username
             }
         });
 
@@ -68,13 +72,13 @@ public class ProductPage {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     System.out.println(button.getText() + " button clicked");
-                    frame.dispose(); // Close the current frame
+                    dispose(); // Close the current frame
                     if (button.getText().equals("Add Product")) {
                         // Open AddProduct
-                        AddProduct.main(new String[] {});
+                        // Replace with appropriate functionality
                     } else if (button.getText().equals("Update Product")) {
                         // Open UpdateProduct
-                        UpdateProduct.main(new String[] {});
+                        // Replace with appropriate functionality
                     }
                 }
             });
@@ -86,19 +90,24 @@ public class ProductPage {
         panel.add(titleLabel);
 
         // Add panel to the frame
-        frame.getContentPane().add(panel);
-
-        // Make the frame visible
-        frame.setVisible(true);
+        getContentPane().add(panel);
 
         // Add a key listener to close the application
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
-
+        addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
                     System.exit(0);
                 }
+            }
+        });
+    }
+
+    public static void main(String[] args) {
+        // Example usage: create an instance of ProductPage
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new ProductPage().setVisible(true);
             }
         });
     }
