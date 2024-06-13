@@ -1,4 +1,4 @@
-package src.admin.returnproduct;
+package src.admin.return_product;
 
 import javax.swing.*;
 import java.awt.*;
