@@ -1,7 +1,7 @@
 package src.cashier;
 
 import javax.swing.*;
-
+import src.cashier.POS.ScanProduct;
 import src.customcomponents.RoundedButton;
 
 import java.awt.*;
@@ -20,10 +20,9 @@ public class CashierMenu {
         // Create the frame
         frame = new JFrame("Cashier Menu");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // frame.setSize(1600, 900);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setUndecorated(false); // Remove window borders and title bar
-        frame.setLocationRelativeTo(null); // Center the frame on the screen
+        frame.setUndecorated(false);
+        frame.setLocationRelativeTo(null);
 
         // Create a panel to hold the buttons
         JPanel panel = new JPanel();
@@ -33,7 +32,7 @@ public class CashierMenu {
         // Title Label
         JLabel titleLabel = new JLabel("Cashier Menu");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-        titleLabel.setBounds(70, 30, 200, 30); // Adjusted y-coordinate from 10 to 30
+        titleLabel.setBounds(70, 30, 200, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
         panel.add(titleLabel);
 
@@ -41,12 +40,13 @@ public class CashierMenu {
         String[] buttonLabels = { "Scan Product", "Generate Sales", "Help", "About", "Logout" };
         int buttonWidth = 300;
         int buttonHeight = 50;
-        int startY = 300; // Starting Y position for the first button
-        int gap = 20; // Gap between buttons
+        int startY = 200;
+        int gap = 20;
 
         for (int i = 0; i < buttonLabels.length; i++) {
             RoundedButton button = new RoundedButton(buttonLabels[i]);
-            button.setBounds((1600 - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth, buttonHeight);
+            button.setBounds((frame.getWidth() - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth,
+                    buttonHeight);
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFont(new Font("Arial", Font.BOLD, 16));
@@ -60,23 +60,18 @@ public class CashierMenu {
 
                     switch (button.getText()) {
                         case "Scan Product":
-                            // Open Scan Product Page
                             openScanProductPage();
                             break;
                         case "Generate Sales":
-                            // Open Generate Sales Page
                             openGenerateSalesPage();
                             break;
                         case "Help":
-                            // Open Help Page
                             openHelpPage();
                             break;
                         case "About":
-                            // Open About Page
                             openAboutPage();
                             break;
                         case "Logout":
-                            // Logout and close the application
                             System.exit(0);
                             break;
                     }
@@ -98,6 +93,19 @@ public class CashierMenu {
                 }
             }
         });
+
+        frame.addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int frameWidth = frame.getWidth();
+                for (Component component : panel.getComponents()) {
+                    if (component instanceof RoundedButton) {
+                        RoundedButton button = (RoundedButton) component;
+                        int x = (frameWidth - buttonWidth) / 2;
+                        button.setBounds(x, button.getY(), buttonWidth, buttonHeight);
+                    }
+                }
+            }
+        });
     }
 
     public void setVisible(boolean visible) {
@@ -105,31 +113,21 @@ public class CashierMenu {
     }
 
     private void openScanProductPage() {
-        // Replace with code to open the Scan Product Page
         System.out.println("Opening Scan Product Page...");
-        // Example: ScanProductPage scanProductPage = new ScanProductPage();
-        // scanProductPage.setVisible(true);
+        ScanProduct scanProduct = new ScanProduct();
+        scanProduct.setVisible(true);
     }
 
     private void openGenerateSalesPage() {
-        // Replace with code to open the Generate Sales Page
         System.out.println("Opening Generate Sales Page...");
-        // Example: GenerateSalesPage generateSalesPage = new GenerateSalesPage();
-        // generateSalesPage.setVisible(true);
     }
 
     private void openHelpPage() {
-        // Replace with code to open the Help Page
         System.out.println("Opening Help Page...");
-        // Example: HelpPage helpPage = new HelpPage();
-        // helpPage.setVisible(true);
     }
 
     private void openAboutPage() {
-        // Replace with code to open the About Page
         System.out.println("Opening About Page...");
-        // Example: AboutPage aboutPage = new AboutPage();
-        // aboutPage.setVisible(true);
     }
 
     public static void main(String[] args) {
