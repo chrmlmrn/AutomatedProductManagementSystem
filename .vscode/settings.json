@@ -13,7 +13,7 @@
       "name": "Local Instance MySQL80",
       "database": "lavega_store_db",
       "username": "root",
-      "password": "Cm031182*",
+      "password": "root",
       "connectionTimeout": 30
     }
   ],
