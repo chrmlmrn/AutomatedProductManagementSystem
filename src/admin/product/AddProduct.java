@@ -2,6 +2,7 @@ package src.admin.product;
 
 import com.toedter.calendar.JDateChooser;
 
+import database.DatabaseUtil;
 import src.admin.product.barcode.BarcodeGenerator;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
@@ -15,6 +16,12 @@ import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.imageio.ImageIO;
@@ -71,9 +78,9 @@ public class AddProduct {
         };
 
         // Create option lists for the combo boxes
-        String[] categories = { "Category 1", "Category 2", "Category 3" };
-        String[] statuses = { "Available", "Out of Stock", "On Hold", "Discontinued" };
-        String[] types = { "Fast", "Slow" };
+        String[] categories = fetchCategories();
+        String[] statuses = fetchProductStatuses();
+        String[] types = fetchProductTypes();
 
         JComboBox<String> categoryComboBox = new JComboBox<>(categories);
         JComboBox<String> statusComboBox = new JComboBox<>(statuses);
@@ -148,6 +155,9 @@ public class AddProduct {
         addButton.addActionListener(e -> {
             if (validateFields(textFields)) {
                 System.out.println("Add button clicked");
+                String selectedCategory = (String) categoryComboBox.getSelectedItem();
+                String selectedType = (String) typeComboBox.getSelectedItem();
+                insertProduct(textFields, selectedCategory, selectedType);
             }
         });
 
@@ -230,6 +240,118 @@ public class AddProduct {
 
         // Display the frame
         frame.setVisible(true);
+    }
+
+    private static void insertProduct(List<JTextField> textFields, String category, String type) {
+        String insertQuery = "INSERT INTO products (product_code, barcode, product_name, product_price, product_size, category_id, supplier_id, product_type_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
+
+            preparedStatement.setString(1, textFields.get(1).getText());
+            preparedStatement.setString(2, textFields.get(0).getText());
+            preparedStatement.setString(3, textFields.get(2).getText());
+            preparedStatement.setBigDecimal(4, new BigDecimal(textFields.get(4).getText()));
+            preparedStatement.setString(5, textFields.get(5).getText());
+            preparedStatement.setString(6, getCategoryID(category));
+            preparedStatement.setInt(7, getSupplierID(textFields.get(9).getText()));
+            preparedStatement.setString(8, getProductTypeID(type));
+
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(frame, "Product added successfully.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(frame, "Error adding product: " + e.getMessage());
+        }
+    }
+
+    private static String getCategoryID(String categoryName) throws SQLException {
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement preparedStatement = connection
+                        .prepareStatement("SELECT category_id FROM category WHERE category_name = ?")) {
+            preparedStatement.setString(1, categoryName);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("category_id");
+            }
+        }
+        return null;
+    }
+
+    private static int getSupplierID(String supplierName) throws SQLException {
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement preparedStatement = connection
+                        .prepareStatement("SELECT supplier_id FROM supplier WHERE supplier_name = ?")) {
+            preparedStatement.setString(1, supplierName);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getInt("supplier_id");
+            }
+        }
+        return -1;
+    }
+
+    private static String getProductTypeID(String typeName) throws SQLException {
+        try (Connection connection = DatabaseUtil.getConnection();
+                PreparedStatement preparedStatement = connection
+                        .prepareStatement("SELECT product_type_id FROM product_type WHERE product_type_name = ?")) {
+            preparedStatement.setString(1, typeName);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return resultSet.getString("product_type_id");
+            }
+        }
+        return null;
+    }
+
+    private static String[] fetchCategories() {
+        try (Connection connection = DatabaseUtil.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT category_name FROM category")) {
+
+            List<String> categories = new ArrayList<>();
+            while (resultSet.next()) {
+                categories.add(resultSet.getString("category_name"));
+            }
+            return categories.toArray(new String[0]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new String[] {};
+        }
+    }
+
+    private static String[] fetchProductTypes() {
+        try (Connection connection = DatabaseUtil.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT product_type_name FROM product_type")) {
+
+            List<String> types = new ArrayList<>();
+            while (resultSet.next()) {
+                types.add(resultSet.getString("product_type_name"));
+            }
+            return types.toArray(new String[0]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new String[] {};
+        }
+    }
+
+    private static String[] fetchProductStatuses() {
+        try (Connection connection = DatabaseUtil.getConnection();
+                Statement statement = connection.createStatement();
+                ResultSet resultSet = statement.executeQuery("SELECT product_status_name FROM product_status")) {
+
+            List<String> statuses = new ArrayList<>();
+            while (resultSet.next()) {
+                statuses.add(resultSet.getString("product_status_name"));
+            }
+            return statuses.toArray(new String[0]);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new String[] {};
+        }
     }
 
     private static boolean validateFields(List<JTextField> textFields) {

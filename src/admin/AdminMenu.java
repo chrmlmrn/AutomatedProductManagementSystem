@@ -2,6 +2,7 @@ package src.admin;
 
 import javax.swing.*;
 import src.admin.product.ProductPage;
+import src.admin.return_product.ReturnPage;
 import src.customcomponents.RoundedButton;
 import src.login.Login;
 import java.awt.*;
@@ -18,18 +19,19 @@ public class AdminMenu extends JFrame {
         // Frame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(false); // Remove window borders and title bar
-        setLocationRelativeTo(null); // Center the frame on the screen
+        setUndecorated(false);
+        setLocationRelativeTo(null);
 
         // Panel
         JPanel panel = new JPanel();
-        panel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
+        panel.setLayout(null);
         panel.setBackground(Color.WHITE);
 
         // Title Label
         JLabel titleLabel = new JLabel("Admin Menu");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
+        titleLabel.setBounds(70, 30, 200, 30);
         panel.add(titleLabel);
 
         // Buttons
@@ -37,10 +39,13 @@ public class AdminMenu extends JFrame {
                 "About", "Logout" };
         int buttonWidth = 300;
         int buttonHeight = 50;
+        int startY = 50;
+        int gap = 20;
 
-        for (String label : buttonLabels) {
-            RoundedButton button = new RoundedButton(label);
-            button.setPreferredSize(new Dimension(buttonWidth, buttonHeight));
+        for (int i = 0; i < buttonLabels.length; i++) {
+            RoundedButton button = new RoundedButton(buttonLabels[i]);
+            button.setBounds((getWidth() - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth,
+                    buttonHeight);
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFont(new Font("Arial", Font.BOLD, 16));
@@ -55,39 +60,33 @@ public class AdminMenu extends JFrame {
                         case "Product":
                             ProductPage productPage = new ProductPage();
                             productPage.setVisible(true);
-                            dispose(); // Close the current frame
+                            dispose();
                             break;
                         case "Inventory":
                             // Open Inventory Page
-                            // Replace with appropriate functionality
                             break;
                         case "Reports":
                             // Open Reports Page
-                            // Replace with appropriate functionality
                             break;
                         case "Records":
                             // Open Records Page
-                            // Replace with appropriate functionality
                             break;
                         case "Return":
                             dispose();
-                            Login.main(new String[] {}); // Open login window again
+                            ReturnPage.main(new String[] {});
                             break;
                         case "Maintenance":
                             // Open Maintenance Page
-                            // Replace with appropriate functionality
                             break;
                         case "Help":
                             // Open Help Page
-                            // Replace with appropriate functionality
                             break;
                         case "About":
                             // Open About Page
-                            // Replace with appropriate functionality
                             break;
                         case "Logout":
                             dispose();
-                            Login.main(new String[] {}); // Open login window again
+                            Login.main(new String[] {});
                             break;
                     }
                 }
@@ -96,7 +95,7 @@ public class AdminMenu extends JFrame {
         }
 
         // Add panel to the frame
-        getContentPane().add(panel, BorderLayout.CENTER);
+        getContentPane().add(panel);
 
         // Add a key listener to close the application
         addKeyListener(new java.awt.event.KeyAdapter() {
@@ -104,6 +103,19 @@ public class AdminMenu extends JFrame {
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
                     System.exit(0);
+                }
+            }
+        });
+
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int frameWidth = getWidth();
+                for (Component component : panel.getComponents()) {
+                    if (component instanceof RoundedButton) {
+                        RoundedButton button = (RoundedButton) component;
+                        int x = (frameWidth - buttonWidth) / 2;
+                        button.setBounds(x, button.getY(), buttonWidth, buttonHeight);
+                    }
                 }
             }
         });
