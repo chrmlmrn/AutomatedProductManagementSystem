@@ -3,32 +3,33 @@ package src.cashier.POS;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import database.DatabaseUtil;
 import src.customcomponents.RoundedButton;
 
-import java.sql.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Map;
+import java.sql.*;
 
-public class ScanProduct {
+public class ScanProduct extends JFrame {
     private static DefaultTableModel productTableModel;
     private static JLabel subTotalLabel;
     private static JLabel totalLabel;
     private static Map<String, Product> productDatabase;
 
-    public static void main(String[] args) {
+    public ScanProduct() {
         // Initialize product database
         initializeProductDatabase();
 
-        // Create the frame
-        JFrame frame = new JFrame("Scan Products");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // frame.setSize(1600, 900);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setUndecorated(false); // Remove window borders and title bar
-        frame.setLocationRelativeTo(null); // Center the frame on the screen
+        // Frame properties
+        setTitle("Scan Products");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        // setSize(1600, 900);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(false); // Remove window borders and title bar
+        setLocationRelativeTo(null); // Center the frame on the screen
 
         // Initialize subTotalLabel and totalLabel
         subTotalLabel = new JLabel("Sub Total: 0.00");
@@ -53,9 +54,9 @@ public class ScanProduct {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         panel.add(backButton);
-        // Connect to the SQL database
-        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/your_database_name",
-                "username", "password")) {
+
+        // Connect to the SQL database and populate product table
+        try (Connection connection = DatabaseUtil.getConnection()) {
             String query = "SELECT barcode, item, size, price FROM products";
             try (Statement statement = connection.createStatement();
                     ResultSet resultSet = statement.executeQuery(query)) {
@@ -71,6 +72,7 @@ public class ScanProduct {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error connecting to database!");
         }
+
         // Product table
         String[] productColumns = { "PRODUCT CODE", "PRODUCT NAME", "PRICE", "QUANTITY" };
         productTableModel = new DefaultTableModel(productColumns, 0);
@@ -171,16 +173,13 @@ public class ScanProduct {
         });
 
         // Add panel to the frame
-        frame.getContentPane().add(panel);
-
-        // Make the frame visible
-        frame.setVisible(true);
+        getContentPane().add(panel);
 
         // Call updateTotals after initializing the labels
         updateTotals();
 
         // Add a key listener to close the application
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
+        addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
