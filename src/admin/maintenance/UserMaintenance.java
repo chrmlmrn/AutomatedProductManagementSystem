@@ -98,14 +98,6 @@ public class UserMaintenance {
         updateButton.setPreferredSize(new Dimension(150, 40));
         updateButton.addActionListener(e -> System.out.println("Update button clicked"));
 
-        RoundedButton resetPasswordButton = new RoundedButton("Reset Password");
-        resetPasswordButton.setFont(new Font("Arial", Font.BOLD, 16));
-        resetPasswordButton.setBackground(Color.WHITE);
-        resetPasswordButton.setForeground(Color.BLACK);
-        resetPasswordButton.setFocusPainted(false);
-        resetPasswordButton.setPreferredSize(new Dimension(170, 40));
-        resetPasswordButton.addActionListener(e -> System.out.println("Reset Password button clicked"));
-
         RoundedButton cancelButton = new RoundedButton("Cancel");
         cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
         cancelButton.setBackground(Color.WHITE);
@@ -119,7 +111,6 @@ public class UserMaintenance {
         buttonPanel.setBackground(new Color(30, 144, 255));
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
         buttonPanel.add(updateButton);
-        buttonPanel.add(resetPasswordButton);
         buttonPanel.add(cancelButton);
 
         gbc.gridy = 3;

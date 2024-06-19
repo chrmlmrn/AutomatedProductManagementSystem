@@ -60,7 +60,7 @@ public class BarcodeGenerator {
         return (char) (checksum + '0');
     }
 
-    public static void generateEAN13Barcode(String data, String filePath) {
+    public static BufferedImage generateEAN13Barcode(String data, String filePath) {
         // Define dimensions based on provided specifications
         double barcodeWidthMM = 31.35;
         double leftQuietZoneMM = 3.63;
@@ -116,6 +116,8 @@ public class BarcodeGenerator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return image;
     }
 
     // Method to convert the data into its binary representation
