@@ -83,3 +83,105 @@ SELECT *
 FROM users;
 SELECT *
 FROM user_logs;
+--@block
+CREATE TABLE product_type (
+    product_type_id CHAR(1) PRIMARY KEY,
+    product_type_name VARCHAR(50) NOT NULL
+);
+--@block
+INSERT INTO product_type (product_type_id, product_type_name)
+VALUES ('F', 'Fast'),
+    ('S', 'Slow');
+--@block
+CREATE TABLE supplier (
+    supplier_id INT PRIMARY KEY AUTO_INCREMENT,
+    supplier_name VARCHAR(255) NOT NULL
+);
+--@block
+CREATE TABLE category (
+    category_id CHAR(2) PRIMARY KEY,
+    category_name VARCHAR(50) NOT NULL
+);
+--@block
+INSERT INTO category (category_id, category_name)
+VALUES ('FR', 'Fruits'),
+    ('VE', 'Vegetables'),
+    ('ME', 'Meats'),
+    ('DA', 'Dairy'),
+    ('RP', 'Rice and Pasta'),
+    ('CG', 'Canned Goods'),
+    ('FF', 'Frozen Foods'),
+    ('CO', 'Condiments'),
+    ('SN', 'Snacks'),
+    ('DR', 'Drinks'),
+    ('HH', 'Household'),
+    ('PI', 'Personal Items'),
+    ('OT', 'Other');
+--@block
+CREATE TABLE products (
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_code VARCHAR(20) NOT NULL,
+    barcode VARCHAR(50) NOT NULL,
+    barcode_image BLOB,
+    product_name VARCHAR(255) NOT NULL,
+    product_price DECIMAL(10, 2) NOT NULL,
+    product_size VARCHAR(50),
+    category_id CHAR(2) NOT NULL,
+    supplier_id INT NOT NULL,
+    product_type_id CHAR(1) NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES category(category_id),
+    FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id),
+    FOREIGN KEY (product_type_id) REFERENCES product_type(product_type_id)
+);
+--@block
+CREATE TABLE product_status (
+    product_status_id CHAR(3) PRIMARY KEY,
+    product_status_name VARCHAR(50)
+);
+--@block
+INSERT INTO product_status (product_status_id, product_status_name)
+VALUES ('ACT', 'Active'),
+    ('INA', 'Inactive'),
+    ('OOS', 'Out of Stock'),
+    ('INS', 'In Stock'),
+    ('DIS', 'Discontinued');
+--@block
+CREATE TABLE inventory (
+    inventory_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    product_total_quantity INT NOT NULL,
+    critical_stock_level INT NOT NULL,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    product_status_id CHAR(3) NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (product_status_id) REFERENCES product_status(product_status_id)
+);
+--@block
+CREATE TABLE product_expiration (
+    product_expiration_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    product_expiration_date DATE NOT NULL,
+    product_quantity INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+--@block
+CREATE TABLE return_status (
+    return_status_id CHAR(3) PRIMARY KEY,
+    return_status_name VARCHAR(50) NOT NULL
+);
+--@block
+INSERT INTO return_status (return_status_id, return_status_name)
+VALUES ('PRO', 'Processing'),
+    ('COM', 'Completed'),
+    ('REJ', 'Rejected'),
+    ('CAN', 'Cancelled');
+--@block
+CREATE TABLE return_reason (
+    return_reason_id CHAR(3) PRIMARY KEY,
+    return_reason_name VARCHAR(50) NOT NULL
+);
+--@block
+INSERT INTO return_reason (return_reason_id, return_reason_name)
+VALUES ('DEF', 'Defective Product'),
+    ('WRO', 'Wrong Product'),
+    ('EXP', 'Expired Product');
