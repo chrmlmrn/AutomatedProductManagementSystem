@@ -206,4 +206,9 @@ public class ScanProduct extends JFrame {
     private static void showReceiptUI() {
         // Display receipt using data from productTableModel
     }
+
+    public static void main(String[] strings) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'main'");
+    }
 }
