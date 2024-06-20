@@ -13,20 +13,35 @@ public class Product {
         this.quantity = quantity;
     }
 
-    public Object getName() {
-        // TODO Auto-generated method stub
-        return null;
+    public String getCode() {
+        return code;
     }
 
-    public Object getPrice() {
-        // TODO Auto-generated method stub
-        return null;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public Object getCode() {
-        // TODO Auto-generated method stub
-        return null;
+    public String getName() {
+        return name;
     }
 
-    // Getters and setters for the fields if needed
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

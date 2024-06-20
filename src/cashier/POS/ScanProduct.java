@@ -9,15 +9,16 @@ import src.customcomponents.RoundedButton;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.sql.*;
 
 public class ScanProduct extends JFrame {
     private static DefaultTableModel productTableModel;
     private static JLabel subTotalLabel;
     private static JLabel totalLabel;
     private static Map<String, Product> productDatabase;
+    private JTextField barcodeField;
 
     public ScanProduct() {
         // Initialize product database
@@ -26,10 +27,9 @@ public class ScanProduct extends JFrame {
         // Frame properties
         setTitle("Scan Products");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // setSize(1600, 900);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(false); // Remove window borders and title bar
-        setLocationRelativeTo(null); // Center the frame on the screen
+        setUndecorated(false);
+        setLocationRelativeTo(null);
 
         // Initialize subTotalLabel and totalLabel
         subTotalLabel = new JLabel("Sub Total: 0.00");
@@ -55,23 +55,20 @@ public class ScanProduct extends JFrame {
         backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         panel.add(backButton);
 
-        // Connect to the SQL database and populate product table
-        try (Connection connection = DatabaseUtil.getConnection()) {
-            String query = "SELECT barcode, item, size, price FROM products";
-            try (Statement statement = connection.createStatement();
-                    ResultSet resultSet = statement.executeQuery(query)) {
-                while (resultSet.next()) {
-                    String barcode = resultSet.getString("barcode");
-                    String item = resultSet.getString("item");
-                    String size = resultSet.getString("size");
-                    double price = resultSet.getDouble("price");
-                    productTableModel.addRow(new Object[] { barcode, item, size, price });
+        // Barcode field
+        barcodeField = new JTextField();
+        barcodeField.setBounds(50, 80, 200, 30);
+        barcodeField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String barcode = barcodeField.getText().trim();
+                if (!barcode.isEmpty()) {
+                    addProduct(barcode);
+                    barcodeField.setText("");
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error connecting to database!");
-        }
+        });
+        panel.add(barcodeField);
 
         // Product table
         String[] productColumns = { "PRODUCT CODE", "PRODUCT NAME", "PRICE", "QUANTITY" };
@@ -82,7 +79,7 @@ public class ScanProduct extends JFrame {
         productTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
         productTable.setRowHeight(30);
         JScrollPane productScrollPane = new JScrollPane(productTable);
-        productScrollPane.setBounds(50, 100, 700, 300);
+        productScrollPane.setBounds(50, 120, 700, 300);
         panel.add(productScrollPane);
 
         // Summary section
@@ -148,7 +145,6 @@ public class ScanProduct extends JFrame {
         discountButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Handle Discount button click
                 System.out.println("Discount button clicked");
             }
         });
@@ -156,7 +152,6 @@ public class ScanProduct extends JFrame {
         productCodeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Handle Product Code button click
                 String productCode = JOptionPane.showInputDialog("Enter Product Code:");
                 if (productCode != null && !productCode.isEmpty()) {
                     addProduct(productCode);
@@ -167,7 +162,6 @@ public class ScanProduct extends JFrame {
         receiptButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Handle Receipt button click
                 showReceiptUI();
             }
         });
@@ -195,20 +189,76 @@ public class ScanProduct extends JFrame {
     }
 
     private static void addProduct(String code) {
-        // Fetch product details from your SQL database using the code
-        // Add the product to the productTableModel
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseUtil.getConnection();
+            String sql = "SELECT product_code, product_name, product_price, product_total_quantity " +
+                    "FROM products JOIN inventory ON products.product_id = inventory.product_id " +
+                    "WHERE barcode = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, code);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Object[] row = {
+                        rs.getString("product_code"),
+                        rs.getString("product_name"),
+                        rs.getDouble("product_price"),
+                        rs.getInt("product_total_quantity")
+                };
+                productTableModel.addRow(row);
+                updateTotals();
+            } else {
+                JOptionPane.showMessageDialog(null, "Product not found for barcode: " + code);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving product data from database");
+        } finally {
+            DatabaseUtil.close(rs);
+            DatabaseUtil.close(stmt);
+            DatabaseUtil.close(conn);
+        }
     }
 
     private static void updateTotals() {
-        // Update subTotalLabel and totalLabel based on products in productTableModel
+        double subtotal = 0.0;
+        int rowCount = productTableModel.getRowCount();
+        for (int i = 0; i < rowCount; i++) {
+            double price = (double) productTableModel.getValueAt(i, 2);
+            int quantity = (int) productTableModel.getValueAt(i, 3);
+            subtotal += price * quantity;
+        }
+        subTotalLabel.setText(String.format("Sub Total: %.2f", subtotal));
+        totalLabel.setText(String.format("Total: %.2f", subtotal)); // Assuming no discount for simplicity
     }
 
     private static void showReceiptUI() {
-        // Display receipt using data from productTableModel
+        StringBuilder receipt = new StringBuilder("Receipt\n\n");
+        for (int i = 0; i < productTableModel.getRowCount(); i++) {
+            receipt.append(productTableModel.getValueAt(i, 1)).append(" - ");
+            receipt.append(productTableModel.getValueAt(i, 3)).append(" @ ");
+            receipt.append(productTableModel.getValueAt(i, 2)).append("\n");
+        }
+        receipt.append("\n");
+        receipt.append(subTotalLabel.getText()).append("\n");
+        receipt.append(totalLabel.getText()).append("\n");
+
+        JTextArea textArea = new JTextArea(receipt.toString());
+        textArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(400, 300));
+        JOptionPane.showMessageDialog(null, scrollPane, "Receipt", JOptionPane.PLAIN_MESSAGE);
     }
 
-    public static void main(String[] strings) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'main'");
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new ScanProduct().setVisible(true);
+            }
+        });
     }
 }

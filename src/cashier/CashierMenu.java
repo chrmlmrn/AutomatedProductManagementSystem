@@ -57,7 +57,7 @@ public class CashierMenu {
                     switch (button.getText()) {
                         case "Scan Product":
                             // Open Scan Product Page
-                            ScanProduct.main(new String[] {});
+                            openScanProductPage();
                             break;
                         case "Generate Sales":
                             // Open Generate Sales Page
@@ -102,5 +102,11 @@ public class CashierMenu {
     public void setVisible(boolean b) {
         // TODO Auto-generated method stub
 
+    }
+
+    private static void openScanProductPage() {
+        System.out.println("Opening Scan Product Page...");
+        ScanProduct scanProduct = new ScanProduct();
+        scanProduct.setVisible(true);
     }
 }
