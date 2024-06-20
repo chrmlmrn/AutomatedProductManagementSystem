@@ -185,3 +185,30 @@ INSERT INTO return_reason (return_reason_id, return_reason_name)
 VALUES ('DEF', 'Defective Product'),
     ('WRO', 'Wrong Product'),
     ('EXP', 'Expired Product');
+--@block
+SELECT *
+FROM products;
+--@block
+SELECT *
+FROM supplier;
+--@block
+SELECT *
+FROM category;
+--@block
+SELECT *
+FROM inventory;
+--@block
+SELECT DATE_FORMAT(last_updated, '%Y-%m-%d') AS formatted_date
+FROM inventory;
+--@block
+SELECT *
+FROM product_expiration;
+--@block
+SELECT DATE_FORMAT(product_expiration_date, '%Y-%m-%d') AS formatted_date
+FROM product_expiration;
+--@block
+SELECT *
+FROM user;
+--@block
+SELECT *
+FROM user_logs;
