@@ -120,7 +120,7 @@ VALUES ('FR', 'Fruits'),
 --@block
 CREATE TABLE products (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id VARCHAR(20) NOT NULL,
+    product_id VARCHAR(255) NOT NULL,
     barcode VARCHAR(50) NOT NULL,
     barcode_image BLOB,
     product_name VARCHAR(255) NOT NULL,
