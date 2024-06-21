@@ -4,7 +4,7 @@ import javax.swing.*;
 
 import database.DatabaseUtil;
 import src.SHA256.Sha256Util;
-import src.admin.maintenance.userlogs.UserLogUtil;
+import src.admin.reports.userlogs.UserLogUtil;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 

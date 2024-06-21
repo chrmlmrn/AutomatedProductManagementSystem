@@ -5,7 +5,7 @@ import javax.swing.*;
 import database.DatabaseUtil;
 import src.SHA256.Sha256Util;
 import src.admin.AdminMenu;
-import src.admin.maintenance.userlogs.UserLogUtil;
+import src.admin.reports.userlogs.UserLogUtil;
 import src.cashier.CashierMenu;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;

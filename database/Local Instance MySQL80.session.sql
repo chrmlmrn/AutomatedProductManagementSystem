@@ -1,7 +1,7 @@
 --@block
 CREATE TABLE user_level_of_access (
-    user_role_id CHAR(1) PRIMARY KEY,
-    user_role_name VARCHAR(50)
+    user_role_id CHAR(1) PRIMARY KEY NOT NULL,
+    user_role_name VARCHAR(50) NOT NULL
 );
 --@block
 INSERT INTO user_level_of_access (user_role_id, user_role_name)
@@ -9,42 +9,43 @@ VALUES ('A', 'Admin'),
     ('C', 'Cashier');
 --@block
 CREATE TABLE user_account_status (
-    user_account_status_id CHAR(3) PRIMARY KEY,
-    account_status VARCHAR(50) UNIQUE
+    user_account_status_id CHAR(3) PRIMARY KEY NOT NULL,
+    account_status VARCHAR(50) NOT NULL
 );
 --@block
 INSERT INTO user_account_status (user_account_status_id, account_status)
 VALUES ('ACT', 'Active'),
     ('INA', 'Inactive');
 --@block
-CREATE TABLE user (
+CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     user_role_id CHAR(1),
-    user_first_name VARCHAR(50),
-    user_last_name VARCHAR(50),
+    user_first_name VARCHAR(50) NOT NULL,
+    user_last_name VARCHAR(50) NOT NULL,
     username VARCHAR(50) UNIQUE,
-    password VARCHAR(255),
+    password_hash VARCHAR(255),
     user_account_status_id CHAR(3) DEFAULT 'ACT',
     FOREIGN KEY (user_role_id) REFERENCES user_level_of_access(user_role_id),
     FOREIGN KEY (user_account_status_id) REFERENCES user_account_status(user_account_status_id)
 );
---@block
-RENAME TABLE user TO users;
---@block
-ALTER TABLE users CHANGE password password_hash VARCHAR(255);
 --@block
 CREATE TABLE user_logs (
     user_log_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     user_action VARCHAR(100),
     action_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 --@block
 CREATE TABLE report_type (
     report_type_id INT AUTO_INCREMENT PRIMARY KEY,
-    report_type VARCHAR(100) UNIQUE
+    report_type VARCHAR(100) NOT NULL
 );
+--@block
+INSERT INTO report_type(report_type)
+VALUES ('Sales Report'),
+    ('Inventory Report'),
+    ('Return Report');
 --@block
 CREATE TABLE reports (
     report_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,15 +53,8 @@ CREATE TABLE reports (
     report_date DATE,
     user_id INT,
     FOREIGN KEY (report_type_id) REFERENCES report_type(report_type_id),
-    FOREIGN KEY (user_id) REFERENCES user(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
---@block
-INSERT INTO report_type (report_type)
-VALUES ('Sales'),
-    ('Inventory');
---@block
-SELECT *
-FROM reports;
 --@block
 CREATE TABLE security_question (
     security_question_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -81,10 +75,14 @@ CREATE TABLE security_answer (
     security_answer_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     security_question_id INT,
-    security_answer VARCHAR(255),
-    FOREIGN KEY (user_id) REFERENCES user(user_id),
+    security_answer VARCHAR(255) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (security_question_id) REFERENCES security_question(security_question_id)
 );
+SELECT *
+FROM users;
+SELECT *
+FROM user_logs;
 --@block
 CREATE TABLE product_type (
     product_type_id CHAR(1) PRIMARY KEY,
@@ -121,8 +119,8 @@ VALUES ('FR', 'Fruits'),
     ('OT', 'Other');
 --@block
 CREATE TABLE products (
-    product_id INT PRIMARY KEY AUTO_INCREMENT,
-    product_code VARCHAR(20) NOT NULL,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id VARCHAR(20) NOT NULL,
     barcode VARCHAR(50) NOT NULL,
     barcode_image BLOB,
     product_name VARCHAR(255) NOT NULL,
@@ -131,7 +129,6 @@ CREATE TABLE products (
     category_id CHAR(2) NOT NULL,
     supplier_id INT NOT NULL,
     product_type_id CHAR(1) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES category(category_id),
     FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id),
     FOREIGN KEY (product_type_id) REFERENCES product_type(product_type_id)
@@ -189,54 +186,7 @@ VALUES ('DEF', 'Defective Product'),
     ('WRO', 'Wrong Product'),
     ('EXP', 'Expired Product');
 --@block
-CREATE TABLE return_products (
-    return_id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id INT NOT NULL,
-    return_quantity INT NOT NULL,
-    return_reason_id CHAR(3) NOT NULL,
-    return_date DATE NOT NULL,
-    return_status_id CHAR(3) NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (return_reason_id) REFERENCES return_reason(return_reason_id),
-    FOREIGN KEY (return_status_id) REFERENCES return_status(return_status_id)
-);
---@block
-CREATE TABLE sales (
-    sales_id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id INT NOT NULL,
-    sales_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id INT NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (user_id) REFERENCES user(user_id)
-);
---@block
-CREATE TABLE discount (
-    discount_type_id CHAR(3) PRIMARY KEY,
-    discount_type VARCHAR(50) NOT NULL,
-    discount_value DECIMAL(10, 2) NOT NULL
-);
---@block
-INSERT INTO discount (discount_type_id, discount_type, discount_value)
-VALUES ('SCN', 'Senior Citizen', 20.00),
-    ('PWD', 'Person with Disability', 20.00);
---@block
-CREATE TABLE product_sales (
-    product_sales_id INT PRIMARY KEY AUTO_INCREMENT,
-    sales_id INT NOT NULL,
-    product_id INT NOT NULL,
-    product_quantity_sold INT NOT NULL,
-    product_unit_price DECIMAL(10, 2) NOT NULL,
-    total_sales DECIMAL(10, 2) NOT NULL,
-    discount_type_id CHAR(3),
-    FOREIGN KEY (sales_id) REFERENCES sales(sales_id),
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (discount_type_id) REFERENCES discount(discount_type_id)
-);
---@block
 SELECT *
-FROM products;
---@block
-SELECT DATE_FORMAT(created_at, '%Y-%m-%d %H:%i:%s') AS formatted_date
 FROM products;
 --@block
 SELECT *
@@ -258,7 +208,7 @@ SELECT DATE_FORMAT(product_expiration_date, '%Y-%m-%d') AS formatted_date
 FROM product_expiration;
 --@block
 SELECT *
-FROM users;
+FROM user;
 --@block
 SELECT *
 FROM user_logs;

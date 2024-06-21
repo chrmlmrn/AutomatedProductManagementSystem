@@ -3,7 +3,7 @@ package src.register;
 import javax.swing.*;
 
 import database.DatabaseUtil;
-import src.admin.maintenance.userlogs.UserLogUtil;
+import src.admin.reports.userlogs.UserLogUtil;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 import src.login.Login;
