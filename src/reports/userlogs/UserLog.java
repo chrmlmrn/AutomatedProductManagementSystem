@@ -1,4 +1,4 @@
-package src.admin.maintenance.userlogs;
+package src.reports.userlogs;
 
 import database.DatabaseUtil;
 import src.customcomponents.RoundedButton;

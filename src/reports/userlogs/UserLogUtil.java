@@ -1,4 +1,4 @@
-package src.admin.maintenance.userlogs;
+package src.reports.userlogs;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

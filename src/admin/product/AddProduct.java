@@ -612,7 +612,7 @@ public class AddProduct {
         saveButton.setFont(new Font("Arial", Font.BOLD, 18));
         saveButton.addActionListener(saveEvent -> {
             // Define the folder where the barcode image will be saved
-            File saveFolder = new File("C:\\\\Users\\\\ADMIN\\\\Documents"); // Replace with your folder path
+            File saveFolder = new File("C:\\\\Users\\\\ismai\\\\Documents"); // Replace with your folder path
 
             // Check if the folder exists, create it if it doesn't
             if (!saveFolder.exists()) {

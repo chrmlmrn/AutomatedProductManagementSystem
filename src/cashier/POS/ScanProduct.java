@@ -65,7 +65,7 @@ public class ScanProduct extends JFrame {
                 String barcode = barcodeField.getText().trim();
                 if (!barcode.isEmpty()) {
                     addProduct(barcode);
-                    barcodeField.setText("");
+
                 }
             }
         });

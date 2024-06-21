@@ -3,6 +3,7 @@ package src.admin.product;
 import javax.swing.*;
 
 import src.admin.AdminMenu;
+import src.cashier.CashierMenu;
 import src.customcomponents.RoundedButton;
 
 import java.awt.*;
@@ -77,6 +78,7 @@ public class ProductPage extends JFrame {
                         // Open AddProduct
                         // AddProduct addProduct = new AddProduct();
                         // addProduct.setVisible(true);
+                        AddProduct.main(new String[] {});
                     } else if (button.getText().equals("Update Product")) {
                         // Open UpdateProduct
                         // Replace with appropriate functionality
