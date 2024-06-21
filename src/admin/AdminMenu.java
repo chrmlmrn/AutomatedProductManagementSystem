@@ -1,9 +1,14 @@
 package src.admin;
 
 import javax.swing.*;
+
+import src.about.AboutMainPage;
+import src.admin.maintenance.MaintenancePage;
 import src.admin.product.ProductPage;
+import src.admin.records.RecordsMainPage;
 import src.admin.return_product.ReturnPage;
 import src.customcomponents.RoundedButton;
+import src.help.HelpPage;
 import src.login.Login;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -54,7 +59,6 @@ public class AdminMenu extends JFrame {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println(button.getText() + " button clicked");
 
                     switch (button.getText()) {
                         case "Product":
@@ -70,6 +74,9 @@ public class AdminMenu extends JFrame {
                             break;
                         case "Records":
                             // Open Records Page
+                            RecordsMainPage recordsMainPage = new RecordsMainPage();
+                            recordsMainPage.setVisible(true);
+                            dispose();
                             break;
                         case "Return":
                             dispose();
@@ -77,12 +84,16 @@ public class AdminMenu extends JFrame {
                             break;
                         case "Maintenance":
                             // Open Maintenance Page
+                            MaintenancePage maintenancePage = new MaintenancePage();
+                            maintenancePage.setVisible(true);
                             break;
                         case "Help":
                             // Open Help Page
+                            HelpPage.main(new String[] {});
                             break;
                         case "About":
                             // Open About Page
+                            AboutMainPage.main(new String[] {});
                             break;
                         case "Logout":
                             dispose();

@@ -30,7 +30,7 @@ public class FAQPage {
         mainPanel.add(backButton);
 
         backButton.addActionListener(e -> {
-            new HelpPage(frame);
+            new HelpPage();
         });
 
         // Add title label

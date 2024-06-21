@@ -6,24 +6,39 @@ import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import database.DatabaseUtil;
+import src.admin.records.RecordsMainPage;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 
-public class ProductRecords {
-    private static DefaultTableModel tableModel;
-    private static JTable productTable;
-    private static JTextField searchField;
+public class ProductRecords extends JFrame {
+    private DefaultTableModel tableModel;
+    private JTable productTable;
+    private JTextField searchField;
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Product Records");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new BorderLayout());
+    public ProductRecords() {
+        initComponents();
+        setTitle("Product Records");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setLocationRelativeTo(null);
+        setVisible(true);
+
+        // Initialize table with data
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void initComponents() {
+        setLayout(new BorderLayout());
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+        setContentPane(mainPanel);
 
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(Color.WHITE);
@@ -35,6 +50,10 @@ public class ProductRecords {
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
+        backButton.addActionListener(e -> {
+            RecordsMainPage recordsMainPage = new RecordsMainPage();
+            recordsMainPage.setVisible(true);
+        });
         headerPanel.add(backButton);
 
         JLabel titleLabel = new JLabel("Product Records");
@@ -111,9 +130,7 @@ public class ProductRecords {
         mainGbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(containerPanel, mainGbc);
 
-        frame.setVisible(true);
-
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
+        addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
@@ -121,18 +138,9 @@ public class ProductRecords {
                 }
             }
         });
-
-        // Initialize table with data
-        try (Connection connection = DatabaseUtil.getConnection()) {
-            refreshTable(connection);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
     }
 
-    private static void searchProducts() {
+    private void searchProducts() {
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {
@@ -175,7 +183,7 @@ public class ProductRecords {
         }
     }
 
-    private static void refreshTable(Connection connection) {
+    private void refreshTable(Connection connection) {
         try {
             String query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
                     +
@@ -202,5 +210,9 @@ public class ProductRecords {
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new ProductRecords());
     }
 }

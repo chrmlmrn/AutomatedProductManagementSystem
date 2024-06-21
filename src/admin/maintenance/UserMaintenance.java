@@ -10,22 +10,26 @@ import database.DatabaseUtil;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 
-public class UserMaintenance {
+public class UserMaintenance extends JFrame {
     private static DefaultTableModel tableModel;
     private static JTable userTable;
     private static JComboBox<String> roleComboBox;
     private static JComboBox<String> statusComboBox;
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("Maintenance");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new BorderLayout());
+    public UserMaintenance() {
+        initComponents(); // Initialize components
+    }
+
+    private void initComponents() {
+        setTitle("Maintenance");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setLayout(new BorderLayout());
+        setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+        setContentPane(mainPanel);
 
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(Color.WHITE);
@@ -105,7 +109,11 @@ public class UserMaintenance {
         cancelButton.setForeground(Color.BLACK);
         cancelButton.setFocusPainted(false);
         cancelButton.setPreferredSize(new Dimension(150, 40));
-        cancelButton.addActionListener(e -> System.exit(0));
+        cancelButton.addActionListener(e -> {
+            dispose();
+            MaintenancePage maintenancePage = new MaintenancePage();
+            maintenancePage.setVisible(true);
+        });
 
         buttonPanel.add(updateButton);
         buttonPanel.add(cancelButton);
@@ -127,9 +135,7 @@ public class UserMaintenance {
         mainGbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(containerPanel, mainGbc);
 
-        frame.setVisible(true);
-
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
+        addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
@@ -252,5 +258,12 @@ public class UserMaintenance {
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            UserMaintenance frame = new UserMaintenance();
+            frame.setVisible(true);
+        });
     }
 }

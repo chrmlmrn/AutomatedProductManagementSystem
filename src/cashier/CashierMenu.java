@@ -3,6 +3,7 @@ package src.cashier;
 import javax.swing.*;
 
 import src.help.HelpPage;
+import src.login.Login;
 import src.about.AboutMainPage;
 import src.cashier.POS.ScanProduct;
 import src.customcomponents.RoundedButton;
@@ -11,14 +12,19 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class CashierMenu {
-    public static void main(String[] args) {
-        // frame
-        JFrame frame = new JFrame("Cashier Menu");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setUndecorated(false); // Remove window borders and title bar
-        frame.setLocationRelativeTo(null); // Center the frame on the screen
+public class CashierMenu extends JFrame {
+
+    public CashierMenu() {
+        initComponent();
+    }
+
+    private void initComponent() {
+        // frame settings
+        setTitle("Cashier Menu");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setUndecorated(false); // Remove window borders and title bar
+        setLocationRelativeTo(null); // Center the frame on the screen
 
         // a panel to hold the buttons
         JPanel panel = new JPanel();
@@ -39,9 +45,16 @@ public class CashierMenu {
         int startY = 150; // Starting Y position for the first button
         int gap = 20; // Gap between buttons
 
+        // Calculate the initial center position for the buttons horizontally
+        int panelWidth = getWidth();
+        int centerX = (panelWidth - buttonWidth) / 2;
+
         for (int i = 0; i < buttonLabels.length; i++) {
             RoundedButton button = new RoundedButton(buttonLabels[i]);
-            button.setBounds((1925 - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth, buttonHeight);
+
+            int y = startY + (buttonHeight + gap) * i;
+
+            button.setBounds(centerX, y, buttonWidth, buttonHeight);
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFont(new Font("Arial", Font.BOLD, 16));
@@ -51,8 +64,7 @@ public class CashierMenu {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    System.out.println(button.getText() + " button clicked");
-                    frame.dispose(); // Close the current frame
+                    dispose(); // Close the current frame
 
                     switch (button.getText()) {
                         case "Scan Product":
@@ -73,7 +85,8 @@ public class CashierMenu {
                             break;
                         case "Logout":
                             // Logout and close the application
-                            System.exit(0);
+                            dispose();
+                            Login.main(new String[] {});
                             break;
                     }
                 }
@@ -83,13 +96,13 @@ public class CashierMenu {
         }
 
         // Add panel to the frame
-        frame.getContentPane().add(panel);
+        getContentPane().add(panel);
 
         // Make the frame visible
-        frame.setVisible(true);
+        setVisible(true);
 
         // Add a key listener to close the application
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
+        addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
@@ -97,16 +110,34 @@ public class CashierMenu {
                 }
             }
         });
-    }
 
-    public void setVisible(boolean b) {
-        // TODO Auto-generated method stub
-
+        // Add component listener to dynamically adjust button positions on resize
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int frameWidth = getWidth();
+                int newCenterX = (frameWidth - buttonWidth) / 2;
+                for (Component component : panel.getComponents()) {
+                    if (component instanceof RoundedButton) {
+                        RoundedButton button = (RoundedButton) component;
+                        button.setBounds(newCenterX, button.getY(), buttonWidth, buttonHeight);
+                    }
+                }
+            }
+        });
     }
 
     private static void openScanProductPage() {
-        System.out.println("Opening Scan Product Page...");
         ScanProduct scanProduct = new ScanProduct();
         scanProduct.setVisible(true);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new CashierMenu();
+            }
+        });
     }
 }

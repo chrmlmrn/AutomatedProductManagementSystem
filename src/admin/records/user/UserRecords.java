@@ -6,24 +6,39 @@ import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import database.DatabaseUtil;
+import src.admin.records.RecordsMainPage;
 import src.customcomponents.RoundedButton;
 import src.customcomponents.RoundedPanel;
 
-public class UserRecords {
-    private static DefaultTableModel tableModel;
-    private static JTable userTable;
-    private static JTextField searchField;
+public class UserRecords extends JFrame {
+    private DefaultTableModel tableModel;
+    private JTable userTable;
+    private JTextField searchField;
 
-    public static void main(String[] args) {
-        JFrame frame = new JFrame("User Records");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new BorderLayout());
+    public UserRecords() {
+        initComponents();
+        setTitle("User Records");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        setLocationRelativeTo(null);
+        setVisible(true);
+
+        // Initialize table with data
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void initComponents() {
+        setLayout(new BorderLayout());
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+        setContentPane(mainPanel);
 
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(Color.WHITE);
@@ -35,6 +50,10 @@ public class UserRecords {
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
+        backButton.addActionListener(e -> {
+            RecordsMainPage recordsMainPage = new RecordsMainPage();
+            recordsMainPage.setVisible(true);
+        });
         headerPanel.add(backButton);
 
         JLabel titleLabel = new JLabel("User Records");
@@ -110,9 +129,7 @@ public class UserRecords {
         mainGbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(containerPanel, mainGbc);
 
-        frame.setVisible(true);
-
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
+        addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(java.awt.event.KeyEvent e) {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
@@ -120,18 +137,9 @@ public class UserRecords {
                 }
             }
         });
-
-        // Initialize table with data
-        try (Connection connection = DatabaseUtil.getConnection()) {
-            refreshTable(connection);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
     }
 
-    private static void searchUsers() {
+    private void searchUsers() {
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {
@@ -177,7 +185,7 @@ public class UserRecords {
         }
     }
 
-    private static void refreshTable(Connection connection) {
+    private void refreshTable(Connection connection) {
         try {
             String query = "SELECT u.user_id, u.user_first_name, u.user_last_name, u.username, l.user_role_name, s.account_status "
                     +
@@ -203,5 +211,9 @@ public class UserRecords {
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new UserRecords());
     }
 }

@@ -14,10 +14,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ScanProduct extends JFrame {
-    private static DefaultTableModel productTableModel;
-    private static JLabel subTotalLabel;
-    private static JLabel totalLabel;
-    private static Map<String, Product> productDatabase;
+    private DefaultTableModel productTableModel;
+    private DefaultTableModel soldProductTableModel;
+    private JLabel subTotalLabel;
+    private JLabel totalLabel;
+    private Map<String, Product> productDatabase;
     private JTextField barcodeField;
 
     public ScanProduct() {
@@ -70,8 +71,8 @@ public class ScanProduct extends JFrame {
         });
         panel.add(barcodeField);
 
-        // Product table
-        String[] productColumns = { "PRODUCT CODE", "PRODUCT NAME", "PRICE", "QUANTITY" };
+        // Product table (Left table for products in database)
+        String[] productColumns = { "PRODUCT CODE", "PRODUCT NAME", "SIZE", "PRICE", "QUANTITY" };
         productTableModel = new DefaultTableModel(productColumns, 0);
         JTable productTable = new JTable(productTableModel);
         productTable.getTableHeader().setBackground(new Color(30, 144, 255));
@@ -82,18 +83,18 @@ public class ScanProduct extends JFrame {
         productScrollPane.setBounds(50, 120, 700, 300);
         panel.add(productScrollPane);
 
-        // Summary section
+        // Summary table (Right table for products being sold)
         String[] summaryColumns = { "PRODUCT NAME", "QUANTITY", "PRICE" };
-        DefaultTableModel summaryTableModel = new DefaultTableModel(summaryColumns, 0);
-        JTable summaryTable = new JTable(summaryTableModel);
+        soldProductTableModel = new DefaultTableModel(summaryColumns, 0);
+        JTable summaryTable = new JTable(soldProductTableModel);
         summaryTable.setRowHeight(30);
         JScrollPane summaryScrollPane = new JScrollPane(summaryTable);
-        summaryScrollPane.setBounds(800, 100, 700, 150);
+        summaryScrollPane.setBounds(800, 100, 500, 300);
         panel.add(summaryScrollPane);
 
         // Total panel
         JPanel totalPanel = new JPanel(new GridLayout(3, 2));
-        totalPanel.setBounds(800, 300, 700, 100);
+        totalPanel.setBounds(800, 420, 500, 100);
 
         JLabel discountLabel = new JLabel("Discount:");
         discountLabel.setFont(new Font("Arial", Font.BOLD, 16));
@@ -183,19 +184,19 @@ public class ScanProduct extends JFrame {
         });
     }
 
-    private static void initializeProductDatabase() {
+    private void initializeProductDatabase() {
         productDatabase = new HashMap<>();
         // You can add products from your SQL database here
     }
 
-    private static void addProduct(String code) {
+    private void addProduct(String code) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
 
         try {
             conn = DatabaseUtil.getConnection();
-            String sql = "SELECT product_code, product_name, product_price, product_total_quantity " +
+            String sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity " +
                     "FROM products JOIN inventory ON products.product_id = inventory.product_id " +
                     "WHERE barcode = ?";
             stmt = conn.prepareStatement(sql);
@@ -206,10 +207,20 @@ public class ScanProduct extends JFrame {
                 Object[] row = {
                         rs.getString("product_code"),
                         rs.getString("product_name"),
+                        rs.getString("product_size"),
                         rs.getDouble("product_price"),
                         rs.getInt("product_total_quantity")
                 };
                 productTableModel.addRow(row);
+
+                // Add to sold products table
+                Object[] soldRow = {
+                        rs.getString("product_name"),
+                        1, // Initial quantity sold is 1
+                        rs.getDouble("product_price")
+                };
+                soldProductTableModel.addRow(soldRow);
+
                 updateTotals();
             } else {
                 JOptionPane.showMessageDialog(null, "Product not found for barcode: " + code);
@@ -224,24 +235,24 @@ public class ScanProduct extends JFrame {
         }
     }
 
-    private static void updateTotals() {
+    private void updateTotals() {
         double subtotal = 0.0;
-        int rowCount = productTableModel.getRowCount();
+        int rowCount = soldProductTableModel.getRowCount();
         for (int i = 0; i < rowCount; i++) {
-            double price = (double) productTableModel.getValueAt(i, 2);
-            int quantity = (int) productTableModel.getValueAt(i, 3);
+            double price = (double) soldProductTableModel.getValueAt(i, 2);
+            int quantity = (int) soldProductTableModel.getValueAt(i, 1);
             subtotal += price * quantity;
         }
         subTotalLabel.setText(String.format("Sub Total: %.2f", subtotal));
         totalLabel.setText(String.format("Total: %.2f", subtotal)); // Assuming no discount for simplicity
     }
 
-    private static void showReceiptUI() {
+    private void showReceiptUI() {
         StringBuilder receipt = new StringBuilder("Receipt\n\n");
-        for (int i = 0; i < productTableModel.getRowCount(); i++) {
-            receipt.append(productTableModel.getValueAt(i, 1)).append(" - ");
-            receipt.append(productTableModel.getValueAt(i, 3)).append(" @ ");
-            receipt.append(productTableModel.getValueAt(i, 2)).append("\n");
+        for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
+            receipt.append(soldProductTableModel.getValueAt(i, 0)).append(" - ");
+            receipt.append(soldProductTableModel.getValueAt(i, 1)).append(" @ ");
+            receipt.append(soldProductTableModel.getValueAt(i, 2)).append("\n");
         }
         receipt.append("\n");
         receipt.append(subTotalLabel.getText()).append("\n");
