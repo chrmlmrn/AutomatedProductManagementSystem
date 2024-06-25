@@ -62,7 +62,7 @@ public class ProductPage extends JPanel {
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFocusPainted(false);
-            button.setFont(new Font("Arial", Font.PLAIN, 16));
+            button.setFont(new Font("Arial", Font.BOLD, 16));
             button.setBorder(BorderFactory.createEmptyBorder());
             button.addActionListener(new ActionListener() {
                 @Override

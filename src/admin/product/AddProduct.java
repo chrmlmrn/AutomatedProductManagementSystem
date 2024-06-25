@@ -30,6 +30,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.text.*;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 public class AddProduct extends JPanel {
     private Map<String, String> categoryMap;
@@ -102,6 +107,9 @@ public class AddProduct extends JPanel {
         gbc.gridwidth = 2;
         gbc.weightx = 1;
         productCodeTextField.setEditable(false); // Set the text field to be non-editable
+
+        generateAndSetProductCode();
+
         containerPanel.add(productCodeTextField, gbc);
 
         JLabel barcodeLabel = new JLabel("Barcode");
@@ -114,6 +122,8 @@ public class AddProduct extends JPanel {
 
         barcodeTextField = new RoundedTextField(5, 20);
         barcodeTextField.setPreferredSize(new Dimension(500, 30));
+        ((AbstractDocument) barcodeTextField.getDocument()).setDocumentFilter(new IntegerFilter());
+
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
@@ -164,6 +174,8 @@ public class AddProduct extends JPanel {
 
         productPriceTextField = new RoundedTextField(5, 20);
         productPriceTextField.setPreferredSize(new Dimension(500, 30));
+        ((AbstractDocument) productPriceTextField.getDocument()).setDocumentFilter(new PositiveNumberFilter());
+
         gbc.gridx = 0;
         gbc.gridy = 10;
         gbc.gridwidth = 2;
@@ -196,6 +208,7 @@ public class AddProduct extends JPanel {
 
         productQuantityTextField = new RoundedTextField(5, 20);
         productQuantityTextField.setPreferredSize(new Dimension(500, 30));
+        ((AbstractDocument) productQuantityTextField.getDocument()).setDocumentFilter(new IntegerFilter());
         gbc.gridx = 0;
         gbc.gridy = 14;
         gbc.gridwidth = 2;
@@ -261,22 +274,21 @@ public class AddProduct extends JPanel {
         addButton.setPreferredSize(new Dimension(300, 40));
         addButton.addActionListener(e -> {
             try {
-                if (validateFields(barcodeTextField, productCodeTextField, productNameTextField, productPriceTextField,
+                if (validateFields(productCodeTextField, barcodeTextField, productNameTextField, productPriceTextField,
                         productSizeTextField, productQuantityTextField, expirationDateChooser, supplierNameTextField)) {
                     String newProductCode = generateNewProductCode();
                     productCodeTextField.setText(newProductCode); // Set the new product code in the text field
 
-                    insertProduct(barcodeTextField.getText(), newProductCode,
+                    insertProduct(newProductCode, barcodeTextField.getText(),
                             productNameTextField.getText(), (String) categoryComboBox.getSelectedItem(),
                             new BigDecimal(productPriceTextField.getText()), productSizeTextField.getText(),
                             Integer.parseInt(productQuantityTextField.getText()),
                             ((JTextField) expirationDateChooser.getDateEditor().getUiComponent()).getText(),
                             (String) typeComboBox.getSelectedItem(), supplierNameTextField.getText());
 
-                    clearFields(barcodeTextField, productCodeTextField, productNameTextField, productPriceTextField,
+                    clearFields(barcodeTextField, productNameTextField, productPriceTextField,
                             productSizeTextField, productQuantityTextField, expirationDateChooser,
                             supplierNameTextField);
-                    JOptionPane.showMessageDialog(null, "Product added successfully!");
                 } else {
                     JOptionPane.showMessageDialog(null, "Please fill out all fields correctly.");
                 }
@@ -287,13 +299,13 @@ public class AddProduct extends JPanel {
         });
 
         // Add a button to generate the barcode
-        RoundedButton generateButton = new RoundedButton("Generate Barcode");
-        generateButton.setFont(new Font("Arial", Font.BOLD, 16));
-        generateButton.setBackground(Color.WHITE);
-        generateButton.setForeground(Color.BLACK);
-        generateButton.setFocusPainted(false);
-        generateButton.setPreferredSize(new Dimension(300, 40));
-        generateButton.addActionListener(e -> {
+        RoundedButton displayBarButton = new RoundedButton("Generate Barcode");
+        displayBarButton.setFont(new Font("Arial", Font.BOLD, 16));
+        displayBarButton.setBackground(Color.WHITE);
+        displayBarButton.setForeground(Color.BLACK);
+        displayBarButton.setFocusPainted(false);
+        displayBarButton.setPreferredSize(new Dimension(300, 40));
+        displayBarButton.addActionListener(e -> {
             // Validate all fields before generating barcode
             if (validateFields(productCodeTextField, barcodeTextField, productNameTextField,
                     productPriceTextField, productSizeTextField, productQuantityTextField,
@@ -335,7 +347,7 @@ public class AddProduct extends JPanel {
         buttonPanel.add(addButton, gbcButton);
 
         gbcButton.gridx = 1;
-        buttonPanel.add(generateButton, gbcButton);
+        buttonPanel.add(displayBarButton, gbcButton);
 
         gbcButton.gridx = 2;
         buttonPanel.add(cancelButton, gbcButton);
@@ -360,6 +372,69 @@ public class AddProduct extends JPanel {
         // mainFrame.pack();
         mainFrame.setLocationRelativeTo(null); // Center the frame
         mainFrame.setVisible(true);
+    }
+
+    // IntegerFilter for quantity
+    static class IntegerFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                throws BadLocationException {
+            if (string != null && string.matches("\\d*")) {
+                super.insertString(fb, offset, string, attr);
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                throws BadLocationException {
+            if (text != null && text.matches("\\d*")) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+        }
+
+        @Override
+        public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+            super.remove(fb, offset, length);
+        }
+    }
+
+    // PositiveNumberFilter for price
+    static class PositiveNumberFilter extends DocumentFilter {
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                throws BadLocationException {
+            if (string != null && isValidInput(fb.getDocument().getText(0, fb.getDocument().getLength()), string)) {
+                super.insertString(fb, offset, string, attr);
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                throws BadLocationException {
+            if (text != null && isValidInput(fb.getDocument().getText(0, fb.getDocument().getLength()), text)) {
+                super.replace(fb, offset, length, text, attrs);
+            }
+        }
+
+        @Override
+        public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+            super.remove(fb, offset, length);
+        }
+
+        private boolean isValidInput(String currentText, String newText) {
+            String combinedText = currentText + newText;
+            return combinedText.matches("\\d*\\.?\\d*");
+        }
+    }
+
+    private void generateAndSetProductCode() {
+        try {
+            String newProductCode = generateNewProductCode();
+            productCodeTextField.setText(newProductCode);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Error generating product code: " + ex.getMessage());
+            ex.printStackTrace();
+        }
     }
 
     private static Map<String, String> fetchCategories() {
@@ -438,11 +513,10 @@ public class AddProduct extends JPanel {
         return true;
     }
 
-    private void clearFields(RoundedTextField productCodeTextField, RoundedTextField barcodeTextField,
+    private void clearFields(RoundedTextField barcodeTextField,
             RoundedTextField productNameTextField, RoundedTextField productPriceTextField,
             RoundedTextField productSizeTextField, RoundedTextField productQuantityTextField,
             JDateChooser expirationDateChooser, RoundedTextField supplierNameTextField) {
-        productCodeTextField.setText("");
         barcodeTextField.setText("");
         productNameTextField.setText("");
         productPriceTextField.setText("");
@@ -450,6 +524,9 @@ public class AddProduct extends JPanel {
         productQuantityTextField.setText("");
         expirationDateChooser.setDate(null);
         supplierNameTextField.setText("");
+
+        generateAndSetProductCode();
+
     }
 
     private String generateNewProductCode() throws SQLException {
@@ -518,8 +595,13 @@ public class AddProduct extends JPanel {
             BufferedImage barcodeImage = BarcodeGenerator.generateEAN13Barcode(fullBarcode, "barcode.png");
 
             // Save barcode image to file
+            String folderPath = "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/barcodes_images/"; // Replace
+                                                                                                                       // with
+                                                                                                                       // your
+                                                                                                                       // folder
+                                                                                                                       // path
             String fileName = productName + "_barcode.png"; // Example: ProductName_barcode.png
-            File barcodeFile = new File(fileName);
+            File barcodeFile = new File(folderPath + fileName);
             ImageIO.write(barcodeImage, "png", barcodeFile);
 
             // Convert the barcode image to a byte array and set it in the prepared
@@ -550,11 +632,12 @@ public class AddProduct extends JPanel {
                 pstmtProduct.close();
 
                 // Insert into the inventory table
-                String insertInventorySQL = "INSERT INTO inventory (product_id, product_total_quantity, critical_stock_level, product_status_id) VALUES (?, ?, ?, ACT)";
+                String insertInventorySQL = "INSERT INTO inventory (product_id, product_total_quantity, critical_stock_level, product_status_id) VALUES (?, ?, ?, ?)";
                 PreparedStatement pstmtInventory = conn.prepareStatement(insertInventorySQL);
                 pstmtInventory.setInt(1, productId);
                 pstmtInventory.setInt(2, quantity);
                 pstmtInventory.setInt(3, criticalStockLevel); // Assuming a default critical stock level
+                pstmtInventory.setString(4, "ACT"); // Assuming a default critical stock level
                 pstmtInventory.executeUpdate();
                 pstmtInventory.close();
 
@@ -586,21 +669,6 @@ public class AddProduct extends JPanel {
         }
     }
 
-    private boolean isProductCodeExists(String productCode) {
-        String query = "SELECT product_code FROM products WHERE product_code = ?";
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, productCode);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(mainFrame, "Error checking product code: " + e.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-        return false;
-    }
-
     private char calculateEAN13Checksum(String data) {
         int sum = 0;
         for (int i = 0; i < 12; i++) {
@@ -612,7 +680,7 @@ public class AddProduct extends JPanel {
     }
 
     private void showBarcodeDialog(BufferedImage barcodeImage, String productName) {
-        // Desired width and height for the image
+
         int imageWidth = 350;
         int imageHeight = 300;
 
@@ -652,35 +720,8 @@ public class AddProduct extends JPanel {
         // Add space between the image and the buttons
         dialog.add(Box.createVerticalStrut(10)); // Add vertical space
 
-        // Add a button to save the barcode
-        RoundedButton saveButton = new RoundedButton("Save Barcode");
-        saveButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button horizontally
-        saveButton.setBackground(Color.WHITE);
-        saveButton.setFont(new Font("Arial", Font.BOLD, 18));
-        saveButton.addActionListener(saveEvent -> {
-            // Define the folder where the barcode image will be saved
-            File saveFolder = new File("C:\\\\Users\\\\ismai\\\\Documents"); // Replace with your folder path
-
-            // Check if the folder exists, create it if it doesn't
-            if (!saveFolder.exists()) {
-                saveFolder.mkdirs(); // Creates parent directories if necessary
-            }
-
-            // Generate the file name using the product name
-            String fileName = productName.replaceAll("\\s+", "_") + ".png"; // Replace spaces with underscores
-            File outputFile = new File(saveFolder, fileName);
-
-            try {
-                ImageIO.write(barcodeImage, "png", outputFile);
-                JOptionPane.showMessageDialog(dialog, "Barcode saved successfully.");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(dialog, "Error saving barcode: " + ex.getMessage());
-            }
-        });
-
         // Add a cancel button to close the dialog
-        RoundedButton cancelButton = new RoundedButton("Cancel");
+        RoundedButton cancelButton = new RoundedButton("Close");
         cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT); // Center the button horizontally
         cancelButton.addActionListener(cancelEvent -> dialog.dispose());
         cancelButton.setBackground(Color.WHITE);
@@ -688,8 +729,6 @@ public class AddProduct extends JPanel {
 
         // Add buttons to the button panel
         buttonPanel.add(Box.createHorizontalGlue()); // Add glue to push buttons to the sides
-        buttonPanel.add(saveButton);
-        buttonPanel.add(Box.createHorizontalStrut(10)); // Add horizontal space between buttons
         buttonPanel.add(cancelButton);
         buttonPanel.add(Box.createHorizontalGlue()); // Add glue to push buttons to the sides
 
@@ -704,5 +743,4 @@ public class AddProduct extends JPanel {
         dialog.setLocationRelativeTo(mainFrame);
         dialog.setVisible(true);
     }
-
 }
