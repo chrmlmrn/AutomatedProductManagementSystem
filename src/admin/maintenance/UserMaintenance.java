@@ -66,7 +66,8 @@ public class UserMaintenance extends JPanel {
         tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 0 || column == 1 || column == 3 || column == 4;
+                // Make "First Name", "Last Name", and "Status" columns editable
+                return column == 0 || column == 1 || column == 4;
             }
         };
 
@@ -111,6 +112,7 @@ public class UserMaintenance extends JPanel {
             mainFrame.repaint();
         });
         bluePanel.add(cancelButton);
+
         // Initialize table with data
         try (Connection connection = DatabaseUtil.getConnection()) {
             refreshTable(connection);

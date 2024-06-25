@@ -3,6 +3,8 @@ package admin.reports;
 import javax.swing.*;
 
 import admin.AdminMenu;
+import admin.reports.inventory.InventoryReport;
+import admin.reports.return_report.ReturnReport;
 import admin.reports.sales.SalesReport;
 import customcomponents.RoundedButton;
 
@@ -68,17 +70,17 @@ public class ReportsPage extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (button.getText().equals("Inventory")) {
-                        // Open Inventory
-                        // InventoryPage inventoryPage = new InventoryPage();
-                        // inventoryPage.setVisible(true);
+                        mainFrame.setContentPane(new InventoryReport(mainFrame));
+                        mainFrame.revalidate();
+                        mainFrame.repaint();
                     } else if (button.getText().equals("Sales")) {
                         mainFrame.setContentPane(new SalesReport(mainFrame));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (button.getText().equals("Return")) {
-                        // Open Return
-                        // ReturnPage returnPage = new ReturnPage();
-                        // returnPage.setVisible(true);
+                        mainFrame.setContentPane(new ReturnReport(mainFrame));
+                        mainFrame.revalidate();
+                        mainFrame.repaint();
                     }
                 }
             });

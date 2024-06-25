@@ -166,7 +166,10 @@ CREATE TABLE product_inventory_status (
     product_inventory_status_name VARCHAR(50)
 );
 --@block
-INSERT INTO product_status (product_status_id, product_status_name)
+INSERT INTO product_inventory_status (
+        product_inventory_status_id,
+        product_inventory_status_name
+    )
 VALUES ('OOS', 'Out of Stock'),
     ('INS', 'In Stock'),
     ('ROG', 'Reordering');
@@ -231,7 +234,8 @@ SELECT *
 FROM security_answer;
 --@block
 SELECT *
-FROM user;
+FROM users;
+--@block
 CREATE TABLE transactions (
     transaction_id INT AUTO_INCREMENT PRIMARY KEY,
     receipt_number VARCHAR(50),

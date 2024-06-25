@@ -627,7 +627,7 @@ public class AddProduct extends JPanel {
                 parsedPrice = new BigDecimal(price + ".00");
             }
             // Insert the product
-            String insertProductSQL = "INSERT INTO products (product_code, barcode, product_name, product_price, product_size, category_id, supplier_id, product_type_id, barcode_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String insertProductSQL = "INSERT INTO products (product_code, barcode, product_name, product_price, product_size, category_id, supplier_id, product_type_id, barcode_image, product_status_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement pstmtProduct = conn.prepareStatement(insertProductSQL, Statement.RETURN_GENERATED_KEYS);
             pstmtProduct.setString(1, productCode);
             pstmtProduct.setString(2, fullBarcode);
@@ -642,6 +642,7 @@ public class AddProduct extends JPanel {
             pstmtProduct.setInt(7, supplierId);
             pstmtProduct.setString(8, typeId);
             pstmtProduct.setBytes(9, barcodeImageBytes); // Set the barcode image bytes
+            pstmtProduct.setString(10, "ACT");
 
             pstmtProduct.executeUpdate();
             ResultSet rsProduct = pstmtProduct.getGeneratedKeys();
@@ -652,12 +653,12 @@ public class AddProduct extends JPanel {
                 pstmtProduct.close();
 
                 // Insert into the inventory table
-                String insertInventorySQL = "INSERT INTO inventory (product_id, product_total_quantity, critical_stock_level, product_status_id) VALUES (?, ?, ?, ?)";
+                String insertInventorySQL = "INSERT INTO inventory (product_id, product_total_quantity, critical_stock_level, product_inventory_status_id) VALUES (?, ?, ?, ?)";
                 PreparedStatement pstmtInventory = conn.prepareStatement(insertInventorySQL);
                 pstmtInventory.setInt(1, productId);
                 pstmtInventory.setInt(2, quantity);
                 pstmtInventory.setInt(3, criticalStockLevel); // Assuming a default critical stock level
-                pstmtInventory.setString(4, "ACT"); // Assuming a default critical stock level
+                pstmtInventory.setString(4, "INS"); // Assuming a default critical stock level
                 pstmtInventory.executeUpdate();
                 pstmtInventory.close();
 

@@ -1,30 +1,45 @@
 package admin.reports.sales;
 
+import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import customcomponents.RoundedTextField;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-import admin.AdminMenu;
 import admin.reports.ReportsPage;
+import cashier.POS.ScanProduct;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.print.PrinterException;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class SalesReport extends JPanel {
+
+    private DefaultTableModel model;
+    private SalesDAO salesDAO;
+    private RoundedTextField startDateField;
+    private RoundedTextField endDateField;
+
     private JFrame mainFrame;
 
     public SalesReport(JFrame mainFrame) {
         this.mainFrame = mainFrame;
 
+        salesDAO = new SalesDAO();
         initComponents();
     }
 
     private void initComponents() {
-        setLayout(null);
-        setBackground(Color.WHITE);
+        setLayout(new BorderLayout());
+
+        // Main Panel
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(null);
+        mainPanel.setBackground(Color.WHITE);
 
         // Back arrow button
         JButton backButton = new JButton("<");
@@ -42,77 +57,121 @@ public class SalesReport extends JPanel {
                 mainFrame.repaint();
             }
         });
-        add(backButton);
+        mainPanel.add(backButton);
 
         // Title Label
         JLabel titleLabel = new JLabel("Sales Reports");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setBounds(80, 30, 300, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
-        add(titleLabel);
+        mainPanel.add(titleLabel);
 
         // Date Input Panel
         RoundedPanel datePanel = new RoundedPanel(30);
-        datePanel.setLayout(null); // Use absolute layout to control bounds manually
+        datePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
         datePanel.setBackground(new Color(30, 144, 255)); // Blue background
-        datePanel.setBounds(50, 100, getWidth() - 100, 100);
-
-        int padding = 50;
-        int labelWidth = 150;
-        int fieldWidth = 200;
-        int fieldHeight = 30;
+        datePanel.setBounds(50, 100, 1800, 100);
 
         JLabel startDateLabel = new JLabel("Enter Date Start");
         startDateLabel.setFont(new Font("Arial", Font.BOLD, 20));
         startDateLabel.setForeground(Color.WHITE);
-        startDateLabel.setBounds(padding, padding, labelWidth, fieldHeight);
 
-        RoundedTextField startDateField = new RoundedTextField(20, 10);
-        startDateField.setBounds(padding + labelWidth + 10, padding, fieldWidth, fieldHeight);
+        startDateField = new RoundedTextField(20, 10);
 
         JLabel endDateLabel = new JLabel("Enter Date End");
         endDateLabel.setFont(new Font("Arial", Font.BOLD, 20));
         endDateLabel.setForeground(Color.WHITE);
-        endDateLabel.setBounds(padding + labelWidth + fieldWidth + 30, padding, labelWidth, fieldHeight);
 
-        RoundedTextField endDateField = new RoundedTextField(20, 10);
-        endDateField.setBounds(padding + 2 * labelWidth + fieldWidth + 40, padding, fieldWidth, fieldHeight);
+        endDateField = new RoundedTextField(20, 10);
+
+        RoundedButton fetchButton = new RoundedButton("Fetch Data");
+        fetchButton.setFont(new Font("Arial", Font.BOLD, 20));
+        fetchButton.setBackground(Color.WHITE);
+        fetchButton.setForeground(new Color(30, 144, 255));
+        fetchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fetchData();
+            }
+        });
 
         datePanel.add(startDateLabel);
         datePanel.add(startDateField);
         datePanel.add(endDateLabel);
         datePanel.add(endDateField);
+        datePanel.add(fetchButton);
 
-        add(datePanel);
+        mainPanel.add(datePanel);
 
         // Table Data
         String[] columnNames = { "Date", "Hours Open", "Hours Closed", "Products Sold", "Tax", "Return/Refund",
-                "Total Sales That Day" };
-        Object[][] data = {
-                // {"11/25/23", "8:00 AM", "10:00 PM", 50, 100.00, 0, "P6,500.00"},
-        };
+                "Total Sales" };
+        Object[][] data = {};
 
-        DefaultTableModel model = new DefaultTableModel(data, columnNames);
+        model = new DefaultTableModel(data, columnNames);
         JTable table = new JTable(model);
         table.setRowHeight(30);
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
         table.getTableHeader().setBackground(new Color(30, 144, 255));
         table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setReorderingAllowed(false); // Disable column reordering
         table.setFont(new Font("Arial", Font.PLAIN, 14));
 
         JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setBounds(50, 220, getWidth() - 100, getHeight() - 300);
-        add(tableScrollPane);
+        tableScrollPane.setBounds(50, 250, 1800, 800);
+        mainPanel.add(tableScrollPane);
 
-        // Add component listener to keep elements centered and resized properly
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                int frameWidth = getWidth();
-                int frameHeight = getHeight();
-                datePanel.setBounds(50, 100, frameWidth - 100, 100);
-                tableScrollPane.setBounds(50, 220, frameWidth - 100, frameHeight - 300);
+        // Print Button
+        JButton printButton = new JButton("Print");
+        printButton.setBounds(1750, 220, 100, 30);
+        printButton.setBackground(new Color(30, 144, 255));
+        printButton.setForeground(Color.WHITE);
+        printButton.setFocusPainted(false);
+        printButton.setFont(new Font("Arial", Font.BOLD, 16));
+        printButton.setBorder(BorderFactory.createEmptyBorder());
+        printButton.addActionListener(e -> {
+            try {
+                table.print(JTable.PrintMode.FIT_WIDTH, new MessageFormat("Sales Report"), null);
+            } catch (PrinterException pe) {
+                pe.printStackTrace();
             }
         });
+        mainPanel.add(printButton);
+
+        // Add main panel to the frame
+        add(mainPanel, BorderLayout.CENTER);
+    }
+
+    private void fetchData() {
+        String startDate = startDateField.getText();
+        String endDate = endDateField.getText();
+
+        if (startDate.isEmpty() || endDate.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter both start and end dates.", "Input Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        List<Sale> sales = salesDAO.getSales(startDate, endDate);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        model.setRowCount(0); // Clear existing rows
+
+        for (Sale sale : sales) {
+            model.addRow(new Object[] {
+                    dateFormat.format(sale.getSaleDate()),
+                    sale.getHoursOpen(),
+                    sale.getHoursClosed(),
+                    sale.getProductsSold(),
+                    sale.getTax(),
+                    sale.getReturnRefund(),
+                    sale.getTotalSales()
+            });
+        }
+
+        if (sales.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No sales data found for the given date range.", "No Data",
+                    JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
 }

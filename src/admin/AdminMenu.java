@@ -131,11 +131,9 @@ public class AdminMenu extends JPanel {
     }
 
     private void openReturnPage() {
-        // ReturnPage returnPage = new ReturnPage();
-        // mainFrame.getContentPane().removeAll();
-        // mainFrame.getContentPane().add(returnPage);
-        // mainFrame.revalidate();
-        // mainFrame.repaint();
+        mainFrame.setContentPane(new ReturnPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
 
     private void openMaintenancePage() {
