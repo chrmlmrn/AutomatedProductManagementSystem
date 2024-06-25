@@ -18,8 +18,8 @@ public class BarcodeGenerator {
             String barcodeData = scanner.nextLine();
 
             // Determine the barcode type based on length
-            if (barcodeData.length() != 12 && barcodeData.length() != 13) {
-                System.out.println("Error: Barcode number must be exactly 12 or 13 digits.");
+            if (barcodeData.length() != 13 && barcodeData.length() != 14) {
+                System.out.println("Error: Barcode number must be exactly 13 or 14 digits.");
                 continue; // Prompt the user to enter the barcode again
             }
 
@@ -29,23 +29,14 @@ public class BarcodeGenerator {
                 continue; // Prompt the user to enter the barcode again
             }
 
-            // Calculate the last digit (checksum) if needed
-            String fullBarcodeData;
-            if (barcodeData.length() == 12) {
-                char checksum = calculateChecksum(barcodeData);
-                fullBarcodeData = barcodeData + checksum;
-            } else {
-                fullBarcodeData = barcodeData;
-            }
-
             String barcodeFilePath = "C:\\Users\\ADMIN\\Documents\\SampleBarcode\\barcode_" + fileCount + ".png";
             fileCount++; // Increment the counter for the next file name
 
-            if (fullBarcodeData.length() == 13) {
-                generateEAN13Barcode(fullBarcodeData, barcodeFilePath);
+            if (barcodeData.length() == 13) {
+                generateEAN13Barcode(barcodeData, barcodeFilePath);
                 System.out.println("Generated EAN-13 Barcode as image: " + barcodeFilePath);
-            } else {
-                generateEAN14Barcode(fullBarcodeData, barcodeFilePath);
+            } else if (barcodeData.length() == 14) {
+                generateEAN14Barcode(barcodeData, barcodeFilePath);
                 System.out.println("Generated EAN-14 Barcode as image: " + barcodeFilePath);
             }
 
@@ -57,16 +48,6 @@ public class BarcodeGenerator {
         }
 
         scanner.close();
-    }
-
-    public static char calculateChecksum(String data) {
-        int sum = 0;
-        for (int i = 0; i < 12; i++) {
-            int digit = Character.getNumericValue(data.charAt(i));
-            sum += (i % 2 == 0) ? digit : digit * 3;
-        }
-        int checksum = (10 - (sum % 10)) % 10;
-        return (char) (checksum + '0');
     }
 
     public static BufferedImage generateEAN13Barcode(String data, String filePath) {
@@ -131,9 +112,9 @@ public class BarcodeGenerator {
 
     public static BufferedImage generateEAN14Barcode(String data, String filePath) {
         // Define dimensions based on provided specifications
-        double barcodeWidthMM = 31.35;
-        double leftQuietZoneMM = 3.63;
-        double rightQuietZoneMM = 2.31;
+        double barcodeWidthMM = 41.35; // Increased width to accommodate EAN-14
+        double leftQuietZoneMM = 10.0; // Increased left quiet zone for better scanning
+        double rightQuietZoneMM = 10.0; // Increased right quiet zone for better scanning
         double barcodeHeightMM = 22.85;
         double numberHeightMM = 7.0; // Height of the number below the barcode
 
@@ -155,9 +136,13 @@ public class BarcodeGenerator {
 
         // Draw barcode
         g2d.setColor(Color.BLACK);
-        int x = 20;
-        int y = 20;
-        String binaryRepresentation = getBinaryRepresentationEAN14(data);
+        int x = 20; // Start drawing from the leftQuietZone
+        int y = 20; // Adjust this value to position the barcode vertically
+
+        // Get binary representation of the data using Code 128 encoding
+        String binaryRepresentation = getBinaryRepresentationCode128(data);
+
+        // Draw each bit of the barcode
         for (int i = 0; i < binaryRepresentation.length(); i++) {
             char bit = binaryRepresentation.charAt(i);
             if (bit == '1') {
@@ -189,7 +174,8 @@ public class BarcodeGenerator {
         return image;
     }
 
-    // Method to convert the EAN-13 data into its binary representation
+    // Method to convert the data into its binary representation
+    // Method to convert the data into its binary representation
     private static String getBinaryRepresentation(String data) {
         StringBuilder binaryBuilder = new StringBuilder();
         binaryBuilder.append("101"); // Start pattern
@@ -242,28 +228,62 @@ public class BarcodeGenerator {
         return binaryBuilder.toString();
     }
 
-    // Method to convert the EAN-14 data into its binary representation
-    private static String getBinaryRepresentationEAN14(String data) {
+    // Method to get Code 128 binary representation of the data
+    private static String getBinaryRepresentationCode128(String data) {
         StringBuilder binaryBuilder = new StringBuilder();
-        binaryBuilder.append("1010"); // Start pattern for EAN-14
 
-        // Encoding schemes for the EAN-14 barcode (using Code 128)
-        // Code 128 encoding tables (just a sample, needs a full table for real use)
-        String[] encoding = {
-                "11011001100", "11001101100", "11001100110", "10010011000",
-                "10010001100", "10001001100", "10011001000", "10011000100",
-                "10001100100", "11001001000", "11001000100", "11000100100"
-        };
+        // Start code
+        binaryBuilder.append("11010010000");
 
-        // Encode all digits
-        for (int i = 0; i < 14; i++) {
-            int digit = Character.getNumericValue(data.charAt(i));
-            binaryBuilder.append(encoding[digit]);
+        // Encode data using Code 128 encoding
+        for (int i = 0; i < data.length(); i++) {
+            int charValue = data.charAt(i);
+            if (charValue >= 32 && charValue <= 126) {
+                binaryBuilder.append(Code128[charValue - 32]);
+            } else {
+                throw new IllegalArgumentException("Invalid character in input for Code 128: " + data.charAt(i));
+            }
         }
 
-        binaryBuilder.append("1010"); // End pattern for EAN-14
+        // Calculate checksum using Code 128
+        int checksum = 104; // Start character
+        for (int i = 0; i < data.length(); i++) {
+            int charValue = data.charAt(i);
+            checksum += (charValue - 32) * (i + 1);
+        }
+        binaryBuilder.append(Code128[checksum % 103]);
+
+        // Stop code
+        binaryBuilder.append("1100011101011");
+
         return binaryBuilder.toString();
     }
+
+    // Code 128 character encoding table
+    private static final String[] Code128 = {
+            "11011001100", "11001101100", "11001100110", "10010011000", "10010001100",
+            "10001001100", "10011001000", "10011000100", "10001100100", "11001001000",
+            "11001000100", "11000100100", "10110011100", "10011011100", "10011001110",
+            "10111001100", "10011101100", "10011100110", "11001110010", "11001011100",
+            "11001001110", "11011100100", "11001110100", "11101101110", "11101001100",
+            "11100101100", "11100100110", "11101100100", "11100110100", "11100110010",
+            "11011011000", "11011000110", "11000110110", "10100011000", "10001011000",
+            "10001000110", "10110001000", "10001101000", "10001100010", "11010001000",
+            "11000101000", "11000100010", "10110111000", "10110001110", "10001101110",
+            "10111011000", "10111000110", "10001110110", "11101110110", "11010001110",
+            "11000101110", "11011101000", "11011100010", "11011101110", "11101011000",
+            "11101000110", "11100010110", "11101101000", "11101100010", "11100011010",
+            "11101111010", "11001000010", "11110001010", "10100110000", "10100001100",
+            "10010110000", "10010000110", "10000101100", "10000100110", "10110010000",
+            "10110000100", "10011010000", "10011000010", "10000110100", "10000110010",
+            "11000010010", "11001010000", "11110111010", "11000010100", "10001111010",
+            "10100111100", "10010111100", "10010011110", "10111100100", "10011110100",
+            "10011110010", "11110100100", "11110010100", "11110010010", "11011011110",
+            "11011110110", "11110110110", "10101111000", "10100011110", "10001011110",
+            "10111101000", "10111100010", "11110101000", "11110100010", "10111011110",
+            "10111101110", "11101011110", "11110101110", "11010000100", "11010010000",
+            "11010011100", "1100011101011" // Stop code
+    };
 
     // Method to draw EAN-13 formatted number below the barcode
     private static void drawEAN13Number(Graphics2D g2d, FontMetrics fm, String data, int barcodeWidth,
@@ -289,7 +309,11 @@ public class BarcodeGenerator {
             int leftQuietZone, int rightQuietZone, int textY) {
         int startX = leftQuietZone;
 
+        // Calculate the startX to center the number below the barcode
+        startX += (barcodeWidth - fm.stringWidth(data)) / 2;
+
         // Draw all 14 digits in a continuous line
         g2d.drawString(data, startX, textY);
     }
+
 }

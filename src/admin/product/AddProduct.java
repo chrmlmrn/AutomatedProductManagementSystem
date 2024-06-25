@@ -275,13 +275,13 @@ public class AddProduct extends JPanel {
         addButton.addActionListener(e -> {
             try {
                 if (validateFields(productCodeTextField, barcodeTextField, productNameTextField, productPriceTextField,
-                        productSizeTextField, productQuantityTextField, expirationDateChooser, supplierNameTextField)) {
+                        productQuantityTextField, supplierNameTextField)) {
                     String newProductCode = generateNewProductCode();
                     productCodeTextField.setText(newProductCode); // Set the new product code in the text field
 
                     insertProduct(newProductCode, barcodeTextField.getText(),
                             productNameTextField.getText(), (String) categoryComboBox.getSelectedItem(),
-                            new BigDecimal(productPriceTextField.getText()), productSizeTextField.getText(),
+                            productPriceTextField.getText(), productSizeTextField.getText(),
                             Integer.parseInt(productQuantityTextField.getText()),
                             ((JTextField) expirationDateChooser.getDateEditor().getUiComponent()).getText(),
                             (String) typeComboBox.getSelectedItem(), supplierNameTextField.getText());
@@ -299,7 +299,7 @@ public class AddProduct extends JPanel {
         });
 
         // Add a button to generate the barcode
-        RoundedButton displayBarButton = new RoundedButton("Generate Barcode");
+        RoundedButton displayBarButton = new RoundedButton("Display Barcode");
         displayBarButton.setFont(new Font("Arial", Font.BOLD, 16));
         displayBarButton.setBackground(Color.WHITE);
         displayBarButton.setForeground(Color.BLACK);
@@ -308,19 +308,30 @@ public class AddProduct extends JPanel {
         displayBarButton.addActionListener(e -> {
             // Validate all fields before generating barcode
             if (validateFields(productCodeTextField, barcodeTextField, productNameTextField,
-                    productPriceTextField, productSizeTextField, productQuantityTextField,
-                    expirationDateChooser, supplierNameTextField)) {
+                    productPriceTextField, productQuantityTextField,
+                    supplierNameTextField)) {
+                // Calculate fullBarcode before generating the barcode image
                 // Calculate fullBarcode before generating the barcode image
                 String barcode = barcodeTextField.getText();
-                if (!barcode.isEmpty() && barcode.matches("\\d{12}")) {
+                BufferedImage barcodeImage = null;
+                if (barcode.matches("\\d{12}")) {
+                    // Generate EAN-13 barcode with checksum
                     String fullBarcode = barcode + calculateEAN13Checksum(barcode);
-                    BufferedImage barcodeImage = BarcodeGenerator.generateEAN13Barcode(fullBarcode, "barcode.png");
-                    String productName = productNameTextField.getText().trim();
+                    barcodeImage = BarcodeGenerator.generateEAN13Barcode(fullBarcode, "barcode.png");
+                } else if (barcode.matches("\\d{13}")) {
+                    // Generate Code 128 barcode
+                    barcodeImage = BarcodeGenerator.generateEAN13Barcode(barcode, "barcode.png");
+                } else if (barcode.matches("\\d{14}")) {
+                    // Generate Code 128 barcode
+                    barcodeImage = BarcodeGenerator.generateEAN14Barcode(barcode, "barcode.png");
+                }
 
+                if (barcodeImage != null) {
+                    String productName = productNameTextField.getText().trim();
                     // Show dialog with generated barcode image and product name
                     showBarcodeDialog(barcodeImage, productName);
                 } else {
-                    JOptionPane.showMessageDialog(this, "Please enter a valid 12-digit barcode.", "Error",
+                    JOptionPane.showMessageDialog(this, "Please enter a valid 13-digit or 14-digit barcode.", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -481,35 +492,26 @@ public class AddProduct extends JPanel {
 
     // Method to validate input fields
     private boolean validateFields(JTextField productCodeTextField, JTextField barcodeTextField,
-            JTextField productNameTextField, JTextField productPriceTextField,
-            JTextField productSizeTextField, JTextField productQuantityTextField,
-            JDateChooser expirationDateChooser, JTextField supplierNameTextField) {
-        // Add your validation logic here
+            JTextField productNameTextField, JTextField productPriceTextField, JTextField productQuantityTextField,
+            JTextField supplierNameTextField) {
+        // Add your validation logic hereW
         // Example validation: checking if fields are empty
         if (productCodeTextField.getText().isEmpty() || barcodeTextField.getText().isEmpty() ||
-                productNameTextField.getText().isEmpty() || productPriceTextField.getText().isEmpty() ||
-                productSizeTextField.getText().isEmpty() || productQuantityTextField.getText().isEmpty() ||
-                supplierNameTextField.getText().isEmpty() || expirationDateChooser.getDate() == null) {
-            JOptionPane.showMessageDialog(null, "Please fill in all fields.", "Error", JOptionPane.ERROR_MESSAGE);
-            return false;
-        }
-
-        // Ensure barcode is 12 digits long
-        if (barcodeTextField.getText().length() != 12 || !barcodeTextField.getText().matches("\\d{12}")) {
-            JOptionPane.showMessageDialog(null, "Barcode must be exactly 12 digits.", "Error",
+                productNameTextField.getText().isEmpty() || productPriceTextField.getText().isEmpty()
+                || productQuantityTextField.getText().isEmpty() ||
+                supplierNameTextField.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Please fill in all fields (if applicable).", "Error",
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        // Validate price, quantity, etc., if necessary
-        try {
-            new BigDecimal(productPriceTextField.getText());
-            Integer.parseInt(productQuantityTextField.getText());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Please enter valid numerical values for price and quantity.", "Error",
+        // Ensure barcode is 12 or 14 digits long
+        if (!barcodeTextField.getText().matches("\\d{12}|\\d{13}|\\d{14}")) {
+            JOptionPane.showMessageDialog(null, "Barcode must be exactly 12 or 14 digits.", "Error",
                     JOptionPane.ERROR_MESSAGE);
             return false;
         }
+
         return true;
     }
 
@@ -556,9 +558,9 @@ public class AddProduct extends JPanel {
     }
 
     private void insertProduct(String productCode, String barcode, String productName, String category,
-            BigDecimal price, String size, int quantity, String expirationDate, String type, String supplierName) {
+            String price, String size, int quantity, String expirationDate, String type, String supplierName) {
         // Calculate the EAN 13 checksum
-        String fullBarcode = barcode + calculateEAN13Checksum(barcode);
+        String fullBarcode = barcode.matches("\\d{12}") ? barcode + calculateEAN13Checksum(barcode) : barcode;
 
         // Get the category_id and product_type_id
         String categoryId = categoryMap.get(category);
@@ -590,9 +592,16 @@ public class AddProduct extends JPanel {
             if ("F".equals(typeId)) {
                 criticalStockLevel = 15;
             }
-
             // Generate the barcode image
-            BufferedImage barcodeImage = BarcodeGenerator.generateEAN13Barcode(fullBarcode, "barcode.png");
+            BufferedImage barcodeImage = null;
+            if (barcode.matches("\\d{12}")) {
+                fullBarcode = barcode + calculateEAN13Checksum(barcode);
+                barcodeImage = BarcodeGenerator.generateEAN13Barcode(fullBarcode, "barcode.png");
+            } else if (barcode.matches("\\d{13}")) {
+                barcodeImage = BarcodeGenerator.generateEAN13Barcode(barcode, "barcode.png");
+            } else if (barcode.matches("\\d{14}")) {
+                barcodeImage = BarcodeGenerator.generateEAN14Barcode(barcode, "barcode.png");
+            }
 
             // Save barcode image to file
             String folderPath = "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/barcodes_images/"; // Replace
@@ -610,14 +619,25 @@ public class AddProduct extends JPanel {
             ImageIO.write(barcodeImage, "png", baos);
             byte[] barcodeImageBytes = baos.toByteArray();
 
+            // Parse the price and format it
+            BigDecimal parsedPrice;
+            if (price.contains(".")) {
+                parsedPrice = new BigDecimal(price);
+            } else {
+                parsedPrice = new BigDecimal(price + ".00");
+            }
             // Insert the product
             String insertProductSQL = "INSERT INTO products (product_code, barcode, product_name, product_price, product_size, category_id, supplier_id, product_type_id, barcode_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement pstmtProduct = conn.prepareStatement(insertProductSQL, Statement.RETURN_GENERATED_KEYS);
             pstmtProduct.setString(1, productCode);
             pstmtProduct.setString(2, fullBarcode);
             pstmtProduct.setString(3, productName);
-            pstmtProduct.setBigDecimal(4, price);
-            pstmtProduct.setString(5, size);
+            pstmtProduct.setBigDecimal(4, parsedPrice);
+            if (size != null && !size.isEmpty()) {
+                pstmtProduct.setString(5, size);
+            } else {
+                pstmtProduct.setNull(5, java.sql.Types.VARCHAR);
+            }
             pstmtProduct.setString(6, categoryId);
             pstmtProduct.setInt(7, supplierId);
             pstmtProduct.setString(8, typeId);
@@ -641,17 +661,19 @@ public class AddProduct extends JPanel {
                 pstmtInventory.executeUpdate();
                 pstmtInventory.close();
 
-                // Parse and format expiration date
-                SimpleDateFormat inputFormat = new SimpleDateFormat("MMM dd, yyyy");
-                SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
-                Date parsedDate = inputFormat.parse(expirationDate);
-                String formattedDate = outputFormat.format(parsedDate);
-
                 // Insert into the product_expiration table
                 String insertExpirationSQL = "INSERT INTO product_expiration (product_id, product_expiration_date, product_quantity) VALUES (?, ?, ?)";
                 PreparedStatement pstmtExpiration = conn.prepareStatement(insertExpirationSQL);
                 pstmtExpiration.setInt(1, productId);
-                pstmtExpiration.setDate(2, java.sql.Date.valueOf(formattedDate)); // Use java.sql.Date
+                if (expirationDate != null && !expirationDate.isEmpty()) {
+                    SimpleDateFormat inputFormat = new SimpleDateFormat("MMM dd, yyyy");
+                    SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    Date parsedDate = inputFormat.parse(expirationDate);
+                    String formattedDate = outputFormat.format(parsedDate);
+                    pstmtExpiration.setDate(2, java.sql.Date.valueOf(formattedDate));
+                } else {
+                    pstmtExpiration.setNull(2, java.sql.Types.DATE);
+                }
                 pstmtExpiration.setInt(3, quantity);
                 pstmtExpiration.executeUpdate();
                 pstmtExpiration.close();

@@ -133,9 +133,11 @@ CREATE TABLE products (
     supplier_id INT NOT NULL,
     product_type_id CHAR(1) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    product_status_id CHAR(3) NOT NULL DEFAULT 'ACT',
     FOREIGN KEY (category_id) REFERENCES category(category_id),
     FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id),
-    FOREIGN KEY (product_type_id) REFERENCES product_type(product_type_id)
+    FOREIGN KEY (product_type_id) REFERENCES product_type(product_type_id),
+    FOREIGN KEY (product_status_id) REFERENCES product_status(product_status_id)
 );
 --@block
 CREATE TABLE product_status (
@@ -146,8 +148,6 @@ CREATE TABLE product_status (
 INSERT INTO product_status (product_status_id, product_status_name)
 VALUES ('ACT', 'Active'),
     ('INA', 'Inactive'),
-    ('OOS', 'Out of Stock'),
-    ('INS', 'In Stock'),
     ('DIS', 'Discontinued');
 --@block
 CREATE TABLE inventory (
@@ -156,10 +156,20 @@ CREATE TABLE inventory (
     product_total_quantity INT NOT NULL,
     critical_stock_level INT NOT NULL,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    product_status_id CHAR(3) NOT NULL DEFAULT 'ACT',
+    product_inventory_status_id CHAR(3) NOT NULL DEFAULT 'INS',
     FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (product_status_id) REFERENCES product_status(product_status_id)
+    FOREIGN KEY (product_inventory_status_id) REFERENCES product_inventory_status(product_inventory_status_id)
 );
+--@block
+CREATE TABLE product_inventory_status (
+    product_inventory_status_id CHAR(3) PRIMARY KEY,
+    product_inventory_status_name VARCHAR(50)
+);
+--@block
+INSERT INTO product_status (product_status_id, product_status_name)
+VALUES ('OOS', 'Out of Stock'),
+    ('INS', 'In Stock'),
+    ('ROG', 'Reordering');
 --@block
 CREATE TABLE product_expiration (
     product_expiration_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -222,3 +232,24 @@ FROM security_answer;
 --@block
 SELECT *
 FROM user;
+CREATE TABLE transactions (
+    transaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    receipt_number VARCHAR(50),
+    reference_number VARCHAR(50),
+    date DATE,
+    time TIME,
+    subtotal DOUBLE,
+    discount DOUBLE,
+    vat DOUBLE,
+    total DOUBLE
+);
+--@block
+CREATE TABLE sales_summary (
+    sale_date DATE PRIMARY KEY,
+    hours_open INT NOT NULL,
+    hours_closed INT NOT NULL,
+    products_sold INT NOT NULL,
+    tax DECIMAL(10, 2) NOT NULL,
+    return_refund DECIMAL(10, 2) NOT NULL,
+    total_sales DECIMAL(10, 2) NOT NULL
+);
