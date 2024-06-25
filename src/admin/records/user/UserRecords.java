@@ -1,26 +1,26 @@
-package src.admin.records.user;
+package admin.records.user;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import database.DatabaseUtil;
-import src.admin.records.RecordsMainPage;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
 
-public class UserRecords extends JFrame {
+import admin.records.RecordsMainPage;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
+import database.DatabaseUtil;
+
+public class UserRecords extends JPanel {
     private DefaultTableModel tableModel;
     private JTable userTable;
     private JTextField searchField;
 
-    public UserRecords() {
+    private JFrame mainFrame;
+
+    public UserRecords(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
         initComponents();
-        setTitle("User Records");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setLocationRelativeTo(null);
         setVisible(true);
 
         // Initialize table with data
@@ -34,41 +34,39 @@ public class UserRecords extends JFrame {
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
+        setLayout(null); // Use absolute positioning
+        setBackground(Color.WHITE);
 
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(Color.WHITE);
-        setContentPane(mainPanel);
-
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(Color.WHITE);
-        headerPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        // Title and Back Button
         JButton backButton = new JButton("<");
-        backButton.setFont(new Font("Arial", Font.BOLD, 24));
+        backButton.setFont(new Font("Arial", Font.BOLD, 30));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
+        backButton.setBounds(20, 20, 50, 50);
+        add(backButton);
+
         backButton.addActionListener(e -> {
-            RecordsMainPage recordsMainPage = new RecordsMainPage();
-            recordsMainPage.setVisible(true);
+            mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
         });
-        headerPanel.add(backButton);
 
         JLabel titleLabel = new JLabel("User Records");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
-        headerPanel.add(titleLabel);
+        titleLabel.setBounds(100, 30, 500, 30);
+        add(titleLabel);
 
-        RoundedPanel containerPanel = new RoundedPanel(30);
-        containerPanel.setBackground(new Color(30, 144, 255));
-        containerPanel.setPreferredSize(new Dimension(1200, 600));
-        containerPanel.setLayout(new GridBagLayout());
+        // Rounded Blue Panel
+        RoundedPanel bluePanel = new RoundedPanel(30);
+        bluePanel.setBackground(new Color(30, 144, 255));
+        bluePanel.setBounds(300, 150, 1200, 600);
+        bluePanel.setLayout(null); // Use absolute positioning within the panel
+        add(bluePanel);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 20, 10, 20);
-
+        // Table Setup
         String[] columnNames = { "User ID", "First Name", "Last Name", "Username", "Role", "Status" };
         Object[][] data = {}; // Sample data
 
@@ -85,58 +83,38 @@ public class UserRecords extends JFrame {
         userTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         userTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(userTable);
-        scrollPane.setPreferredSize(new Dimension(1100, 400));
+        scrollPane.setBounds(50, 50, 1100, 400);
+        bluePanel.add(scrollPane);
 
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(20, 50, 20, 50);
-        containerPanel.add(scrollPane, gbc);
-
+        // Search Panel
         JPanel searchPanel = new JPanel();
         searchPanel.setBackground(new Color(30, 144, 255));
-        searchPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
+        searchPanel.setLayout(null);
+        searchPanel.setBounds(350, 470, 600, 60); // Center the search panel horizontally
+        bluePanel.add(searchPanel);
 
         searchField = new JTextField();
-        searchField.setPreferredSize(new Dimension(300, 40));
         searchField.setFont(new Font("Arial", Font.PLAIN, 16));
+        searchField.setBounds(50, 10, 300, 40); // Center the search field within the search panel
+        searchPanel.add(searchField);
 
         RoundedButton searchButton = new RoundedButton("Search");
         searchButton.setFont(new Font("Arial", Font.BOLD, 16));
         searchButton.setBackground(Color.WHITE);
         searchButton.setForeground(Color.BLACK);
         searchButton.setFocusPainted(false);
-        searchButton.setPreferredSize(new Dimension(150, 40));
+        searchButton.setBounds(370, 10, 150, 40); // Adjust the position of the search button within the search panel
         searchButton.addActionListener(e -> searchUsers());
-
-        searchPanel.add(searchField);
         searchPanel.add(searchButton);
 
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(20, 50, 20, 50);
-        containerPanel.add(searchPanel, gbc);
-
-        GridBagConstraints mainGbc = new GridBagConstraints();
-        mainGbc.gridx = 0;
-        mainGbc.gridy = 0;
-        mainGbc.anchor = GridBagConstraints.NORTHWEST;
-        mainGbc.insets = new Insets(10, 10, 10, 10);
-        mainPanel.add(headerPanel, mainGbc);
-
-        mainGbc.gridy = 1;
-        mainGbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(containerPanel, mainGbc);
-
-        addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
-                    System.exit(0);
-                }
-            }
-        });
+        // Initialize table with data
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void searchUsers() {
@@ -211,9 +189,5 @@ public class UserRecords extends JFrame {
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new UserRecords());
     }
 }

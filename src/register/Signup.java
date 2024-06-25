@@ -1,12 +1,12 @@
-package src.register;
+package register;
 
 import javax.swing.*;
 
+import admin.records.userlogs.UserLogUtil;
 import database.DatabaseUtil;
-import src.admin.reports.userlogs.UserLogUtil;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
-import src.login.Login;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
+import login.Login;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -22,7 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class Signup extends JFrame {
+public class Signup extends JPanel {
         private JPanel mainPanel, formPanel;
         private JLabel registerLabel, detailsLabel, firstNameLabel, lastNameLabel, usernameLabel, passwordLabel,
                         termsLabel, securityQuestionLabel, securityAnswerLabel, haveAccountLabel, clickHereLabel;
@@ -33,8 +33,11 @@ public class Signup extends JFrame {
         private JComboBox<String> securityQuestionComboBox;
         private boolean isAdminSelected = false;
         private boolean isCashierSelected = false;
+        private JFrame mainFrame;
 
-        public Signup() {
+        public Signup(JFrame mainFrame) {
+                this.mainFrame = mainFrame;
+
                 initComponents();
         }
 
@@ -43,17 +46,12 @@ public class Signup extends JFrame {
                 mainPanel = new JPanel(new GridBagLayout());
                 formPanel = createFormPanel();
 
-                setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-                setTitle("Signup Page");
-                // setSize(1600, 900);
-                setExtendedState(JFrame.MAXIMIZED_BOTH);
-                setUndecorated(false); // Remove window borders and title bar
-                setLocationRelativeTo(null); // Center the frame on the screen
-
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.gridx = 0;
                 gbc.gridy = 0;
                 gbc.anchor = GridBagConstraints.CENTER;
+                gbc.insets = new Insets(200, 0, 0, 0); // Add space at the top
+
                 mainPanel.add(formPanel, gbc);
 
                 add(mainPanel);
@@ -349,9 +347,34 @@ public class Signup extends JFrame {
         }
 
         private void goToLoginPage() {
-                Login loginPage = new Login();
-                loginPage.setVisible(true);
-                dispose(); // Close the current frame
+                mainFrame.setContentPane(new Login(mainFrame));
+                mainFrame.revalidate();
+                mainFrame.repaint();
+        }
+
+        private String generateEmployeeID() {
+                String prefix = isAdminSelected ? "ADM-" : "CAS-";
+                int count = getEmployeeCount() + 1;
+                return String.format("%s%04d", prefix, count);
+        }
+
+        // Method to get the current count of employees
+        private static int getEmployeeCount() {
+                String query = "SELECT COUNT(*) FROM users"; // Modify the table name as per your schema
+                int count = 0;
+
+                try (Connection connection = DatabaseUtil.getConnection();
+                                PreparedStatement stmt = connection.prepareStatement(query);
+                                ResultSet rs = stmt.executeQuery()) {
+
+                        if (rs.next()) {
+                                count = rs.getInt(1);
+                        }
+                } catch (SQLException e) {
+                        e.printStackTrace();
+                }
+
+                return count;
         }
 
         private void saveUserDetails() {
@@ -366,7 +389,6 @@ public class Signup extends JFrame {
                 System.out.println("Cashier Selected: " + isCashierSelected);
 
                 // Validation checks
-                System.out.println("Performing validation checks...");
                 if (firstNameField.getText().trim().isEmpty() ||
                                 lastNameField.getText().trim().isEmpty() ||
                                 usernameField.getText().trim().isEmpty() ||
@@ -380,8 +402,8 @@ public class Signup extends JFrame {
                                         "Error", JOptionPane.ERROR_MESSAGE);
                         return; // Exit the method if any required field is missing
                 }
-                System.out.println("Validation checks passed.");
 
+                String uniqueUserId = generateEmployeeID();
                 String firstName = firstNameField.getText().trim();
                 String lastName = lastNameField.getText().trim();
                 String username = usernameField.getText().trim();
@@ -390,40 +412,34 @@ public class Signup extends JFrame {
                 String userRoleId = isAdminSelected ? "A" : "C"; // Assuming "A" for Admin and "C" for Cashier
 
                 // Check username length
-                System.out.println("Checking username length...");
                 if (username.length() < 5) {
                         JOptionPane.showMessageDialog(this, "Username must be at least 5 characters long.", "Error",
                                         JOptionPane.ERROR_MESSAGE);
                         return;
                 }
-                System.out.println("Username length check passed.");
 
                 // Check password length and complexity
-                System.out.println("Performing password complexity check...");
                 if (password.length() < 8 || password.length() > 12 || !isPasswordComplex(password)) {
                         JOptionPane.showMessageDialog(this,
-                                        "Password must be 8 to 12 characters long and contain numbers, special characters, and be case-sensitive.",
+                                        "Password must be 8 to 12 characters long and contain numbers, and be case-sensitive.",
                                         "Error", JOptionPane.ERROR_MESSAGE);
                         return;
                 }
-                System.out.println("Password complexity check passed.");
 
                 // Encrypt password using SHA-256
-                System.out.println("Encrypting password...");
                 String encryptedPassword = hashSHA256(password);
                 System.out.println("Password encrypted.");
 
                 // Encrypt security answer using SHA-256
-                System.out.println("Encrypting security answer...");
                 String encryptedSecurityAnswer = hashSHA256(securityAnswer);
                 System.out.println("Security answer encrypted.");
 
                 // SQL query to insert user details into the database
-                String insertUserQuery = "INSERT INTO users (user_role_id, user_first_name, user_last_name, username, password_hash, user_account_status_id) "
-                                + "VALUES(?, ?, ?, ?, ?, 'ACT')";
+                String insertUserQuery = "INSERT INTO users (unique_user_id, user_role_id, user_first_name, user_last_name, username, password_hash, user_account_status_id) "
+                                + "VALUES(?, ?, ?, ?, ?, ?, ?)";
 
                 // SQL query to insert security answer into the database
-                String insertSecurityAnswerQuery = "INSERT INTO security_answer (user_id, security_question_id, security_answer) "
+                String insertSecurityAnswerQuery = "INSERT INTO security_answer (user_id, security_question_id, security_answer_hash) "
                                 + "VALUES (?, ?, ?)";
 
                 // Get the selected security question
@@ -437,11 +453,15 @@ public class Signup extends JFrame {
                                 // Insert user details
                                 PreparedStatement insertUserStatement = connection.prepareStatement(insertUserQuery,
                                                 Statement.RETURN_GENERATED_KEYS);
-                                insertUserStatement.setString(1, userRoleId);
-                                insertUserStatement.setString(2, firstName);
-                                insertUserStatement.setString(3, lastName);
-                                insertUserStatement.setString(4, username);
-                                insertUserStatement.setString(5, encryptedPassword);
+                                insertUserStatement.setString(1, uniqueUserId); // user_id
+                                insertUserStatement.setString(2, userRoleId); // user_role_id
+                                insertUserStatement.setString(3, firstName); // user_first_name
+                                insertUserStatement.setString(4, lastName); // user_last_name
+                                insertUserStatement.setString(5, username); // username
+                                insertUserStatement.setString(6, encryptedPassword); // password_hash
+                                insertUserStatement.setString(7, "ACT"); // Set the default value for
+                                                                         // user_account_status_id
+
                                 insertUserStatement.executeUpdate();
 
                                 // Get the generated user ID
@@ -539,13 +559,5 @@ public class Signup extends JFrame {
                 System.out.println("Contains uppercase: " + containsUpperCase);
 
                 return containsDigit && containsLowerCase && containsUpperCase;
-        }
-
-        public static void main(String[] args) {
-                EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                                new Signup().setVisible(true);
-                        }
-                });
         }
 }

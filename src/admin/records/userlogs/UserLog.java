@@ -1,32 +1,40 @@
-package src.admin.reports.userlogs;
+package admin.records.userlogs;
 
 import database.DatabaseUtil;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+
+import admin.AdminMenu;
+import admin.records.RecordsMainPage;
+
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class UserLog {
-    private static DefaultTableModel tableModel;
-    private static JTable logTable;
+public class UserLog extends JPanel {
+    private DefaultTableModel tableModel;
+    private JTable logTable;
 
-    public static void main(String[] args) {
-        // Create and set up the frame
-        JFrame frame = new JFrame("User Logs");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new BorderLayout());
+    private JFrame mainFrame;
+
+    public UserLog(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+
+        initComponents();
+        fetchData();
+    }
+
+    private void initComponents() {
+        setLayout(new BorderLayout());
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+        add(mainPanel, BorderLayout.CENTER);
 
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(Color.WHITE);
@@ -38,6 +46,11 @@ public class UserLog {
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
+        backButton.addActionListener(e -> {
+            mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        });
         headerPanel.add(backButton);
 
         JLabel titleLabel = new JLabel("User Logs");
@@ -88,7 +101,11 @@ public class UserLog {
         closeButton.setForeground(Color.BLACK);
         closeButton.setFocusPainted(false);
         closeButton.setPreferredSize(new Dimension(150, 40));
-        closeButton.addActionListener(e -> frame.dispose());
+        closeButton.addActionListener(e -> {
+            mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        });
 
         buttonPanel.add(refreshButton);
         buttonPanel.add(closeButton);
@@ -109,14 +126,9 @@ public class UserLog {
         mainGbc.gridy = 1;
         mainGbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(containerPanel, mainGbc);
-
-        frame.setVisible(true);
-
-        // Fetch data from database
-        fetchData();
     }
 
-    private static void fetchData() {
+    private void fetchData() {
         String query = "SELECT ul.user_log_id, ul.user_id, u.username, ul.user_action, ul.action_timestamp " +
                 "FROM user_logs ul " +
                 "JOIN users u ON ul.user_id = u.user_id";
@@ -139,7 +151,7 @@ public class UserLog {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error fetching data from database: " + e.getMessage(), "Error",
+            JOptionPane.showMessageDialog(this, "Error fetching data from database: " + e.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
     }

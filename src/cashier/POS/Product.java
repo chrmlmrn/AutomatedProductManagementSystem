@@ -1,4 +1,4 @@
-package src.cashier.POS;
+package cashier.POS;
 
 public class Product {
     private String code;

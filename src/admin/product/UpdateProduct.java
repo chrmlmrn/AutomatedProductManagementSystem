@@ -1,29 +1,33 @@
-package src.admin.product;
+package admin.product;
 
 import javax.swing.*;
 
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
-
+import admin.AdminMenu;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
 import java.awt.*;
 
-public class UpdateProduct {
-    public static void main(String[] args) {
-        // Create the frame
-        JFrame frame = new JFrame();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // frame.setSize(1600, 900);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null); // Center the frame
-        frame.setUndecorated(false); // Remove window borders and title bar
+public class UpdateProduct extends JPanel {
+    // Components
+    private RoundedPanel containerPanel;
+    private JTextField searchField;
+    private JTextField[] currentTextFields;
+    private JTextField[] updateTextFields;
 
-        // Create a main panel for centering the blue container
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+    private JFrame mainFrame;
+
+    public UpdateProduct(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+
+        initComponents();
+    }
+
+    private void initComponents() {
+        setBackground(Color.WHITE);
+        setLayout(new GridBagLayout());
 
         // Create the blue container panel
-        RoundedPanel containerPanel = new RoundedPanel(30);
+        containerPanel = new RoundedPanel(30);
         containerPanel.setBackground(new Color(30, 144, 255));
         containerPanel.setPreferredSize(new Dimension(800, 800)); // Increased width size
         containerPanel.setLayout(new GridBagLayout());
@@ -52,7 +56,7 @@ public class UpdateProduct {
         searchGbc.insets = new Insets(0, 0, 0, 0); // No padding inside search panel
 
         // Add search field with reduced left padding
-        JTextField searchField = new JTextField(15);
+        searchField = new JTextField(15);
         searchField.setPreferredSize(new Dimension(10, 30));
         searchField.setMargin(new Insets(0, 5, 0, 100)); // Reduced left margin
         searchGbc.gridx = 1;
@@ -76,7 +80,7 @@ public class UpdateProduct {
                 "Current Product Status", "Current Supplier Name"
         };
 
-        JTextField[] currentTextFields = new JTextField[currentLabels.length];
+        currentTextFields = new JTextField[currentLabels.length];
 
         for (int i = 0; i < currentLabels.length; i++) {
             JLabel label = new JLabel(currentLabels[i]);
@@ -105,7 +109,7 @@ public class UpdateProduct {
                 "Update Product Status", "Update Supplier Name"
         };
 
-        JTextField[] updateTextFields = new JTextField[updateLabels.length];
+        updateTextFields = new JTextField[updateLabels.length];
 
         for (int i = 0; i < updateLabels.length; i++) {
             JLabel label = new JLabel(updateLabels[i]);
@@ -142,10 +146,9 @@ public class UpdateProduct {
         cancelButton.setFocusPainted(false);
         cancelButton.setPreferredSize(new Dimension(300, 40));
         cancelButton.addActionListener(e -> {
-            System.out.println("Cancel button clicked");
-            frame.dispose(); // Close the current frame
-            // Open ProductPage
-            ProductPage.main(new String[] {});
+            mainFrame.setContentPane(new ProductPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
         });
 
         // Create button panel with GridBagLayout
@@ -171,19 +174,6 @@ public class UpdateProduct {
         // Add the blue container panel to the main panel
         GridBagConstraints mainGbc = new GridBagConstraints();
         mainGbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(containerPanel, mainGbc);
-
-        // Set up the frame layout
-        frame.setVisible(true);
-
-        // Add a key listener to close the application
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
-                    System.exit(0);
-                }
-            }
-        });
+        add(containerPanel, mainGbc);
     }
 }

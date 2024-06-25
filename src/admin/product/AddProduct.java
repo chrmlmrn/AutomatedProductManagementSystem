@@ -1,12 +1,13 @@
-package src.admin.product;
+package admin.product;
 
 import com.toedter.calendar.JDateChooser;
 
 import database.DatabaseUtil;
-import src.admin.product.barcode.BarcodeGenerator;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
-import src.customcomponents.RoundedTextField;
+import admin.product.barcode.BarcodeGenerator;
+import cashier.CashierMenu;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
+import customcomponents.RoundedTextField;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -30,318 +31,335 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AddProduct {
-    private static JFrame frame;
-    private static Map<String, String> categoryMap;
-    private static Map<String, String> productTypeMap;
+public class AddProduct extends JPanel {
+    private Map<String, String> categoryMap;
+    private Map<String, String> productTypeMap;
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            // Create the frame
-            JFrame frame = new JFrame();
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-            frame.setUndecorated(false); // Remove window borders and title bar
+    private RoundedTextField productCodeTextField;
 
-            // Create a main panel for centering the blue container
-            JPanel mainPanel = new JPanel(new GridBagLayout());
-            mainPanel.setBackground(Color.WHITE);
+    private RoundedTextField barcodeTextField;
+    private RoundedTextField productNameTextField;
+    private JComboBox<String> categoryComboBox;
+    private RoundedTextField productPriceTextField;
+    private RoundedTextField productSizeTextField;
+    private RoundedTextField productQuantityTextField;
+    private JDateChooser expirationDateChooser;
+    private JComboBox<String> typeComboBox;
+    private RoundedTextField supplierNameTextField;
 
-            // Create the blue container panel with rounded corners
-            RoundedPanel containerPanel = new RoundedPanel(30); // Adjust the radius as needed
-            containerPanel.setBackground(new Color(30, 144, 255));
-            containerPanel.setPreferredSize(new Dimension(650, 800)); // Increased width and height size
-            containerPanel.setLayout(new GridBagLayout());
-            containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding
+    private JFrame mainFrame;
 
-            // Create constraints for layout inside the blue container
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.insets = new Insets(5, 10, 5, 10); // Reduced spacing
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.anchor = GridBagConstraints.LINE_START;
+    public AddProduct(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        initComponents();
+    }
 
-            // Add the title label
-            JLabel titleLabel = new JLabel("Enter Product Details");
-            titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-            titleLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.gridwidth = 2;
-            gbc.anchor = GridBagConstraints.CENTER;
-            containerPanel.add(titleLabel, gbc);
+    private void initComponents() {
 
-            // Reset grid width
-            gbc.gridwidth = 1;
-            gbc.anchor = GridBagConstraints.LINE_START;
+        // Create a main panel for centering the blue container
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(Color.WHITE);
 
-            // Create labels and text fields for the form
-            JLabel barcodeLabel = new JLabel("Product Barcode");
-            barcodeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            barcodeLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 1;
-            containerPanel.add(barcodeLabel, gbc);
+        // Create the blue container panel with rounded corners
+        RoundedPanel containerPanel = new RoundedPanel(30); // Adjust the radius as needed
+        containerPanel.setBackground(new Color(30, 144, 255));
+        containerPanel.setPreferredSize(new Dimension(650, 800)); // Increased width and height size
+        containerPanel.setLayout(new GridBagLayout());
+        containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding
 
-            RoundedTextField barcodeTextField = new RoundedTextField(5, 20);
-            barcodeTextField.setPreferredSize(new Dimension(500, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 2;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(barcodeTextField, gbc);
+        // Create constraints for layout inside the blue container
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 10, 5, 10); // Reduced spacing
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.LINE_START;
 
-            JLabel productCodeLabel = new JLabel("Product Code");
-            productCodeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            productCodeLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 3;
-            gbc.gridwidth = 1;
-            containerPanel.add(productCodeLabel, gbc);
+        // Add the title label
+        JLabel titleLabel = new JLabel("Enter Product Details");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        titleLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        containerPanel.add(titleLabel, gbc);
 
-            RoundedTextField productCodeTextField = new RoundedTextField(5, 20);
-            productCodeTextField.setPreferredSize(new Dimension(500, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 4;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(productCodeTextField, gbc);
+        // Reset grid width
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.LINE_START;
 
-            JLabel productNameLabel = new JLabel("Product Name");
-            productNameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            productNameLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 5;
-            gbc.gridwidth = 1;
-            containerPanel.add(productNameLabel, gbc);
+        // Create labels and text fields for the form
+        JLabel productCodeLabel = new JLabel("Product Code");
+        productCodeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        productCodeLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        containerPanel.add(productCodeLabel, gbc);
 
-            RoundedTextField productNameTextField = new RoundedTextField(5, 20);
-            productNameTextField.setPreferredSize(new Dimension(500, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 6;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(productNameTextField, gbc);
+        productCodeTextField = new RoundedTextField(5, 20);
+        productCodeTextField.setPreferredSize(new Dimension(500, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        productCodeTextField.setEditable(false); // Set the text field to be non-editable
+        containerPanel.add(productCodeTextField, gbc);
 
-            JLabel categoryLabel = new JLabel("Product Category");
-            categoryLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            categoryLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 7;
-            gbc.gridwidth = 1;
-            containerPanel.add(categoryLabel, gbc);
+        JLabel barcodeLabel = new JLabel("Barcode");
+        barcodeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        barcodeLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        containerPanel.add(barcodeLabel, gbc);
 
-            categoryMap = fetchCategories();
-            String[] categories = categoryMap.keySet().toArray(new String[0]);
-            JComboBox<String> categoryComboBox = new JComboBox<>(categories);
+        barcodeTextField = new RoundedTextField(5, 20);
+        barcodeTextField.setPreferredSize(new Dimension(500, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(barcodeTextField, gbc);
 
-            gbc.gridx = 0;
-            gbc.gridy = 8;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(categoryComboBox, gbc);
+        JLabel productNameLabel = new JLabel("Product Name");
+        productNameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        productNameLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 1;
+        containerPanel.add(productNameLabel, gbc);
 
-            JLabel priceLabel = new JLabel("Product Price");
-            priceLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            priceLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 9;
-            gbc.gridwidth = 1;
-            containerPanel.add(priceLabel, gbc);
+        productNameTextField = new RoundedTextField(5, 20);
+        productNameTextField.setPreferredSize(new Dimension(500, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(productNameTextField, gbc);
 
-            RoundedTextField productPriceTextField = new RoundedTextField(5, 20);
-            productPriceTextField.setPreferredSize(new Dimension(500, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 10;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(productPriceTextField, gbc);
+        JLabel categoryLabel = new JLabel("Product Category");
+        categoryLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        categoryLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.gridwidth = 1;
+        containerPanel.add(categoryLabel, gbc);
 
-            JLabel sizeLabel = new JLabel("Product Size");
-            sizeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            sizeLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 11;
-            gbc.gridwidth = 1;
-            containerPanel.add(sizeLabel, gbc);
+        categoryMap = fetchCategories();
+        String[] categories = categoryMap.keySet().toArray(new String[0]);
+        categoryComboBox = new JComboBox<>(categories);
 
-            RoundedTextField productSizeTextField = new RoundedTextField(5, 20);
-            productSizeTextField.setPreferredSize(new Dimension(500, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 12;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(productSizeTextField, gbc);
+        gbc.gridx = 0;
+        gbc.gridy = 8;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(categoryComboBox, gbc);
 
-            JLabel quantityLabel = new JLabel("Product Quantity");
-            quantityLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            quantityLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 13;
-            gbc.gridwidth = 1;
-            containerPanel.add(quantityLabel, gbc);
+        JLabel priceLabel = new JLabel("Product Price");
+        priceLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        priceLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.gridwidth = 1;
+        containerPanel.add(priceLabel, gbc);
 
-            RoundedTextField productQuantityTextField = new RoundedTextField(5, 20);
-            productQuantityTextField.setPreferredSize(new Dimension(500, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 14;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(productQuantityTextField, gbc);
+        productPriceTextField = new RoundedTextField(5, 20);
+        productPriceTextField.setPreferredSize(new Dimension(500, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(productPriceTextField, gbc);
 
-            JLabel expirationDateLabel = new JLabel("Product Expiration Date");
-            expirationDateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            expirationDateLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 15;
-            gbc.gridwidth = 1;
-            containerPanel.add(expirationDateLabel, gbc);
+        JLabel sizeLabel = new JLabel("Product Size");
+        sizeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        sizeLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        gbc.gridwidth = 1;
+        containerPanel.add(sizeLabel, gbc);
 
-            JDateChooser expirationDateChooser = new JDateChooser();
-            expirationDateChooser.setPreferredSize(new Dimension(200, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 16;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(expirationDateChooser, gbc);
+        productSizeTextField = new RoundedTextField(5, 20);
+        productSizeTextField.setPreferredSize(new Dimension(500, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 12;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(productSizeTextField, gbc);
 
-            JLabel typeLabel = new JLabel("Product Type");
-            typeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            typeLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 17;
-            gbc.gridwidth = 1;
-            containerPanel.add(typeLabel, gbc);
+        JLabel quantityLabel = new JLabel("Product Quantity");
+        quantityLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        quantityLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 13;
+        gbc.gridwidth = 1;
+        containerPanel.add(quantityLabel, gbc);
 
-            productTypeMap = fetchProductTypes();
-            String[] types = productTypeMap.keySet().toArray(new String[0]);
-            JComboBox<String> typeComboBox = new JComboBox<>(types);
+        productQuantityTextField = new RoundedTextField(5, 20);
+        productQuantityTextField.setPreferredSize(new Dimension(500, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 14;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(productQuantityTextField, gbc);
 
-            gbc.gridx = 0;
-            gbc.gridy = 18;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(typeComboBox, gbc);
+        JLabel expirationDateLabel = new JLabel("Product Expiration Date");
+        expirationDateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        expirationDateLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 15;
+        gbc.gridwidth = 1;
+        containerPanel.add(expirationDateLabel, gbc);
 
-            JLabel supplierNameLabel = new JLabel("Supplier Name");
-            supplierNameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            supplierNameLabel.setForeground(Color.WHITE);
-            gbc.gridx = 0;
-            gbc.gridy = 19;
-            gbc.gridwidth = 1;
-            containerPanel.add(supplierNameLabel, gbc);
+        expirationDateChooser = new JDateChooser();
+        expirationDateChooser.setPreferredSize(new Dimension(200, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 16;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(expirationDateChooser, gbc);
 
-            RoundedTextField supplierNameTextField = new RoundedTextField(5, 20);
-            supplierNameTextField.setPreferredSize(new Dimension(500, 30));
-            gbc.gridx = 0;
-            gbc.gridy = 20;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            containerPanel.add(supplierNameTextField, gbc);
+        JLabel typeLabel = new JLabel("Product Type");
+        typeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        typeLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 17;
+        gbc.gridwidth = 1;
+        containerPanel.add(typeLabel, gbc);
 
-            // Add buttons
-            RoundedButton addButton = new RoundedButton("Add Product");
-            addButton.setFont(new Font("Arial", Font.BOLD, 16));
-            addButton.setBackground(Color.WHITE);
-            addButton.setForeground(Color.BLACK);
-            addButton.setFocusPainted(false);
-            addButton.setPreferredSize(new Dimension(300, 40));
-            addButton.addActionListener(e -> {
+        productTypeMap = fetchProductTypes();
+        String[] types = productTypeMap.keySet().toArray(new String[0]);
+        typeComboBox = new JComboBox<>(types);
+
+        gbc.gridx = 0;
+        gbc.gridy = 18;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(typeComboBox, gbc);
+
+        JLabel supplierNameLabel = new JLabel("Supplier Name");
+        supplierNameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        supplierNameLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 19;
+        gbc.gridwidth = 1;
+        containerPanel.add(supplierNameLabel, gbc);
+
+        supplierNameTextField = new RoundedTextField(5, 20);
+        supplierNameTextField.setPreferredSize(new Dimension(500, 30));
+        gbc.gridx = 0;
+        gbc.gridy = 20;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        containerPanel.add(supplierNameTextField, gbc);
+
+        // Add buttons
+        RoundedButton addButton = new RoundedButton("Add Product");
+        addButton.setFont(new Font("Arial", Font.BOLD, 16));
+        addButton.setBackground(Color.WHITE);
+        addButton.setForeground(Color.BLACK);
+        addButton.setFocusPainted(false);
+        addButton.setPreferredSize(new Dimension(300, 40));
+        addButton.addActionListener(e -> {
+            try {
                 if (validateFields(barcodeTextField, productCodeTextField, productNameTextField, productPriceTextField,
                         productSizeTextField, productQuantityTextField, expirationDateChooser, supplierNameTextField)) {
-                    if (!isProductCodeExists(productCodeTextField.getText())) { // Check for duplicate product code
-                        insertProduct(barcodeTextField.getText(), productCodeTextField.getText(),
-                                productNameTextField.getText(), (String) categoryComboBox.getSelectedItem(),
-                                new BigDecimal(productPriceTextField.getText()), productSizeTextField.getText(),
-                                Integer.parseInt(productQuantityTextField.getText()),
-                                ((JTextField) expirationDateChooser.getDateEditor().getUiComponent()).getText(),
-                                (String) typeComboBox.getSelectedItem(), supplierNameTextField.getText());
+                    String newProductCode = generateNewProductCode();
+                    productCodeTextField.setText(newProductCode); // Set the new product code in the text field
 
-                        clearFields(barcodeTextField, productCodeTextField, productNameTextField, productPriceTextField,
-                                productSizeTextField, productQuantityTextField, expirationDateChooser,
-                                supplierNameTextField);
-                    } else {
-                        JOptionPane.showMessageDialog(frame, "Product with this code already exists.", "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
+                    insertProduct(barcodeTextField.getText(), newProductCode,
+                            productNameTextField.getText(), (String) categoryComboBox.getSelectedItem(),
+                            new BigDecimal(productPriceTextField.getText()), productSizeTextField.getText(),
+                            Integer.parseInt(productQuantityTextField.getText()),
+                            ((JTextField) expirationDateChooser.getDateEditor().getUiComponent()).getText(),
+                            (String) typeComboBox.getSelectedItem(), supplierNameTextField.getText());
+
+                    clearFields(barcodeTextField, productCodeTextField, productNameTextField, productPriceTextField,
+                            productSizeTextField, productQuantityTextField, expirationDateChooser,
+                            supplierNameTextField);
+                    JOptionPane.showMessageDialog(null, "Product added successfully!");
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please fill out all fields correctly.");
                 }
-            });
-
-            // Add a button to generate the barcode
-            RoundedButton generateButton = new RoundedButton("Generate Barcode");
-            generateButton.setFont(new Font("Arial", Font.BOLD, 16));
-            generateButton.setBackground(Color.WHITE);
-            generateButton.setForeground(Color.BLACK);
-            generateButton.setFocusPainted(false);
-            generateButton.setPreferredSize(new Dimension(300, 40));
-            generateButton.addActionListener(e -> {
-                // Validate all fields before generating barcode
-                if (validateFields(barcodeTextField, productCodeTextField, productNameTextField,
-                        productPriceTextField, productSizeTextField, productQuantityTextField,
-                        expirationDateChooser, supplierNameTextField)) {
-                    // Calculate fullBarcode before generating the barcode image
-                    String barcode = barcodeTextField.getText();
-                    if (!barcode.isEmpty() && barcode.matches("\\d{12}")) {
-                        String fullBarcode = barcode + calculateEAN13Checksum(barcode);
-                        BufferedImage barcodeImage = BarcodeGenerator.generateEAN13Barcode(fullBarcode, "barcode.png");
-                        String productName = productNameTextField.getText().trim();
-
-                        // Show dialog with generated barcode image and product name
-                        showBarcodeDialog(barcodeImage, productName);
-                    } else {
-                        JOptionPane.showMessageDialog(frame, "Please enter a valid 12-digit barcode.", "Error",
-                                JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            });
-            // Cancel Button
-            RoundedButton cancelButton = new RoundedButton("Cancel");
-            cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
-            cancelButton.setBackground(Color.WHITE);
-            cancelButton.setForeground(Color.BLACK);
-            cancelButton.setFocusPainted(false);
-            cancelButton.setPreferredSize(new Dimension(300, 40));
-            cancelButton.addActionListener(e -> {
-                System.out.println("Cancel button clicked");
-                frame.dispose(); // Close the current frame
-                // Open ProductPage frame
-                // ProductPage.main(new String[] {});
-            });
-
-            JPanel buttonPanel = new JPanel(new GridBagLayout());
-            GridBagConstraints gbcButton = new GridBagConstraints();
-            buttonPanel.setBackground(new Color(30, 144, 255));
-            gbcButton.insets = new Insets(10, 10, 10, 10);
-            gbcButton.gridx = 0;
-            gbcButton.gridy = 0;
-            buttonPanel.add(addButton, gbcButton);
-
-            gbcButton.gridx = 1;
-            buttonPanel.add(generateButton, gbcButton);
-
-            gbcButton.gridx = 2;
-            buttonPanel.add(cancelButton, gbcButton);
-
-            gbc.gridx = 0;
-            gbc.gridy = 21;
-            gbc.gridwidth = 2;
-            gbc.weightx = 1;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            containerPanel.add(buttonPanel, gbc);
-
-            // Add the blue container to the main panel
-            GridBagConstraints gbcMainPanel = new GridBagConstraints();
-            gbcMainPanel.gridx = 0;
-            gbcMainPanel.gridy = 0;
-            gbcMainPanel.weightx = 1;
-            gbcMainPanel.weighty = 1;
-            gbcMainPanel.fill = GridBagConstraints.CENTER;
-            mainPanel.add(containerPanel, gbcMainPanel);
-
-            frame.setContentPane(mainPanel);
-            frame.pack();
-            frame.setLocationRelativeTo(null); // Center the frame
-            frame.setVisible(true);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Error generating product code: " + ex.getMessage());
+                ex.printStackTrace();
+            }
         });
+
+        // Add a button to generate the barcode
+        RoundedButton generateButton = new RoundedButton("Generate Barcode");
+        generateButton.setFont(new Font("Arial", Font.BOLD, 16));
+        generateButton.setBackground(Color.WHITE);
+        generateButton.setForeground(Color.BLACK);
+        generateButton.setFocusPainted(false);
+        generateButton.setPreferredSize(new Dimension(300, 40));
+        generateButton.addActionListener(e -> {
+            // Validate all fields before generating barcode
+            if (validateFields(productCodeTextField, barcodeTextField, productNameTextField,
+                    productPriceTextField, productSizeTextField, productQuantityTextField,
+                    expirationDateChooser, supplierNameTextField)) {
+                // Calculate fullBarcode before generating the barcode image
+                String barcode = barcodeTextField.getText();
+                if (!barcode.isEmpty() && barcode.matches("\\d{12}")) {
+                    String fullBarcode = barcode + calculateEAN13Checksum(barcode);
+                    BufferedImage barcodeImage = BarcodeGenerator.generateEAN13Barcode(fullBarcode, "barcode.png");
+                    String productName = productNameTextField.getText().trim();
+
+                    // Show dialog with generated barcode image and product name
+                    showBarcodeDialog(barcodeImage, productName);
+                } else {
+                    JOptionPane.showMessageDialog(this, "Please enter a valid 12-digit barcode.", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        // Cancel Button
+        RoundedButton cancelButton = new RoundedButton("Cancel");
+        cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
+        cancelButton.setBackground(Color.WHITE);
+        cancelButton.setForeground(Color.BLACK);
+        cancelButton.setFocusPainted(false);
+        cancelButton.setPreferredSize(new Dimension(300, 40));
+        cancelButton.addActionListener(e -> {
+            mainFrame.setContentPane(new ProductPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        });
+
+        JPanel buttonPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbcButton = new GridBagConstraints();
+        buttonPanel.setBackground(new Color(30, 144, 255));
+        gbcButton.insets = new Insets(10, 10, 10, 10);
+        gbcButton.gridx = 0;
+        gbcButton.gridy = 0;
+        buttonPanel.add(addButton, gbcButton);
+
+        gbcButton.gridx = 1;
+        buttonPanel.add(generateButton, gbcButton);
+
+        gbcButton.gridx = 2;
+        buttonPanel.add(cancelButton, gbcButton);
+
+        gbc.gridx = 0;
+        gbc.gridy = 21;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        containerPanel.add(buttonPanel, gbc);
+
+        // Add the blue container to the main panel
+        GridBagConstraints gbcMainPanel = new GridBagConstraints();
+        gbcMainPanel.gridx = 0;
+        gbcMainPanel.gridy = 0;
+        gbcMainPanel.weightx = 1;
+        gbcMainPanel.weighty = 1;
+        gbcMainPanel.fill = GridBagConstraints.CENTER;
+        mainPanel.add(containerPanel, gbcMainPanel);
+
+        mainFrame.setContentPane(mainPanel);
+        // mainFrame.pack();
+        mainFrame.setLocationRelativeTo(null); // Center the frame
+        mainFrame.setVisible(true);
     }
 
     private static Map<String, String> fetchCategories() {
@@ -387,13 +405,13 @@ public class AddProduct {
     }
 
     // Method to validate input fields
-    private static boolean validateFields(JTextField barcodeTextField, JTextField productCodeTextField,
+    private boolean validateFields(JTextField productCodeTextField, JTextField barcodeTextField,
             JTextField productNameTextField, JTextField productPriceTextField,
             JTextField productSizeTextField, JTextField productQuantityTextField,
             JDateChooser expirationDateChooser, JTextField supplierNameTextField) {
         // Add your validation logic here
         // Example validation: checking if fields are empty
-        if (barcodeTextField.getText().isEmpty() || productCodeTextField.getText().isEmpty() ||
+        if (productCodeTextField.getText().isEmpty() || barcodeTextField.getText().isEmpty() ||
                 productNameTextField.getText().isEmpty() || productPriceTextField.getText().isEmpty() ||
                 productSizeTextField.getText().isEmpty() || productQuantityTextField.getText().isEmpty() ||
                 supplierNameTextField.getText().isEmpty() || expirationDateChooser.getDate() == null) {
@@ -420,12 +438,12 @@ public class AddProduct {
         return true;
     }
 
-    private static void clearFields(RoundedTextField barcodeTextField, RoundedTextField productCodeTextField,
+    private void clearFields(RoundedTextField productCodeTextField, RoundedTextField barcodeTextField,
             RoundedTextField productNameTextField, RoundedTextField productPriceTextField,
             RoundedTextField productSizeTextField, RoundedTextField productQuantityTextField,
             JDateChooser expirationDateChooser, RoundedTextField supplierNameTextField) {
-        barcodeTextField.setText("");
         productCodeTextField.setText("");
+        barcodeTextField.setText("");
         productNameTextField.setText("");
         productPriceTextField.setText("");
         productSizeTextField.setText("");
@@ -434,7 +452,33 @@ public class AddProduct {
         supplierNameTextField.setText("");
     }
 
-    private static void insertProduct(String barcode, String productCode, String productName, String category,
+    private String generateNewProductCode() throws SQLException {
+        String latestProductCode = "";
+        String query = "SELECT product_code FROM products ORDER BY product_code DESC LIMIT 1";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(query);
+                ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                latestProductCode = rs.getString("product_code");
+            }
+        }
+
+        // Extract the numeric part and increment it
+        int nextCodeNumber = 1; // Default starting number
+        if (!latestProductCode.isEmpty()) {
+            String numericPart = latestProductCode.replaceAll("[^\\d]", "");
+            if (!numericPart.isEmpty()) {
+                nextCodeNumber = Integer.parseInt(numericPart) + 1;
+            }
+        }
+
+        // Format the new product code as PRODXXXX
+        return String.format("PROD%04d", nextCodeNumber);
+    }
+
+    private void insertProduct(String productCode, String barcode, String productName, String category,
             BigDecimal price, String size, int quantity, String expirationDate, String type, String supplierName) {
         // Calculate the EAN 13 checksum
         String fullBarcode = barcode + calculateEAN13Checksum(barcode);
@@ -446,6 +490,10 @@ public class AddProduct {
         try {
             Connection conn = DatabaseUtil.getConnection();
             conn.setAutoCommit(false); // Enable transaction
+
+            // Fetch the latest product code and generate a new one
+            String newProductCode = generateNewProductCode();
+            productCodeTextField.setText(newProductCode);
 
             // Insert the supplier first and retrieve its generated ID
             String insertSupplierSQL = "INSERT INTO supplier (supplier_name) VALUES (?)";
@@ -502,12 +550,11 @@ public class AddProduct {
                 pstmtProduct.close();
 
                 // Insert into the inventory table
-                String insertInventorySQL = "INSERT INTO inventory (product_id, product_total_quantity, critical_stock_level, product_status_id) VALUES (?, ?, ?, ?)";
+                String insertInventorySQL = "INSERT INTO inventory (product_id, product_total_quantity, critical_stock_level, product_status_id) VALUES (?, ?, ?, ACT)";
                 PreparedStatement pstmtInventory = conn.prepareStatement(insertInventorySQL);
                 pstmtInventory.setInt(1, productId);
                 pstmtInventory.setInt(2, quantity);
                 pstmtInventory.setInt(3, criticalStockLevel); // Assuming a default critical stock level
-                pstmtInventory.setString(4, "ACT"); // Assuming default status as 'In Stock'
                 pstmtInventory.executeUpdate();
                 pstmtInventory.close();
 
@@ -539,7 +586,7 @@ public class AddProduct {
         }
     }
 
-    private static boolean isProductCodeExists(String productCode) {
+    private boolean isProductCodeExists(String productCode) {
         String query = "SELECT product_code FROM products WHERE product_code = ?";
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -548,13 +595,13 @@ public class AddProduct {
                 return rs.next();
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(frame, "Error checking product code: " + e.getMessage(), "Error",
+            JOptionPane.showMessageDialog(mainFrame, "Error checking product code: " + e.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
         return false;
     }
 
-    private static char calculateEAN13Checksum(String data) {
+    private char calculateEAN13Checksum(String data) {
         int sum = 0;
         for (int i = 0; i < 12; i++) {
             int digit = Character.getNumericValue(data.charAt(i));
@@ -564,7 +611,7 @@ public class AddProduct {
         return (char) (checksum + '0');
     }
 
-    private static void showBarcodeDialog(BufferedImage barcodeImage, String productName) {
+    private void showBarcodeDialog(BufferedImage barcodeImage, String productName) {
         // Desired width and height for the image
         int imageWidth = 350;
         int imageHeight = 300;
@@ -574,7 +621,7 @@ public class AddProduct {
                 barcodeImage.getScaledInstance(imageWidth, imageHeight, Image.SCALE_SMOOTH));
 
         // Create a dialog to display the barcode image
-        JDialog dialog = new JDialog(frame, "Generated Barcode for " + productName, true);
+        JDialog dialog = new JDialog(mainFrame, "Generated Barcode for " + productName, true);
         dialog.setSize(500, 500); // Adjusted height to accommodate label and spacing
         dialog.setLayout(new BoxLayout(dialog.getContentPane(), BoxLayout.Y_AXIS)); // Use BoxLayout with Y_AXIS
         dialog.setUndecorated(true); // Remove window borders and title bar
@@ -654,7 +701,7 @@ public class AddProduct {
         dialog.getRootPane().setBorder(border);
 
         // Set the dialog to be visible
-        dialog.setLocationRelativeTo(frame);
+        dialog.setLocationRelativeTo(mainFrame);
         dialog.setVisible(true);
     }
 

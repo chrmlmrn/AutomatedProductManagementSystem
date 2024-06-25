@@ -10,7 +10,7 @@
       "server": "localhost",
       "port": 33060,
       "driver": "MySQL",
-      "name": "Local Instance MySQL80",
+      "name": "Local instance MySQL80",
       "database": "lavega_store_db",
       "username": "root",
       "password": "root",

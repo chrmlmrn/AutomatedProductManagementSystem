@@ -1,16 +1,14 @@
-package src.login;
+package login;
 
 import javax.swing.*;
-
 import database.DatabaseUtil;
-import src.SHA256.Sha256Util;
-import src.admin.AdminMenu;
-import src.admin.reports.userlogs.UserLogUtil;
-import src.cashier.CashierMenu;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
-import src.register.Signup;
-
+import SHA256.Sha256Util;
+import admin.AdminMenu;
+import admin.records.userlogs.UserLogUtil;
+import cashier.CashierMenu;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
+import register.Signup;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -21,7 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class Login extends JFrame {
+public class Login extends JPanel {
 
         private JTextField usernameField;
         private JPasswordField passwordField;
@@ -29,40 +27,33 @@ public class Login extends JFrame {
                         registerLabel;
         private JButton signInButton;
         private JPanel mainPanel, centerPanel;
+        private JFrame mainFrame;
 
         private int loginAttempts = 0;
         private final int maxAttempts = 3;
         private Timer loginTimer;
         private JLabel timerLabel;
 
-        public Login() {
+        public Login(JFrame mainFrame) {
+                this.mainFrame = mainFrame;
                 initComponents();
                 initTimer();
         }
 
         private void initComponents() {
-                mainPanel = new JPanel(new GridBagLayout());
+                setLayout(new GridBagLayout());
                 centerPanel = createCenterPanel();
-
-                setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-                setTitle("Login Page");
-                // setSize(1600, 900);
-                setExtendedState(JFrame.MAXIMIZED_BOTH);
-                setUndecorated(false);
-                setLocationRelativeTo(null);
 
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.gridx = 0;
                 gbc.gridy = 0;
                 gbc.anchor = GridBagConstraints.CENTER;
-                mainPanel.add(centerPanel, gbc);
-
-                add(mainPanel);
+                add(centerPanel, gbc);
         }
 
         private void initTimer() {
                 loginTimer = new Timer(1000, new ActionListener() {
-                        int counter = 30; // 30 seconds countdown
+                        int counter = 30;
                         boolean timerStarted = false;
 
                         @Override
@@ -70,18 +61,16 @@ public class Login extends JFrame {
                                 if (loginAttempts >= maxAttempts) {
                                         timerLabel.setVisible(true);
                                         if (!timerStarted) {
-                                                counter = 30; // Reset the counter
+                                                counter = 30;
                                                 timerStarted = true;
                                                 loginTimer.start();
                                         }
                                         timerLabel.setText("Please try again later. Timer: " + counter + " seconds");
                                         counter--;
                                         if (counter < 0) {
-                                                timerLabel.setText("Timer expired. You can now try again."); // Reset
-                                                                                                             // timer
-                                                                                                             // label
-                                                loginAttempts = 0; // Reset login attempts
-                                                signInButton.setEnabled(true); // Re-enable the sign-in button
+                                                timerLabel.setText("Timer expired. You can now try again.");
+                                                loginAttempts = 0;
+                                                signInButton.setEnabled(true);
                                                 timerStarted = false;
                                                 loginTimer.stop();
                                         }
@@ -244,17 +233,13 @@ public class Login extends JFrame {
                         String role = getUserRole(username);
                         System.out.println("Authentication successful. Role: " + role);
 
-                        // Proceed to open main application window or perform any other action based on
-                        // role
                         if ("A".equals(role)) {
                                 openAdminPage();
                         } else if ("C".equals(role)) {
                                 openCashierPage();
                         }
 
-                        // Reset login attempts
                         loginAttempts = 0;
-                        // Log successful login attempt
                         UserLogUtil.logUserAction(getUserIdByUsername(username), "User logged in");
                         timerLabel.setText("");
                         if (loginTimer.isRunning()) {
@@ -265,14 +250,13 @@ public class Login extends JFrame {
                         if (loginAttempts >= maxAttempts) {
                                 timerLabel.setVisible(true);
                                 if (!loginTimer.isRunning()) {
-                                        loginTimer.start(); // Start the timer if not already running
+                                        loginTimer.start();
                                 }
-                                signInButton.setEnabled(false); // Disable sign-in button
+                                signInButton.setEnabled(false);
                         } else {
                                 JOptionPane.showMessageDialog(this, "Invalid username or password",
                                                 "Authentication Error", JOptionPane.ERROR_MESSAGE);
                         }
-                        // Log failed login attempt
                         UserLogUtil.logUserAction(getUserIdByUsername(username), "User login failed");
                 }
         }
@@ -304,12 +288,12 @@ public class Login extends JFrame {
                                         return resultSet.getInt("user_id");
                                 } else {
                                         System.err.println("User not found for username: " + username);
-                                        return -1; // Return -1 indicating user not found
+                                        return -1;
                                 }
                         }
                 } catch (SQLException e) {
                         e.printStackTrace();
-                        return -1; // Return -1 indicating an error occurred
+                        return -1;
                 }
         }
 
@@ -323,48 +307,36 @@ public class Login extends JFrame {
                                         return resultSet.getString("user_role_id");
                                 } else {
                                         System.err.println("User not found for username: " + username);
-                                        return ""; // Return empty string indicating user not found
+                                        return "";
                                 }
                         }
                 } catch (SQLException e) {
                         e.printStackTrace();
-                        return ""; // Return empty string indicating an error occurred
+                        return "";
                 }
         }
 
         private void openAdminPage() {
-                // Replace with code to open the admin window
-                System.out.println("Opening admin window...");
-                AdminMenu adminMenuPage = new AdminMenu();
-                adminMenuPage.setVisible(true);
-                dispose();
-                // dispose(); // Close the current login frame
+                mainFrame.setContentPane(new AdminMenu(mainFrame));
+                mainFrame.revalidate();
+                mainFrame.repaint();
         }
 
         private void openCashierPage() {
-                System.out.println("Opening cashier window...");
-                CashierMenu cashierMenuPage = new CashierMenu();
-                cashierMenuPage.setVisible(true);
-                dispose();
+                mainFrame.setContentPane(new CashierMenu(mainFrame));
+                mainFrame.revalidate();
+                mainFrame.repaint();
         }
 
         private void openSignUpPage() {
-                Signup signupPage = new Signup();
-                signupPage.setVisible(true);
-                dispose(); // Close the current login frame
+                mainFrame.setContentPane(new Signup(mainFrame));
+                mainFrame.revalidate();
+                mainFrame.repaint();
         }
 
         private void openForgotPasswordPage() {
-                ForgotPassword forgotPasswordPage = new ForgotPassword();
-                forgotPasswordPage.setVisible(true);
-                dispose(); // Close the current login frame
-        }
-
-        public static void main(String args[]) {
-                EventQueue.invokeLater(new Runnable() {
-                        public void run() {
-                                new Login().setVisible(true);
-                        }
-                });
+                mainFrame.setContentPane(new ForgotPassword(mainFrame));
+                mainFrame.revalidate();
+                mainFrame.repaint();
         }
 }

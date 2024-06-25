@@ -19,12 +19,14 @@ VALUES ('ACT', 'Active'),
 --@block
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
+    unique_user_id VARCHAR(20) NOT NULL UNIQUE,
     user_role_id CHAR(1),
     user_first_name VARCHAR(50) NOT NULL,
     user_last_name VARCHAR(50) NOT NULL,
     username VARCHAR(50) UNIQUE,
-    password_hash VARCHAR(255),
+    password_hash VARCHAR(255) NOT NULL,
     user_account_status_id CHAR(3) DEFAULT 'ACT',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_role_id) REFERENCES user_level_of_access(user_role_id),
     FOREIGN KEY (user_account_status_id) REFERENCES user_account_status(user_account_status_id)
 );
@@ -34,6 +36,7 @@ CREATE TABLE user_logs (
     user_id INT,
     user_action VARCHAR(100),
     action_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    action_timeout_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 --@block
@@ -75,7 +78,7 @@ CREATE TABLE security_answer (
     security_answer_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     security_question_id INT,
-    security_answer VARCHAR(255) NOT NULL,
+    security_answer_hash VARCHAR(255) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (security_question_id) REFERENCES security_question(security_question_id)
 );
@@ -119,8 +122,8 @@ VALUES ('FR', 'Fruits'),
     ('OT', 'Other');
 --@block
 CREATE TABLE products (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id VARCHAR(255) NOT NULL,
+    product_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_code VARCHAR(20) NOT NULL UNIQUE,
     barcode VARCHAR(50) NOT NULL,
     barcode_image BLOB,
     product_name VARCHAR(255) NOT NULL,
@@ -129,6 +132,7 @@ CREATE TABLE products (
     category_id CHAR(2) NOT NULL,
     supplier_id INT NOT NULL,
     product_type_id CHAR(1) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (category_id) REFERENCES category(category_id),
     FOREIGN KEY (supplier_id) REFERENCES supplier(supplier_id),
     FOREIGN KEY (product_type_id) REFERENCES product_type(product_type_id)
@@ -152,7 +156,7 @@ CREATE TABLE inventory (
     product_total_quantity INT NOT NULL,
     critical_stock_level INT NOT NULL,
     last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    product_status_id CHAR(3) NOT NULL,
+    product_status_id CHAR(3) NOT NULL DEFAULT 'ACT',
     FOREIGN KEY (product_id) REFERENCES products(product_id),
     FOREIGN KEY (product_status_id) REFERENCES product_status(product_status_id)
 );
@@ -160,7 +164,7 @@ CREATE TABLE inventory (
 CREATE TABLE product_expiration (
     product_expiration_id INT PRIMARY KEY AUTO_INCREMENT,
     product_id INT NOT NULL,
-    product_expiration_date DATE NOT NULL,
+    product_expiration_date DATE,
     product_quantity INT NOT NULL,
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
@@ -208,7 +212,13 @@ SELECT DATE_FORMAT(product_expiration_date, '%Y-%m-%d') AS formatted_date
 FROM product_expiration;
 --@block
 SELECT *
-FROM user;
+FROM users;
 --@block
 SELECT *
 FROM user_logs;
+--@block
+SELECT *
+FROM security_answer;
+--@block
+SELECT *
+FROM user;

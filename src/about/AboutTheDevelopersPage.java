@@ -1,23 +1,27 @@
-package src.about;
+package about;
 
 import javax.swing.*;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
+
+import cashier.CashierMenu;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
+import login.Login;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class AboutTheDevelopersPage {
-    public AboutTheDevelopersPage(JFrame frame) {
-        // Clear the frame
-        frame.getContentPane().removeAll();
-        frame.repaint();
+public class AboutTheDevelopersPage extends JPanel {
+    private JFrame mainFrame;
 
-        // Create a main panel
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
-        mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+    public AboutTheDevelopersPage(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        initComponents();
+    }
+
+    private void initComponents() {
+        setLayout(null); // Use null layout for absolute positioning
+        setBackground(Color.WHITE);
 
         // Add back button
         JButton backButton = new JButton("<");
@@ -30,33 +34,32 @@ public class AboutTheDevelopersPage {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Dispose of the current frame
-                frame.dispose();
-                // Open the AboutMainPage.java
-                AboutMainPage.main(new String[] {});
+                mainFrame.setContentPane(new AboutMainPage(mainFrame));
+                mainFrame.revalidate();
+                mainFrame.repaint();
             }
         });
-        mainPanel.add(backButton);
+        add(backButton);
 
         // Add title label
         JLabel titleLabel = new JLabel("About");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
         titleLabel.setBounds(90, 30, 100, 30);
-        mainPanel.add(titleLabel);
+        add(titleLabel);
 
         // Content panel
         RoundedPanel contentPanel = new RoundedPanel(15);
         contentPanel.setLayout(null);
         contentPanel.setBackground(new Color(30, 144, 255));
         contentPanel.setBounds((1925 - 700) / 2, (1000 - 400) / 2, 700, 400); // Center the panel
-        mainPanel.add(contentPanel);
+        add(contentPanel);
 
         // Add About Us title inside content panel
         JLabel aboutUsLabel = new JLabel("About the Developers");
-        aboutUsLabel.setFont(new Font("Arial", Font.BOLD, 24)); // Thicker font for emphasis
+        aboutUsLabel.setFont(new Font("Arial", Font.BOLD, 24));
         aboutUsLabel.setForeground(Color.WHITE);
-        aboutUsLabel.setBounds(30, 20, 640, 30); // Left justified
+        aboutUsLabel.setBounds(30, 20, 640, 30);
         contentPanel.add(aboutUsLabel);
 
         // Add text area for content
@@ -76,25 +79,24 @@ public class AboutTheDevelopersPage {
         textArea.setLineWrap(true);
         textArea.setWrapStyleWord(true);
         textArea.setEditable(false);
+
         JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setBounds(30, 60, 640, 270); // Adjust size and position as needed
+        scrollPane.setBounds(30, 60, 640, 270);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         contentPanel.add(scrollPane);
 
         // Add return button inside content panel
         JButton returnButton = new RoundedButton("Return");
         returnButton.setFont(new Font("Arial", Font.BOLD, 16));
-        returnButton.setBounds(570, 340, 100, 30); // Right justified and properly inside the blue box
+        returnButton.setBounds(570, 340, 100, 30);
         returnButton.setBackground(Color.WHITE);
         returnButton.setForeground(new Color(24, 26, 78));
         returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new AboutMainPage(frame);
+                new AboutMainPage(mainFrame);
             }
         });
         contentPanel.add(returnButton);
-
-        frame.setVisible(true);
     }
 }

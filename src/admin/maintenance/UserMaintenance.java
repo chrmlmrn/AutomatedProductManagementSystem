@@ -1,4 +1,4 @@
-package src.admin.maintenance;
+package admin.maintenance;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -6,64 +6,67 @@ import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
-import database.DatabaseUtil;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
 
-public class UserMaintenance extends JFrame {
+import admin.AdminMenu;
+import database.DatabaseUtil;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
+
+public class UserMaintenance extends JPanel {
     private static DefaultTableModel tableModel;
     private static JTable userTable;
     private static JComboBox<String> roleComboBox;
     private static JComboBox<String> statusComboBox;
 
-    public UserMaintenance() {
+    private JFrame mainFrame;
+
+    public UserMaintenance(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+
         initComponents(); // Initialize components
     }
 
     private void initComponents() {
-        setTitle("Maintenance");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setLayout(new BorderLayout());
-        setLocationRelativeTo(null);
+        setBackground(Color.WHITE);
+        setLayout(null); // Use absolute positioning
 
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(Color.WHITE);
-        setContentPane(mainPanel);
-
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(Color.WHITE);
-        headerPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        // Title and Back Button
         JButton backButton = new JButton("<");
-        backButton.setFont(new Font("Arial", Font.BOLD, 24));
+        backButton.setFont(new Font("Arial", Font.BOLD, 20));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
-        headerPanel.add(backButton);
+        backButton.setBounds(20, 20, 50, 50);
+        add(backButton);
+
+        backButton.addActionListener(e -> {
+            mainFrame.setContentPane(new MaintenancePage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        });
 
         JLabel titleLabel = new JLabel("Maintenance");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        titleLabel.setBounds(100, 30, 200, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
-        headerPanel.add(titleLabel);
+        add(titleLabel);
 
-        RoundedPanel containerPanel = new RoundedPanel(30);
-        containerPanel.setBackground(new Color(30, 144, 255));
-        containerPanel.setPreferredSize(new Dimension(1200, 600));
-        containerPanel.setLayout(new GridBagLayout());
+        // Rounded Blue Panel
+        RoundedPanel bluePanel = new RoundedPanel(30);
+        bluePanel.setBackground(new Color(30, 144, 255));
+        bluePanel.setBounds(450, 300, 1000, 500);
+        bluePanel.setLayout(null); // Use absolute positioning within the panel
+        add(bluePanel);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 20, 10, 20);
-
+        // Table Setup
         String[] columnNames = { "First Name", "Last Name", "Username", "Role", "Status" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 0 || column == 1 || column == 3 || column == 4; // Allow editing for First Name, Last
-                                                                                 // Name, Role, and Status
+                return column == 0 || column == 1 || column == 3 || column == 4;
             }
         };
 
@@ -73,7 +76,8 @@ public class UserMaintenance extends JFrame {
         userTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         userTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(userTable);
-        scrollPane.setPreferredSize(new Dimension(1100, 400));
+        scrollPane.setBounds(50, 50, 900, 300);
+        bluePanel.add(scrollPane);
 
         // Add JComboBox for Role and Status
         roleComboBox = new JComboBox<>(new String[] { "Admin", "Cashier" });
@@ -85,65 +89,28 @@ public class UserMaintenance extends JFrame {
         TableColumn statusColumn = userTable.getColumnModel().getColumn(4);
         statusColumn.setCellEditor(new DefaultCellEditor(statusComboBox));
 
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(20, 50, 20, 50);
-        containerPanel.add(scrollPane, gbc);
-
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(new Color(30, 144, 255));
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
-
+        // Button Panel
         RoundedButton updateButton = new RoundedButton("Update");
         updateButton.setFont(new Font("Arial", Font.BOLD, 16));
         updateButton.setBackground(Color.WHITE);
         updateButton.setForeground(Color.BLACK);
         updateButton.setFocusPainted(false);
-        updateButton.setPreferredSize(new Dimension(150, 40));
+        updateButton.setBounds(200, 400, 150, 40);
         updateButton.addActionListener(e -> updateUser());
+        bluePanel.add(updateButton);
 
         RoundedButton cancelButton = new RoundedButton("Cancel");
         cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
         cancelButton.setBackground(Color.WHITE);
         cancelButton.setForeground(Color.BLACK);
         cancelButton.setFocusPainted(false);
-        cancelButton.setPreferredSize(new Dimension(150, 40));
+        cancelButton.setBounds(650, 400, 150, 40);
         cancelButton.addActionListener(e -> {
-            dispose();
-            MaintenancePage maintenancePage = new MaintenancePage();
-            maintenancePage.setVisible(true);
+            mainFrame.setContentPane(new MaintenancePage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
         });
-
-        buttonPanel.add(updateButton);
-        buttonPanel.add(cancelButton);
-
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(20, 50, 20, 50);
-        containerPanel.add(buttonPanel, gbc);
-
-        GridBagConstraints mainGbc = new GridBagConstraints();
-        mainGbc.gridx = 0;
-        mainGbc.gridy = 0;
-        mainGbc.anchor = GridBagConstraints.NORTHWEST;
-        mainGbc.insets = new Insets(10, 10, 10, 10);
-        mainPanel.add(headerPanel, mainGbc);
-
-        mainGbc.gridy = 1;
-        mainGbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(containerPanel, mainGbc);
-
-        addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
-                    System.exit(0);
-                }
-            }
-        });
-
+        bluePanel.add(cancelButton);
         // Initialize table with data
         try (Connection connection = DatabaseUtil.getConnection()) {
             refreshTable(connection);
@@ -260,10 +227,4 @@ public class UserMaintenance extends JFrame {
         }
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            UserMaintenance frame = new UserMaintenance();
-            frame.setVisible(true);
-        });
-    }
 }

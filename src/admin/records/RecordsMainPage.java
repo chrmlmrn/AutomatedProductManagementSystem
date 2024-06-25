@@ -1,61 +1,71 @@
-package src.admin.records;
+package admin.records;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import src.admin.AdminMenu;
-import src.admin.records.product.ProductRecords;
-import src.admin.records.user.UserRecords;
-import src.customcomponents.RoundedButton;
+import customcomponents.RoundedButton;
+import admin.AdminMenu; // Replace with your actual AdminMenu class
+import admin.records.product.ProductRecords; // Replace with your actual ProductRecords class
+import admin.records.user.UserRecords; // Replace with your actual UserRecords class
+import admin.records.userlogs.UserLog;
 
-public class RecordsMainPage extends JFrame {
-    public RecordsMainPage() {
+public class RecordsMainPage extends JPanel {
+
+    private JFrame mainFrame;
+
+    public RecordsMainPage(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
         initComponents();
-        setTitle("Records Main Page");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setLocationRelativeTo(null); // Center the frame
-        setUndecorated(false); // Keep window borders and title bar
-        setVisible(true);
     }
 
     private void initComponents() {
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
-        mainPanel.setBackground(Color.WHITE);
-        setContentPane(mainPanel);
+        setLayout(null);
+        setBackground(Color.WHITE);
 
-        JButton backButton = new JButton("<");
-        backButton.setFont(new Font("Arial", Font.BOLD, 20));
+        // Header Panel
+        JPanel headerPanel = new JPanel(null);
+        headerPanel.setBackground(Color.WHITE);
+        headerPanel.setBounds(0, 0, getWidth(), 100);
+        add(headerPanel);
+
+        // Back button
+        RoundedButton backButton = new RoundedButton("<");
+        backButton.setFont(new Font("Arial", Font.BOLD, 30));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
         backButton.addActionListener(e -> {
-            AdminMenu adminMenu = new AdminMenu();
-            adminMenu.setVisible(true);
+            mainFrame.setContentPane(new AdminMenu(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
         });
-        mainPanel.add(backButton);
+        headerPanel.add(backButton);
 
+        // Title Label
         JLabel titleLabel = new JLabel("Records");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
-        titleLabel.setBounds(90, 30, 150, 30);
-        mainPanel.add(titleLabel);
+        titleLabel.setBounds(100, 30, 200, 30);
+        headerPanel.add(titleLabel);
 
-        String[] buttonLabels = { "Product", "User", "Sales", "Return" };
+        add(headerPanel);
+
+        // Buttons
+        String[] buttonLabels = { "Product", "User", "Inventory", "Sales", "Return", "User Logs" };
         int buttonWidth = 300;
         int buttonHeight = 50;
-        int gap = 20;
-        int totalButtonHeight = buttonLabels.length * buttonHeight + (buttonLabels.length - 1) * gap;
-        int startY = (750 - totalButtonHeight) / 2;
+        int gap = 20; // Gap between buttons
 
-        for (int i = 0; i < buttonLabels.length; i++) {
-            RoundedButton button = new RoundedButton(buttonLabels[i]);
-            button.setBounds((1600 - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth, buttonHeight);
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new GridLayout(buttonLabels.length, 1, 0, gap));
+        buttonsPanel.setOpaque(false);
+
+        for (String label : buttonLabels) {
+            RoundedButton button = new RoundedButton(label);
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFont(new Font("Arial", Font.BOLD, 16));
@@ -64,38 +74,74 @@ public class RecordsMainPage extends JFrame {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    String buttonText = button.getText();
-                    if (buttonText.equals("Product")) {
-                        // Open Product page
-                        ProductRecords productRecords = new ProductRecords();
-                        productRecords.setVisible(true);
-                    } else if (buttonText.equals("User")) {
-                        // Open User page
-                        UserRecords userRecords = new UserRecords();
-                        userRecords.setVisible(true);
-                    } else if (buttonText.equals("Sales")) {
-                        // Open Sales page
-                        // new SalesPage(); // Replace with actual class
-                    } else if (buttonText.equals("Return")) {
-                        // Open Return page
-                        // new ReturnPage(); // Replace with actual class
+                    switch (button.getText()) {
+                        case "Product":
+                            openProductRecords();
+                            break;
+                        case "User":
+                            openUserRecords();
+                            break;
+                        case "Inventory":
+                            openInventoryRecords();
+                            break;
+                        case "Sales":
+                            // Open Sales page
+                            break;
+                        case "Return":
+                            // Open Return page
+                        case "User Logs":
+                            openUserlogs();
+                            break;
                     }
                 }
             });
-            mainPanel.add(button);
+
+            buttonsPanel.add(button);
         }
 
-        addKeyListener(new java.awt.event.KeyAdapter() {
+        add(buttonsPanel);
+        buttonsPanel.setBounds((getWidth() - buttonWidth) / 2,
+                (getHeight() - (buttonHeight * buttonLabels.length + gap * (buttonLabels.length - 1))) / 2, buttonWidth,
+                buttonHeight * buttonLabels.length + gap * (buttonLabels.length - 1));
+
+        // Add component listener to dynamically adjust button positions on resize
+        addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
-                    System.exit(0);
-                }
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int frameWidth = getWidth();
+                int frameHeight = getHeight();
+                int newCenterX = (frameWidth - buttonWidth) / 2;
+                int newCenterY = (frameHeight - (buttonHeight * buttonLabels.length + gap * (buttonLabels.length - 1)))
+                        / 2;
+
+                buttonsPanel.setBounds(newCenterX, newCenterY, buttonWidth,
+                        buttonHeight * buttonLabels.length + gap * (buttonLabels.length - 1));
+                headerPanel.setBounds(0, 0, frameWidth, 100);
             }
         });
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new RecordsMainPage());
+    private void openProductRecords() {
+        mainFrame.setContentPane(new ProductRecords(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openUserRecords() {
+        mainFrame.setContentPane(new UserRecords(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openUserlogs() {
+        mainFrame.setContentPane(new UserLog(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openInventoryRecords() {
+        // mainFrame.setContentPane(new ProductRecords(mainFrame));
+        // mainFrame.revalidate();
+        // mainFrame.repaint();
     }
 }

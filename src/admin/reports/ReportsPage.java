@@ -1,26 +1,25 @@
-package admin.product;
+package admin.reports;
 
 import javax.swing.*;
 
 import admin.AdminMenu;
-import cashier.POS.ScanProduct;
+import admin.reports.sales.SalesReport;
 import customcomponents.RoundedButton;
-import help.HelpPage;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class ProductPage extends JPanel {
+public class ReportsPage extends JPanel {
     private JFrame mainFrame;
 
-    public ProductPage(JFrame mainFrame) {
+    public ReportsPage(JFrame mainFrame) {
         this.mainFrame = mainFrame;
+
         initComponents();
     }
 
     private void initComponents() {
-        // Set up the panel
         setLayout(null);
         setBackground(Color.WHITE);
 
@@ -40,16 +39,17 @@ public class ProductPage extends JPanel {
                 mainFrame.repaint();
             }
         });
+        add(backButton);
 
         // Title Label
-        JLabel titleLabel = new JLabel("Product");
+        JLabel titleLabel = new JLabel("Reports");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setBounds(80, 30, 200, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
         add(titleLabel);
 
         // Buttons
-        String[] buttonLabels = { "Add Product", "Update Product" };
+        String[] buttonLabels = { "Inventory", "Sales", "Return" };
         int buttonWidth = 300;
         int buttonHeight = 50;
         int startY = 300; // Center the buttons vertically
@@ -62,29 +62,28 @@ public class ProductPage extends JPanel {
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFocusPainted(false);
-            button.setFont(new Font("Arial", Font.PLAIN, 16));
+            button.setFont(new Font("Arial", Font.BOLD, 16));
             button.setBorder(BorderFactory.createEmptyBorder());
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    mainFrame.getContentPane().removeAll();
-                    if (button.getText().equals("Add Product")) {
-                        mainFrame.getContentPane().add(new AddProduct(mainFrame));
-                    } else if (button.getText().equals("Update Product")) {
-                        mainFrame.setContentPane(new UpdateProduct(mainFrame));
+                    if (button.getText().equals("Inventory")) {
+                        // Open Inventory
+                        // InventoryPage inventoryPage = new InventoryPage();
+                        // inventoryPage.setVisible(true);
+                    } else if (button.getText().equals("Sales")) {
+                        mainFrame.setContentPane(new SalesReport(mainFrame));
                         mainFrame.revalidate();
                         mainFrame.repaint();
+                    } else if (button.getText().equals("Return")) {
+                        // Open Return
+                        // ReturnPage returnPage = new ReturnPage();
+                        // returnPage.setVisible(true);
                     }
-                    mainFrame.revalidate();
-                    mainFrame.repaint();
                 }
             });
             add(button);
         }
-
-        // Add components to the panel
-        add(backButton);
-        add(titleLabel);
 
         // Add component listener to keep buttons centered
         addComponentListener(new java.awt.event.ComponentAdapter() {

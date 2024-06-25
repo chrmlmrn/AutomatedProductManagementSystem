@@ -1,12 +1,13 @@
-package src.login;
+package login;
 
 import javax.swing.*;
 
 import database.DatabaseUtil;
-import src.SHA256.Sha256Util;
-import src.admin.reports.userlogs.UserLogUtil;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
+import SHA256.Sha256Util;
+import admin.records.RecordsMainPage;
+import admin.records.userlogs.UserLogUtil;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -18,7 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ForgotPassword extends JFrame {
+public class ForgotPassword extends JPanel {
 
     private JPanel mainPanel, formPanel;
     private JLabel forgotPasswordLabel, usernameLabel, questionLabel, answerLabel, newPasswordLabel,
@@ -28,7 +29,11 @@ public class ForgotPassword extends JFrame {
     private JLabel questionTextLabel;
     private JButton resetButton, fetchQuestionButton;
 
-    public ForgotPassword() {
+    private JFrame mainFrame;
+
+    public ForgotPassword(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+
         initComponents();
     }
 
@@ -37,17 +42,11 @@ public class ForgotPassword extends JFrame {
         mainPanel = new JPanel(new GridBagLayout());
         formPanel = createFormPanel();
 
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Forgot Password Page");
-        // setSize(1600, 900);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(false); // Remove window borders and title bar
-        setLocationRelativeTo(null); // Center the frame on the screen
-
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(200, 0, 0, 0); // Add space at the top
         mainPanel.add(formPanel, gbc);
 
         add(mainPanel);
@@ -98,9 +97,9 @@ public class ForgotPassword extends JFrame {
         // Setup back to login label to navigate back to login page
         backToLoginLabel = createLabel("Back to Login", new Font("Arial", Font.BOLD, 12), new Color(0, 102, 204));
         backToLoginLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        backToLoginLabel.addMouseListener(new MouseAdapter() {
+        backToLoginLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
                 goToLoginPage();
             }
         });
@@ -114,6 +113,9 @@ public class ForgotPassword extends JFrame {
     private void layoutFormPanel(JPanel panel) {
         GroupLayout layout = new GroupLayout(panel);
         panel.setLayout(layout);
+
+        layout.setAutoCreateGaps(true);
+        layout.setAutoCreateContainerGaps(true);
 
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -145,7 +147,7 @@ public class ForgotPassword extends JFrame {
         layout.setVerticalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
-                                .addGap(56, 56, 56)
+                                .addGap(20, 20, 20) // Adjust this gap for more space
                                 .addComponent(forgotPasswordLabel)
                                 .addGap(18, 18, 18)
                                 .addComponent(usernameLabel)
@@ -264,7 +266,7 @@ public class ForgotPassword extends JFrame {
     private boolean validateAnswer(String username, String question, String answer) {
         // Query the database to fetch the stored answer for the provided username and
         // question
-        String query = "SELECT sa.security_answer FROM security_answer sa " +
+        String query = "SELECT sa.security_answer_hash FROM security_answer sa " +
                 "JOIN users u ON sa.user_id = u.user_id " +
                 "JOIN security_question sq ON sa.security_question_id = sq.security_question_id " +
                 "WHERE u.username = ? AND sq.security_question = ?";
@@ -274,7 +276,7 @@ public class ForgotPassword extends JFrame {
             statement.setString(2, question);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-                String correctAnswer = resultSet.getString("security_answer");
+                String correctAnswer = resultSet.getString("security_answer_hash");
                 // Compare the provided answer with the stored answer (case-insensitive)
                 return correctAnswer.equalsIgnoreCase(answer);
             } else {
@@ -322,16 +324,9 @@ public class ForgotPassword extends JFrame {
     }
 
     private void goToLoginPage() {
-        Login loginPage = new Login();
-        loginPage.setVisible(true);
-        dispose(); // Close the current frame
+        mainFrame.setContentPane(new Login(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
 
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new ForgotPassword().setVisible(true);
-            }
-        });
-    }
 }

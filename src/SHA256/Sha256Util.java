@@ -1,4 +1,4 @@
-package src.SHA256;
+package SHA256;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

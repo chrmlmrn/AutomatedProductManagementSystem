@@ -1,42 +1,37 @@
-package src.cashier;
+package cashier;
 
 import javax.swing.*;
 
-import src.help.HelpPage;
-import src.login.Login;
-import src.about.AboutMainPage;
-import src.cashier.POS.ScanProduct;
-import src.customcomponents.RoundedButton;
+import help.HelpPage;
+import login.Login;
+import about.AboutMainPage;
+import cashier.POS.ScanProduct;
+import customcomponents.RoundedButton;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class CashierMenu extends JFrame {
+public class CashierMenu extends JPanel {
 
-    public CashierMenu() {
+    private JFrame mainFrame;
+
+    public CashierMenu(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
         initComponent();
     }
 
     private void initComponent() {
-        // frame settings
-        setTitle("Cashier Menu");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(false); // Remove window borders and title bar
-        setLocationRelativeTo(null); // Center the frame on the screen
-
-        // a panel to hold the buttons
-        JPanel panel = new JPanel();
-        panel.setLayout(null);
-        panel.setBackground(Color.WHITE);
+        // panel settings
+        setLayout(null);
+        setBackground(Color.WHITE);
 
         // Title Label
         JLabel titleLabel = new JLabel("Cashier Menu");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setBounds(70, 30, 200, 30); // Adjusted y-coordinate from 10 to 30
         titleLabel.setForeground(new Color(24, 26, 78));
-        panel.add(titleLabel);
+        add(titleLabel);
 
         // Buttons
         String[] buttonLabels = { "Scan Product", "Generate Sales", "Help", "About", "Logout" };
@@ -64,8 +59,6 @@ public class CashierMenu extends JFrame {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    dispose(); // Close the current frame
-
                     switch (button.getText()) {
                         case "Scan Product":
                             // Open Scan Product Page
@@ -77,29 +70,22 @@ public class CashierMenu extends JFrame {
                             break;
                         case "Help":
                             // Open Help Page
-                            HelpPage.main(new String[] {});
+                            openHelpPage();
                             break;
                         case "About":
                             // Open About Page
-                            AboutMainPage.main(new String[] {});
+                            openAboutPage();
                             break;
                         case "Logout":
-                            // Logout and close the application
-                            dispose();
-                            Login.main(new String[] {});
+                            // Logout and open login panel
+                            openLoginPage();
                             break;
                     }
                 }
             });
 
-            panel.add(button);
+            add(button);
         }
-
-        // Add panel to the frame
-        getContentPane().add(panel);
-
-        // Make the frame visible
-        setVisible(true);
 
         // Add a key listener to close the application
         addKeyListener(new java.awt.event.KeyAdapter() {
@@ -117,7 +103,7 @@ public class CashierMenu extends JFrame {
             public void componentResized(java.awt.event.ComponentEvent e) {
                 int frameWidth = getWidth();
                 int newCenterX = (frameWidth - buttonWidth) / 2;
-                for (Component component : panel.getComponents()) {
+                for (Component component : getComponents()) {
                     if (component instanceof RoundedButton) {
                         RoundedButton button = (RoundedButton) component;
                         button.setBounds(newCenterX, button.getY(), buttonWidth, buttonHeight);
@@ -127,17 +113,28 @@ public class CashierMenu extends JFrame {
         });
     }
 
-    private static void openScanProductPage() {
-        ScanProduct scanProduct = new ScanProduct();
-        scanProduct.setVisible(true);
+    private void openScanProductPage() {
+        mainFrame.setContentPane(new ScanProduct(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new CashierMenu();
-            }
-        });
+    private void openHelpPage() {
+        mainFrame.setContentPane(new HelpPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
+
+    private void openAboutPage() {
+        mainFrame.setContentPane(new AboutMainPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openLoginPage() {
+        mainFrame.setContentPane(new Login(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
 }

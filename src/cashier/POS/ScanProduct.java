@@ -1,10 +1,13 @@
-package src.cashier.POS;
+package cashier.POS;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
+import cashier.CashierMenu;
+import customcomponents.RoundedButton;
 import database.DatabaseUtil;
-import src.customcomponents.RoundedButton;
+import help.HelpPage;
+import login.Login;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -13,48 +16,48 @@ import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ScanProduct extends JFrame {
+public class ScanProduct extends JPanel {
     private DefaultTableModel productTableModel;
     private DefaultTableModel soldProductTableModel;
     private JLabel subTotalLabel;
     private JLabel totalLabel;
     private Map<String, Product> productDatabase;
     private JTextField barcodeField;
+    private JFrame mainFrame;
 
-    public ScanProduct() {
-        // Initialize product database
+    public ScanProduct(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        initComponents();
         initializeProductDatabase();
+    }
 
-        // Frame properties
-        setTitle("Scan Products");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(false);
-        setLocationRelativeTo(null);
-
-        // Initialize subTotalLabel and totalLabel
-        subTotalLabel = new JLabel("Sub Total: 0.00");
-        totalLabel = new JLabel("Total: 0.00");
-
-        // Create a panel to hold the components
-        JPanel panel = new JPanel();
-        panel.setLayout(null);
-        panel.setBackground(Color.WHITE);
+    private void initComponents() {
+        setLayout(null);
+        setBackground(Color.WHITE);
 
         // Title Label
         JLabel titleLabel = new JLabel("Scan Products");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-        titleLabel.setBounds(50, 30, 300, 40);
         titleLabel.setForeground(new Color(24, 26, 78));
-        panel.add(titleLabel);
+        titleLabel.setBounds(90, 30, 300, 30);
+        add(titleLabel);
 
         // Back button (simulated with a label)
-        JLabel backButton = new JLabel("<");
-        backButton.setFont(new Font("Arial", Font.BOLD, 30));
-        backButton.setBounds(10, 30, 30, 30);
+        // Add back button
+        RoundedButton backButton = new RoundedButton("<");
+        backButton.setFont(new Font("Arial", Font.BOLD, 20));
+        backButton.setBorder(BorderFactory.createEmptyBorder());
+        backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
-        backButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        panel.add(backButton);
+        backButton.setFocusPainted(false);
+        backButton.setBounds(20, 20, 50, 50);
+        add(backButton);
+
+        backButton.addActionListener(e -> {
+            mainFrame.setContentPane(new CashierMenu(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        });
 
         // Barcode field
         barcodeField = new JTextField();
@@ -65,11 +68,10 @@ public class ScanProduct extends JFrame {
                 String barcode = barcodeField.getText().trim();
                 if (!barcode.isEmpty()) {
                     addProduct(barcode);
-
                 }
             }
         });
-        panel.add(barcodeField);
+        add(barcodeField);
 
         // Product table (Left table for products in database)
         String[] productColumns = { "PRODUCT CODE", "PRODUCT NAME", "SIZE", "PRICE", "QUANTITY" };
@@ -81,7 +83,7 @@ public class ScanProduct extends JFrame {
         productTable.setRowHeight(30);
         JScrollPane productScrollPane = new JScrollPane(productTable);
         productScrollPane.setBounds(50, 120, 700, 300);
-        panel.add(productScrollPane);
+        add(productScrollPane);
 
         // Summary table (Right table for products being sold)
         String[] summaryColumns = { "PRODUCT NAME", "QUANTITY", "PRICE" };
@@ -90,7 +92,7 @@ public class ScanProduct extends JFrame {
         summaryTable.setRowHeight(30);
         JScrollPane summaryScrollPane = new JScrollPane(summaryTable);
         summaryScrollPane.setBounds(800, 100, 500, 300);
-        panel.add(summaryScrollPane);
+        add(summaryScrollPane);
 
         // Total panel
         JPanel totalPanel = new JPanel(new GridLayout(3, 2));
@@ -108,11 +110,15 @@ public class ScanProduct extends JFrame {
         totalPanel.add(discountLabel);
         totalPanel.add(discountValueLabel);
         totalPanel.add(subTotalTextLabel);
+        subTotalLabel = new JLabel("Sub Total: 0.00");
+        subTotalLabel.setFont(new Font("Arial", Font.BOLD, 16));
         totalPanel.add(subTotalLabel);
         totalPanel.add(totalTextLabel);
+        totalLabel = new JLabel("Total: 0.00");
+        totalLabel.setFont(new Font("Arial", Font.BOLD, 16));
         totalPanel.add(totalLabel);
 
-        panel.add(totalPanel);
+        add(totalPanel);
 
         // Buttons
         RoundedButton discountButton = new RoundedButton("Discount");
@@ -138,9 +144,9 @@ public class ScanProduct extends JFrame {
         receiptButton.setFont(new Font("Arial", Font.BOLD, 16));
         receiptButton.setBorder(BorderFactory.createEmptyBorder());
 
-        panel.add(discountButton);
-        panel.add(productCodeButton);
-        panel.add(receiptButton);
+        add(discountButton);
+        add(productCodeButton);
+        add(receiptButton);
 
         // Add action listeners for buttons
         discountButton.addActionListener(new ActionListener() {
@@ -166,9 +172,6 @@ public class ScanProduct extends JFrame {
                 showReceiptUI();
             }
         });
-
-        // Add panel to the frame
-        getContentPane().add(panel);
 
         // Call updateTotals after initializing the labels
         updateTotals();
@@ -263,13 +266,5 @@ public class ScanProduct extends JFrame {
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setPreferredSize(new Dimension(400, 300));
         JOptionPane.showMessageDialog(null, scrollPane, "Receipt", JOptionPane.PLAIN_MESSAGE);
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new ScanProduct().setVisible(true);
-            }
-        });
     }
 }

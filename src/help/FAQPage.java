@@ -1,23 +1,27 @@
-package src.help;
+package help;
 
 import javax.swing.*;
+
+import cashier.CashierMenu;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import src.customcomponents.RoundedButton;
-import src.customcomponents.RoundedPanel;
+import customcomponents.RoundedButton;
+import customcomponents.RoundedPanel;
+import login.Login;
 
-public class FAQPage {
-    public FAQPage(JFrame frame) {
-        // Clear the frame
-        frame.getContentPane().removeAll();
-        frame.repaint();
+public class FAQPage extends JPanel {
+    private JFrame mainFrame;
 
-        // Create a main panel with a BoxLayout
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
-        mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+    public FAQPage(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        initComponents();
+    }
+
+    private void initComponents() {
+        setLayout(null); // Use null layout for absolute positioning
+        setBackground(Color.WHITE);
 
         // Add back button
         RoundedButton backButton = new RoundedButton("<");
@@ -27,10 +31,12 @@ public class FAQPage {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
-        mainPanel.add(backButton);
+        add(backButton);
 
         backButton.addActionListener(e -> {
-            new HelpPage();
+            mainFrame.setContentPane(new HelpPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
         });
 
         // Add title label
@@ -38,7 +44,7 @@ public class FAQPage {
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
         titleLabel.setBounds(90, 30, 400, 30);
-        mainPanel.add(titleLabel);
+        add(titleLabel);
 
         // Create a panel for the FAQ content
         JPanel faqContentPanel = new JPanel();
@@ -49,7 +55,7 @@ public class FAQPage {
         scrollPane.setBounds(100, 100, 1720, 800);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        mainPanel.add(scrollPane);
+        add(scrollPane);
 
         // FAQ questions and answers
         String[][] faqs = {
@@ -102,8 +108,7 @@ public class FAQPage {
             gbc.insets = new Insets(0, 0, 0, 0);
 
             JLabel answerLabel = new JLabel(
-                    "<html><div style='width: 800px; text-align: center;'>" + answer + "</div></html>"); // Width
-                                                                                                         // constraint
+                    "<html><div style='width: 800px; text-align: center;'>" + answer + "</div></html>");
             answerLabel.setFont(new Font("Arial", Font.PLAIN, 16));
             answerLabel.setForeground(Color.BLACK);
             answerPanel.add(answerLabel, gbc);
@@ -112,8 +117,8 @@ public class FAQPage {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     answerPanel.setVisible(!answerPanel.isVisible());
-                    frame.revalidate();
-                    frame.repaint();
+                    mainFrame.revalidate();
+                    mainFrame.repaint();
                 }
             });
 
@@ -122,8 +127,5 @@ public class FAQPage {
             faqContentPanel.add(Box.createRigidArea(new Dimension(0, gap))); // Add space
             faqContentPanel.add(faqPanel);
         }
-
-        frame.revalidate();
-        frame.repaint();
     }
 }

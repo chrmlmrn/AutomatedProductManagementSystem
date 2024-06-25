@@ -1,14 +1,13 @@
-package src.admin.return_product;
+package admin.return_product;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 public class ReturnPage {
     public static void main(String[] args) {
         // Create the frame
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // frame.setSize(1600, 900);
         frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setLocationRelativeTo(null); // Center the frame
 
@@ -20,7 +19,7 @@ public class ReturnPage {
         // Create the blue container panel
         JPanel containerPanel = new JPanel();
         containerPanel.setBackground(new Color(30, 144, 255));
-        containerPanel.setPreferredSize(new Dimension(400, 200)); // Adjusted size to match the image
+        containerPanel.setPreferredSize(new Dimension(600, 300)); // Adjusted size to match the image
         containerPanel.setLayout(new GridBagLayout());
         containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding
 
@@ -54,69 +53,72 @@ public class ReturnPage {
         gbc.anchor = GridBagConstraints.LINE_START;
         mainPanel.add(returnLabel, gbc);
 
-        // Create labels and text fields for the product barcode and quantity
-        JLabel barcodeLabel = new JLabel("Enter product barcode");
-        barcodeLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        barcodeLabel.setForeground(Color.WHITE);
+        // Create labels and text fields for the product id and quantity
+        JLabel productIdLabel = new JLabel("Enter Product ID");
+        productIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        productIdLabel.setForeground(Color.WHITE);
         gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(barcodeLabel, gbc);
+        containerPanel.add(productIdLabel, gbc);
 
-        JTextField barcodeField = new JTextField(15);
-        barcodeField.setPreferredSize(new Dimension(200, 30));
-        gbc.gridx = 0;
-        gbc.gridy = 2;
+        JTextField productIdField = new JTextField("", 15);
+        productIdField.setPreferredSize(new Dimension(200, 30));
+        gbc.gridx = 1;
+        gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(barcodeField, gbc);
+        containerPanel.add(productIdField, gbc);
 
         JLabel quantityLabel = new JLabel("Quantity");
-        quantityLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        quantityLabel.setFont(new Font("Arial", Font.BOLD, 14));
         quantityLabel.setForeground(Color.WHITE);
-        gbc.gridx = 2;
+        gbc.gridx = 0;
         gbc.gridy = 1;
-        gbc.gridwidth = 2;
+        gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.LINE_START;
         containerPanel.add(quantityLabel, gbc);
 
-        // Create a panel for quantity with minus and plus buttons
-        JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-        quantityPanel.setBackground(new Color(30, 144, 255));
+        JTextField quantityField = new JTextField("", 5);
+        quantityField.setPreferredSize(new Dimension(40, 30));
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        containerPanel.add(quantityField, gbc);
 
-        JTextField quantityField = new JTextField("0", 3);
-        quantityField.setPreferredSize(new Dimension(50, 30));
-        quantityField.setHorizontalAlignment(JTextField.CENTER);
-
-        JButton minusButton = new JButton("-");
-        minusButton.setFont(new Font("Arial", Font.BOLD, 16));
-        minusButton.setPreferredSize(new Dimension(45, 30));
-        minusButton.setFocusPainted(false);
-        minusButton.addActionListener(e -> {
-            int quantity = Integer.parseInt(quantityField.getText());
-            if (quantity > 0) {
-                quantityField.setText(String.valueOf(quantity - 1));
-            }
-        });
-
-        JButton plusButton = new JButton("+");
-        plusButton.setFont(new Font("Arial", Font.BOLD, 16));
-        plusButton.setPreferredSize(new Dimension(45, 30));
-        plusButton.setFocusPainted(false);
-        plusButton.addActionListener(e -> {
-            int quantity = Integer.parseInt(quantityField.getText());
-            quantityField.setText(String.valueOf(quantity + 1));
-        });
-
-        quantityPanel.add(minusButton);
-        quantityPanel.add(quantityField);
-        quantityPanel.add(plusButton);
-
+        JButton verifyButton = new JButton("Verify");
+        verifyButton.setFont(new Font("Arial", Font.BOLD, 14));
+        verifyButton.setBackground(Color.WHITE);
+        verifyButton.setForeground(Color.BLACK);
+        verifyButton.setFocusPainted(false);
+        verifyButton.setPreferredSize(new Dimension(90, 30));
+        verifyButton.addActionListener(e -> System.out.println("Verify button clicked"));
         gbc.gridx = 2;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.LINE_END;
+        containerPanel.add(verifyButton);
+
+        JLabel reasonLabel = new JLabel("Return Reason");
+        reasonLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        reasonLabel.setForeground(Color.WHITE);
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        containerPanel.add(reasonLabel, gbc);
+
+        // Create a combo box for return reasons
+        String[] reasons = { "Wrong Item", "Damaged Item", "Expired Item" };
+        JComboBox<String> reasonComboBox = new JComboBox<>(reasons);
+        reasonComboBox.setPreferredSize(new Dimension(200, 30));
+        gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        containerPanel.add(quantityPanel, gbc);
+        gbc.anchor = GridBagConstraints.LINE_START;
+        containerPanel.add(reasonComboBox, gbc);
 
         // Add confirm and cancel buttons
         JButton confirmButton = new JButton("Confirm");
@@ -141,14 +143,14 @@ public class ReturnPage {
         // Create button panel with horizontal box layout
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(new Color(30, 144, 255));
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
         buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
 
         // Add the button panel to the container
         gbc.gridx = 0;
         gbc.gridy = 3;
-        gbc.gridwidth = 4;
+        gbc.gridwidth = 3;
         gbc.anchor = GridBagConstraints.CENTER;
         containerPanel.add(buttonPanel, gbc);
 
@@ -156,7 +158,7 @@ public class ReturnPage {
         GridBagConstraints mainGbc = new GridBagConstraints();
         mainGbc.gridx = 0;
         mainGbc.gridy = 1;
-        mainGbc.gridwidth = 5;
+        mainGbc.gridwidth = 3;
         mainGbc.anchor = GridBagConstraints.CENTER;
         mainPanel.add(containerPanel, mainGbc);
 

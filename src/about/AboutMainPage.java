@@ -1,50 +1,49 @@
-package src.about;
+package about;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import src.cashier.CashierMenu;
-import src.customcomponents.RoundedButton;
+import cashier.CashierMenu;
+import customcomponents.RoundedButton;
+import login.Login;
 
-public class AboutMainPage {
-    public AboutMainPage(JFrame frame) {
-        // Clear the frame
-        frame.getContentPane().removeAll();
-        frame.repaint();
+public class AboutMainPage extends JPanel {
+    private JFrame mainFrame;
 
-        // Create a main panel
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
-        mainPanel.setBackground(Color.WHITE);
-        frame.setContentPane(mainPanel);
+    public AboutMainPage(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
+        initComponents();
+    }
 
+    private void initComponents() {
+        setLayout(null); // Use null layout for absolute positioning
+        setBackground(Color.WHITE);
+
+        // Title Label
+        JLabel titleLabel = new JLabel("About");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        titleLabel.setForeground(new Color(24, 26, 78));
+        titleLabel.setBounds(90, 30, 300, 30);
+        add(titleLabel);
+
+        // Back button (simulated with a label)
         // Add back button
-        JButton backButton = new JButton("<");
+        RoundedButton backButton = new RoundedButton("<");
         backButton.setFont(new Font("Arial", Font.BOLD, 20));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
-        backButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Dispose of the current frame
-                frame.dispose();
-                // Open the CashierMenu.java
-                CashierMenu.main(new String[] {});
-            }
-        });
-        mainPanel.add(backButton);
+        add(backButton);
 
-        // Add title label
-        JLabel titleLabel = new JLabel("About");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-        titleLabel.setForeground(new Color(24, 26, 78));
-        titleLabel.setBounds(90, 30, 100, 30);
-        mainPanel.add(titleLabel);
+        backButton.addActionListener(e -> {
+            mainFrame.setContentPane(new CashierMenu(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        });
 
         // Buttons for About The System, About the Developers
         String[] buttonLabels = { "About The System", "About the Developers" };
@@ -69,36 +68,18 @@ public class AboutMainPage {
                     String buttonText = button.getText();
                     // Perform action based on the button clicked
                     if (buttonText.equals("About The System")) {
-                        new AboutTheSystemPage(frame);
+                        mainFrame.setContentPane(new AboutTheSystemPage(mainFrame));
+                        mainFrame.revalidate();
+                        mainFrame.repaint();
                     } else if (buttonText.equals("About the Developers")) {
-                        new AboutTheDevelopersPage(frame);
+                        mainFrame.setContentPane(new AboutTheDevelopersPage(mainFrame));
+                        mainFrame.revalidate();
+                        mainFrame.repaint();
                     }
                 }
             });
-            mainPanel.add(button);
+            add(button);
         }
 
-        frame.setVisible(true);
-
-        // Add a key listener to close the application
-        frame.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
-                    System.exit(0);
-                }
-            }
-        });
-    }
-
-    public static void main(String[] args) {
-        // Create the frame
-        JFrame frame = new JFrame("About Main Page");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setLocationRelativeTo(null); // Center the frame
-        frame.setUndecorated(false); // Keep window borders and title bar
-
-        new AboutMainPage(frame);
     }
 }

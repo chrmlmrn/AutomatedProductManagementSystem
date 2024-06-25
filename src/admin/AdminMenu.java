@@ -1,142 +1,164 @@
-package src.admin;
+package admin;
 
 import javax.swing.*;
-
-import src.about.AboutMainPage;
-import src.admin.maintenance.MaintenancePage;
-import src.admin.product.ProductPage;
-import src.admin.records.RecordsMainPage;
-import src.admin.return_product.ReturnPage;
-import src.customcomponents.RoundedButton;
-import src.help.HelpPage;
-import src.login.Login;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class AdminMenu extends JFrame {
+import about.AboutMainPage;
+import admin.maintenance.MaintenancePage;
+import admin.product.ProductPage;
+import admin.records.RecordsMainPage;
+import admin.reports.ReportsPage;
+import admin.return_product.ReturnPage;
+import customcomponents.RoundedButton;
+import help.HelpPage;
+import login.Login;
 
-    public AdminMenu() {
+public class AdminMenu extends JPanel {
+    private JFrame mainFrame;
+
+    public AdminMenu(JFrame mainFrame) {
+        this.mainFrame = mainFrame;
         initComponents();
     }
 
     private void initComponents() {
-        // Frame
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setUndecorated(false);
-        setLocationRelativeTo(null);
-
-        // Panel
-        JPanel panel = new JPanel();
-        panel.setLayout(null);
-        panel.setBackground(Color.WHITE);
+        setLayout(null);
+        setBackground(Color.WHITE);
 
         // Title Label
         JLabel titleLabel = new JLabel("Admin Menu");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-        titleLabel.setForeground(new Color(24, 26, 78));
         titleLabel.setBounds(70, 30, 200, 30);
-        panel.add(titleLabel);
+        titleLabel.setForeground(new Color(24, 26, 78));
+        add(titleLabel);
 
         // Buttons
         String[] buttonLabels = { "Product", "Inventory", "Reports", "Records", "Return", "Maintenance", "Help",
                 "About", "Logout" };
         int buttonWidth = 300;
         int buttonHeight = 50;
-        int startY = 50;
-        int gap = 20;
+        int startY = 150; // Starting Y position for the first button
+        int gap = 20; // Gap between buttons
+
+        // Calculate the initial center position for the buttons horizontally
+        int panelWidth = getWidth();
+        int centerX = (panelWidth - buttonWidth) / 2;
 
         for (int i = 0; i < buttonLabels.length; i++) {
             RoundedButton button = new RoundedButton(buttonLabels[i]);
-            button.setBounds((getWidth() - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth,
-                    buttonHeight);
+
+            int y = startY + (buttonHeight + gap) * i;
+
+            button.setBounds(centerX, y, buttonWidth, buttonHeight);
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFont(new Font("Arial", Font.BOLD, 16));
             button.setBorder(BorderFactory.createEmptyBorder());
 
+            // Add action listener for the buttons
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-
                     switch (button.getText()) {
                         case "Product":
-                            ProductPage productPage = new ProductPage();
-                            productPage.setVisible(true);
-                            dispose();
+                            openProductPage();
                             break;
                         case "Inventory":
                             // Open Inventory Page
                             break;
                         case "Reports":
-                            // Open Reports Page
+                            openReportsPage();
                             break;
                         case "Records":
-                            // Open Records Page
-                            RecordsMainPage recordsMainPage = new RecordsMainPage();
-                            recordsMainPage.setVisible(true);
-                            dispose();
+                            openRecordsPage();
                             break;
                         case "Return":
-                            dispose();
-                            ReturnPage.main(new String[] {});
+                            openReturnPage();
                             break;
                         case "Maintenance":
-                            // Open Maintenance Page
-                            MaintenancePage maintenancePage = new MaintenancePage();
-                            maintenancePage.setVisible(true);
+                            openMaintenancePage();
                             break;
                         case "Help":
-                            // Open Help Page
-                            HelpPage.main(new String[] {});
+                            openHelpPage();
                             break;
                         case "About":
-                            // Open About Page
-                            AboutMainPage.main(new String[] {});
+                            openAboutPage();
                             break;
                         case "Logout":
-                            dispose();
-                            Login.main(new String[] {});
+                            openLoginPage();
                             break;
                     }
                 }
             });
-            panel.add(button);
+
+            add(button);
         }
 
-        // Add panel to the frame
-        getContentPane().add(panel);
-
-        // Add a key listener to close the application
-        addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyPressed(java.awt.event.KeyEvent e) {
-                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ESCAPE) {
-                    System.exit(0);
-                }
-            }
-        });
-
+        // Add component listener to dynamically adjust button positions on resize
         addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
                 int frameWidth = getWidth();
-                for (Component component : panel.getComponents()) {
+                int newCenterX = (frameWidth - buttonWidth) / 2;
+                for (Component component : getComponents()) {
                     if (component instanceof RoundedButton) {
                         RoundedButton button = (RoundedButton) component;
-                        int x = (frameWidth - buttonWidth) / 2;
-                        button.setBounds(x, button.getY(), buttonWidth, buttonHeight);
+                        button.setBounds(newCenterX, button.getY(), buttonWidth, buttonHeight);
                     }
                 }
             }
         });
     }
 
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new AdminMenu().setVisible(true);
-            }
-        });
+    private void openProductPage() {
+        mainFrame.setContentPane(new ProductPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openReportsPage() {
+        mainFrame.setContentPane(new ReportsPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openRecordsPage() {
+        mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openReturnPage() {
+        // ReturnPage returnPage = new ReturnPage();
+        // mainFrame.getContentPane().removeAll();
+        // mainFrame.getContentPane().add(returnPage);
+        // mainFrame.revalidate();
+        // mainFrame.repaint();
+    }
+
+    private void openMaintenancePage() {
+        mainFrame.setContentPane(new MaintenancePage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openHelpPage() {
+        mainFrame.setContentPane(new HelpPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openAboutPage() {
+        mainFrame.setContentPane(new AboutMainPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openLoginPage() {
+        mainFrame.setContentPane(new Login(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
 }
