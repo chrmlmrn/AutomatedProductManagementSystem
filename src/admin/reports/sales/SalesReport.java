@@ -70,7 +70,7 @@ public class SalesReport extends JPanel {
         RoundedPanel datePanel = new RoundedPanel(30);
         datePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
         datePanel.setBackground(new Color(30, 144, 255)); // Blue background
-        datePanel.setBounds(50, 100, 1800, 100);
+        datePanel.setBounds(50, 100, 1280, 100);
 
         JLabel startDateLabel = new JLabel("Enter Date Start");
         startDateLabel.setFont(new Font("Arial", Font.BOLD, 20));
@@ -118,12 +118,12 @@ public class SalesReport extends JPanel {
         table.setFont(new Font("Arial", Font.PLAIN, 14));
 
         JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setBounds(50, 250, 1800, 800);
+        tableScrollPane.setBounds(50, 250, 1280, 500);
         mainPanel.add(tableScrollPane);
 
         // Print Button
         JButton printButton = new JButton("Print");
-        printButton.setBounds(1750, 220, 100, 30);
+        printButton.setBounds(1220, 210, 100, 30);
         printButton.setBackground(new Color(30, 144, 255));
         printButton.setForeground(Color.WHITE);
         printButton.setFocusPainted(false);

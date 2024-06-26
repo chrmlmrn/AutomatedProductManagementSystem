@@ -50,7 +50,7 @@ public class Signup extends JPanel {
                 gbc.gridx = 0;
                 gbc.gridy = 0;
                 gbc.anchor = GridBagConstraints.CENTER;
-                gbc.insets = new Insets(200, 0, 0, 0); // Add space at the top
+                gbc.insets = new Insets(100, 0, 0, 0); // Add space at the top
 
                 mainPanel.add(formPanel, gbc);
 

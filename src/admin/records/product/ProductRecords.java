@@ -53,7 +53,7 @@ public class ProductRecords extends JPanel {
         // Rounded Blue Panel
         RoundedPanel bluePanel = new RoundedPanel(30);
         bluePanel.setBackground(new Color(30, 144, 255));
-        bluePanel.setBounds(300, 150, 1200, 600);
+        bluePanel.setBounds(100, 120, 1200, 600);
         bluePanel.setLayout(null); // Use absolute positioning within the panel
         add(bluePanel);
 

@@ -55,7 +55,7 @@ public class MaintenancePage extends JPanel {
 
         for (int i = 0; i < buttonLabels.length; i++) {
             RoundedButton button = new RoundedButton(buttonLabels[i]);
-            button.setBounds((1925 - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth, buttonHeight);
+            button.setBounds((1350 - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth, buttonHeight);
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFont(new Font("Arial", Font.BOLD, 16));

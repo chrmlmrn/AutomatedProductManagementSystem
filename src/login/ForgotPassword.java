@@ -4,7 +4,6 @@ import javax.swing.*;
 
 import database.DatabaseUtil;
 import SHA256.Sha256Util;
-import admin.records.RecordsMainPage;
 import admin.records.userlogs.UserLogUtil;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
@@ -12,8 +11,6 @@ import customcomponents.RoundedPanel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -46,7 +43,7 @@ public class ForgotPassword extends JPanel {
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(200, 0, 0, 0); // Add space at the top
+        gbc.insets = new Insets(100, 0, 0, 0); // Add space at the top
         mainPanel.add(formPanel, gbc);
 
         add(mainPanel);

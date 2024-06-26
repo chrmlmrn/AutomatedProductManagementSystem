@@ -1,23 +1,24 @@
 package cashier.help;
 
-import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
-import login.Login;
 
 public class UserManual extends JPanel {
     private JFrame mainFrame;
+    private int buttonWidth = 1000;
+    private int buttonHeight = 50;
+    private int gap = 20;
 
     public UserManual(JFrame mainFrame) {
         this.mainFrame = mainFrame;
-        initComponents();
+        initComponent();
     }
 
-    private void initComponents() {
-        setLayout(null); // Use null layout for absolute positioning
+    private void initComponent() {
+        // Panel settings
+        setLayout(null);
         setBackground(Color.WHITE);
 
         // Add back button
@@ -28,13 +29,12 @@ public class UserManual extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
-        add(backButton);
-
         backButton.addActionListener(e -> {
             mainFrame.setContentPane(new HelpPage(mainFrame));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
+        add(backButton);
 
         // Add title label
         JLabel titleLabel = new JLabel("User Manual");
@@ -49,7 +49,6 @@ public class UserManual extends JPanel {
         manualContentPanel.setBackground(Color.WHITE);
 
         JScrollPane scrollPane = new JScrollPane(manualContentPanel);
-        scrollPane.setBounds(100, 100, 1720, 800);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         add(scrollPane);
@@ -65,13 +64,9 @@ public class UserManual extends JPanel {
                 { "Rules and Regulations of the Business", getRulesAndRegulationsContent() }
         };
 
-        int buttonWidth = 1000;
-        int buttonHeight = 50;
-        int gap = 20;
-
-        for (int i = 0; i < manualSections.length; i++) {
-            String sectionTitle = manualSections[i][0];
-            String sectionContent = manualSections[i][1];
+        for (String[] section : manualSections) {
+            String sectionTitle = section[0];
+            String sectionContent = section[1];
 
             JPanel sectionPanel = new RoundedPanel(20);
             sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
@@ -104,19 +99,32 @@ public class UserManual extends JPanel {
             contentLabel.setForeground(Color.BLACK);
             contentPanel.add(contentLabel, gbc);
 
-            sectionButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    contentPanel.setVisible(!contentPanel.isVisible());
-                    mainFrame.revalidate();
-                    mainFrame.repaint();
-                }
+            sectionButton.addActionListener(e -> {
+                contentPanel.setVisible(!contentPanel.isVisible());
+                mainFrame.revalidate();
+                mainFrame.repaint();
             });
 
             sectionPanel.add(contentPanel);
             manualContentPanel.add(Box.createRigidArea(new Dimension(0, gap))); // Add space
             manualContentPanel.add(sectionPanel);
         }
+
+        // Set scroll pane bounds and adjust positions dynamically
+        scrollPane.setBounds(100, 100, getWidth() - 200, getHeight() - 200);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int frameWidth = getWidth();
+                int frameHeight = getHeight();
+                int newWidth = frameWidth - 200;
+                int newHeight = frameHeight - 200;
+                scrollPane.setBounds(100, 100, newWidth, newHeight);
+            }
+        });
+
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
 
     private static String getHowToUseSystemContent() {
@@ -207,4 +215,5 @@ public class UserManual extends JPanel {
                 "</ul></li>" +
                 "</ol></body></html>";
     }
+
 }

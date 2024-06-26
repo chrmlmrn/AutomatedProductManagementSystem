@@ -2,10 +2,10 @@ package cashier;
 
 import javax.swing.*;
 
-import help.HelpPage;
 import login.Login;
-import about.AboutMainPage;
 import cashier.POS.ScanProduct;
+import cashier.about.AboutMainPage;
+import cashier.help.HelpPage;
 import customcomponents.RoundedButton;
 
 import java.awt.*;
@@ -34,7 +34,7 @@ public class CashierMenu extends JPanel {
         add(titleLabel);
 
         // Buttons
-        String[] buttonLabels = { "Scan Product", "Generate Sales", "Help", "About", "Logout" };
+        String[] buttonLabels = { "Scan Product", "Help", "About", "Logout" };
         int buttonWidth = 300;
         int buttonHeight = 50;
         int startY = 150; // Starting Y position for the first button
@@ -64,10 +64,6 @@ public class CashierMenu extends JPanel {
                             // Open Scan Product Page
                             openScanProductPage();
                             break;
-                        case "Generate Sales":
-                            // Open Generate Sales Page
-                            // GenerateSalesPage.main(new String[] {});
-                            break;
                         case "Help":
                             // Open Help Page
                             openHelpPage();
@@ -78,7 +74,7 @@ public class CashierMenu extends JPanel {
                             break;
                         case "Logout":
                             // Logout and open login panel
-                            openLoginPage();
+                            confirmLogout();
                             break;
                     }
                 }
@@ -135,6 +131,15 @@ public class CashierMenu extends JPanel {
         mainFrame.setContentPane(new Login(mainFrame));
         mainFrame.revalidate();
         mainFrame.repaint();
+    }
+
+    private void confirmLogout() {
+        int response = JOptionPane.showConfirmDialog(mainFrame, "Are you sure you want to log out?",
+                "Logout Confirmation",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (response == JOptionPane.YES_OPTION) {
+            openLoginPage();
+        }
     }
 
 }

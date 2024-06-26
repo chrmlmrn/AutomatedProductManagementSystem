@@ -6,15 +6,12 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
-import admin.AdminMenu;
-import admin.product.ProductPage;
 import cashier.CashierMenu;
 
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -60,10 +57,10 @@ public class ScanProduct extends JPanel {
 
         // Initialize subTotalLabel and totalLabel
         subTotalLabel = new JLabel("Sub Total: 0.00");
-        subTotalLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        subTotalLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
         totalLabel = new JLabel("Total: 0.00");
-        totalLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        totalLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
         // Set panel properties
         setLayout(null);
@@ -123,7 +120,7 @@ public class ScanProduct extends JPanel {
         productTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
         productTable.setRowHeight(30);
         JScrollPane productScrollPane = new JScrollPane(productTable);
-        productScrollPane.setBounds(50, 150, 800, 700);
+        productScrollPane.setBounds(50, 150, 700, 500);
         add(productScrollPane);
 
         // Summary table (Right table for products being sold)
@@ -142,22 +139,22 @@ public class ScanProduct extends JPanel {
         summaryTable.getColumn("DELETE")
                 .setCellEditor(new DeleteButtonEditor(new JCheckBox(), soldProductTableModel, productTableModel));
         JScrollPane summaryScrollPane = new JScrollPane(summaryTable);
-        summaryScrollPane.setBounds(1000, 150, 800, 500);
+        summaryScrollPane.setBounds(800, 150, 500, 300);
         add(summaryScrollPane);
 
         // Total panel
         JPanel totalPanel = new JPanel(new GridLayout(3, 2));
-        totalPanel.setBounds(1000, 700, 500, 100);
+        totalPanel.setBounds(800, 450, 500, 100);
         totalPanel.setBackground(Color.WHITE);
 
         JLabel discountLabel = new JLabel("Discount:");
-        discountLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        discountLabel.setFont(new Font("Arial", Font.BOLD, 18));
         JLabel discountValueLabel = new JLabel("0%");
-        discountValueLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        discountValueLabel.setFont(new Font("Arial", Font.BOLD, 18));
         JLabel subTotalTextLabel = new JLabel("Sub Total:");
-        subTotalTextLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        subTotalTextLabel.setFont(new Font("Arial", Font.BOLD, 18));
         JLabel totalTextLabel = new JLabel("Total:");
-        totalTextLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        totalTextLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
         totalPanel.add(discountLabel);
         totalPanel.add(discountValueLabel);
@@ -174,10 +171,10 @@ public class ScanProduct extends JPanel {
         RoundedButton voidButton = new RoundedButton("Void");
         RoundedButton checkoutButton = new RoundedButton("Checkout");
 
-        discountButton.setBounds(50, 900, 200, 50);
-        productCodeButton.setBounds(275, 900, 200, 50);
-        voidButton.setBounds(1000, 850, 200, 50);
-        checkoutButton.setBounds(1300, 850, 200, 50);
+        discountButton.setBounds(50, 680, 200, 50);
+        productCodeButton.setBounds(275, 680, 200, 50);
+        voidButton.setBounds(800, 600, 200, 50);
+        checkoutButton.setBounds(1080, 600, 200, 50);
 
         discountButton.setBackground(new Color(30, 144, 255));
         discountButton.setForeground(Color.WHITE);

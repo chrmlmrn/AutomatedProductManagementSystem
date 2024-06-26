@@ -46,16 +46,16 @@ public class UserMaintenance extends JPanel {
             mainFrame.repaint();
         });
 
-        JLabel titleLabel = new JLabel("Maintenance");
+        JLabel titleLabel = new JLabel("User Maintenance");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-        titleLabel.setBounds(100, 30, 200, 30);
+        titleLabel.setBounds(100, 30, 500, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
         add(titleLabel);
 
         // Rounded Blue Panel
         RoundedPanel bluePanel = new RoundedPanel(30);
         bluePanel.setBackground(new Color(30, 144, 255));
-        bluePanel.setBounds(450, 300, 1000, 500);
+        bluePanel.setBounds(180, 120, 1000, 500);
         bluePanel.setLayout(null); // Use absolute positioning within the panel
         add(bluePanel);
 

@@ -109,7 +109,6 @@ CREATE TABLE category (
 INSERT INTO category (category_id, category_name)
 VALUES ('FR', 'Fruits'),
     ('VE', 'Vegetables'),
-    ('ME', 'Meats'),
     ('DA', 'Dairy'),
     ('RP', 'Rice and Pasta'),
     ('CG', 'Canned Goods'),

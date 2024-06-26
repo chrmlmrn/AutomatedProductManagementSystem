@@ -9,56 +9,60 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import customcomponents.RoundedButton;
-import login.Login;
 
 public class AboutMainPage extends JPanel {
     private JFrame mainFrame;
+    private int buttonWidth = 300;
+    private int buttonHeight = 50;
+    private int gap = 20;
+    private int totalButtonHeight;
+    private int buttonCount;
 
     public AboutMainPage(JFrame mainFrame) {
         this.mainFrame = mainFrame;
-        initComponents();
+        initComponent();
     }
 
-    private void initComponents() {
-        setLayout(null); // Use null layout for absolute positioning
+    private void initComponent() {
+        // Panel settings
+        setLayout(null);
         setBackground(Color.WHITE);
 
-        // Title Label
-        JLabel titleLabel = new JLabel("About");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-        titleLabel.setForeground(new Color(24, 26, 78));
-        titleLabel.setBounds(90, 30, 300, 30);
-        add(titleLabel);
-
-        // Back button (simulated with a label)
         // Add back button
-        RoundedButton backButton = new RoundedButton("<");
+        JButton backButton = new JButton("<");
         backButton.setFont(new Font("Arial", Font.BOLD, 20));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainFrame.setContentPane(new AdminMenu(mainFrame));
+                mainFrame.revalidate();
+                mainFrame.repaint();
+            }
+        });
         add(backButton);
 
-        backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new AdminMenu(mainFrame));
-            mainFrame.revalidate();
-            mainFrame.repaint();
-        });
+        // Add title label
+        JLabel titleLabel = new JLabel("About");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        titleLabel.setForeground(new Color(24, 26, 78));
+        titleLabel.setBounds(70, 30, 100, 30);
+        add(titleLabel);
 
         // Buttons for About The System, About the Developers
         String[] buttonLabels = { "About The System", "About the Developers" };
-        int buttonWidth = 300;
-        int buttonHeight = 50;
-        int gap = 20; // Gap between buttons
-
-        int totalButtonHeight = buttonLabels.length * buttonHeight + (buttonLabels.length - 1) * gap;
-        int startY = (750 - totalButtonHeight) / 2; // Center vertically
+        buttonCount = buttonLabels.length;
+        totalButtonHeight = buttonCount * buttonHeight + (buttonCount - 1) * gap;
+        int startY = (getHeight() - totalButtonHeight) / 2; // Center vertically
 
         for (int i = 0; i < buttonLabels.length; i++) {
             RoundedButton button = new RoundedButton(buttonLabels[i]);
-            button.setBounds((1925 - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth, buttonHeight);
+            button.setBounds((getWidth() - buttonWidth) / 2, startY + (buttonHeight + gap) * i, buttonWidth,
+                    buttonHeight);
             button.setBackground(new Color(30, 144, 255));
             button.setForeground(Color.WHITE);
             button.setFont(new Font("Arial", Font.BOLD, 16));
@@ -78,10 +82,31 @@ public class AboutMainPage extends JPanel {
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     }
+
                 }
             });
             add(button);
         }
 
+        // Add component listener to dynamically adjust button positions on resize
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int frameWidth = getWidth();
+                int newCenterX = (frameWidth - buttonWidth) / 2;
+                int newStartY = (getHeight() - totalButtonHeight) / 2; // Recalculate vertical center
+                Component[] components = getComponents();
+                int buttonIndex = 0;
+                for (Component component : components) {
+                    if (component instanceof RoundedButton) {
+                        RoundedButton button = (RoundedButton) component;
+                        button.setBounds(newCenterX, newStartY + (buttonHeight + gap) * buttonIndex, buttonWidth,
+                                buttonHeight);
+                        buttonIndex++;
+                    }
+                }
+            }
+        });
     }
+
 }

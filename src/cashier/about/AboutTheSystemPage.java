@@ -52,7 +52,7 @@ public class AboutTheSystemPage extends JPanel {
         RoundedPanel contentPanel = new RoundedPanel(15);
         contentPanel.setLayout(null);
         contentPanel.setBackground(new Color(30, 144, 255));
-        contentPanel.setBounds((1925 - 700) / 2, (1000 - 400) / 2, 700, 400); // Center the panel
+        contentPanel.setBounds((1350 - 700) / 2, (800 - 400) / 2, 700, 400); // Center the panel
         add(contentPanel);
 
         // Add About Us title inside content panel

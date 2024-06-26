@@ -39,7 +39,7 @@ public class AdminMenu extends JPanel {
                 "About", "Logout" };
         int buttonWidth = 300;
         int buttonHeight = 50;
-        int startY = 150; // Starting Y position for the first button
+        int startY = 100; // Starting Y position for the first button
         int gap = 20; // Gap between buttons
 
         // Calculate the initial center position for the buttons horizontally
@@ -87,7 +87,7 @@ public class AdminMenu extends JPanel {
                             openAboutPage();
                             break;
                         case "Logout":
-                            openLoginPage();
+                            confirmLogout();
                             break;
                     }
                 }
@@ -159,4 +159,14 @@ public class AdminMenu extends JPanel {
         mainFrame.revalidate();
         mainFrame.repaint();
     }
+
+    private void confirmLogout() {
+        int response = JOptionPane.showConfirmDialog(mainFrame, "Are you sure you want to log out?",
+                "Logout Confirmation",
+                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (response == JOptionPane.YES_OPTION) {
+            openLoginPage();
+        }
+    }
+
 }

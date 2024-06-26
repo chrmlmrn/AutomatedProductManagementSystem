@@ -1,26 +1,24 @@
 package cashier.help;
 
-import javax.swing.*;
-
-import cashier.CashierMenu;
-
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.*;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
-import login.Login;
 
 public class FAQPage extends JPanel {
     private JFrame mainFrame;
+    private int buttonWidth = 1000;
+    private int buttonHeight = 50;
+    private int gap = 20;
 
     public FAQPage(JFrame mainFrame) {
         this.mainFrame = mainFrame;
-        initComponents();
+        initComponent();
     }
 
-    private void initComponents() {
-        setLayout(null); // Use null layout for absolute positioning
+    private void initComponent() {
+        // Panel settings
+        setLayout(null);
         setBackground(Color.WHITE);
 
         // Add back button
@@ -31,19 +29,18 @@ public class FAQPage extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
-        add(backButton);
-
         backButton.addActionListener(e -> {
             mainFrame.setContentPane(new HelpPage(mainFrame));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
+        add(backButton);
 
         // Add title label
         JLabel titleLabel = new JLabel("Frequently Asked Questions");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
-        titleLabel.setBounds(90, 30, 400, 30);
+        titleLabel.setBounds(90, 30, 500, 30);
         add(titleLabel);
 
         // Create a panel for the FAQ content
@@ -52,7 +49,6 @@ public class FAQPage extends JPanel {
         faqContentPanel.setBackground(Color.WHITE);
 
         JScrollPane scrollPane = new JScrollPane(faqContentPanel);
-        scrollPane.setBounds(100, 100, 1720, 800);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         add(scrollPane);
@@ -71,13 +67,9 @@ public class FAQPage extends JPanel {
                         "The admin can see all user activities, including login times, changes made to inventory, and sales transactions." }
         };
 
-        int buttonWidth = 1000;
-        int buttonHeight = 50;
-        int gap = 20;
-
-        for (int i = 0; i < faqs.length; i++) {
-            String question = faqs[i][0];
-            String answer = faqs[i][1];
+        for (String[] faq : faqs) {
+            String question = faq[0];
+            String answer = faq[1];
 
             JPanel faqPanel = new RoundedPanel(20);
             faqPanel.setLayout(new BoxLayout(faqPanel, BoxLayout.Y_AXIS));
@@ -108,18 +100,16 @@ public class FAQPage extends JPanel {
             gbc.insets = new Insets(0, 0, 0, 0);
 
             JLabel answerLabel = new JLabel(
-                    "<html><div style='width: 800px; text-align: center;'>" + answer + "</div></html>");
+                    "<html><div style='width: 800px; text-align: center;'>" + answer + "</div></html>"); // Width
+                                                                                                         // constraint
             answerLabel.setFont(new Font("Arial", Font.PLAIN, 16));
             answerLabel.setForeground(Color.BLACK);
             answerPanel.add(answerLabel, gbc);
 
-            faqButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    answerPanel.setVisible(!answerPanel.isVisible());
-                    mainFrame.revalidate();
-                    mainFrame.repaint();
-                }
+            faqButton.addActionListener(e -> {
+                answerPanel.setVisible(!answerPanel.isVisible());
+                mainFrame.revalidate();
+                mainFrame.repaint();
             });
 
             faqPanel.add(answerPanel);
@@ -127,5 +117,19 @@ public class FAQPage extends JPanel {
             faqContentPanel.add(Box.createRigidArea(new Dimension(0, gap))); // Add space
             faqContentPanel.add(faqPanel);
         }
+
+        // Add component listener to dynamically adjust component positions on resize
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                int frameWidth = getWidth();
+                int frameHeight = getHeight();
+                int totalHeight = (buttonHeight + gap) * faqs.length;
+                int scrollPaneY = (frameHeight - totalHeight) / 2;
+                int newCenterX = (frameWidth - buttonWidth) / 2;
+                scrollPane.setBounds(newCenterX, scrollPaneY, buttonWidth, totalHeight);
+            }
+        });
     }
+
 }
