@@ -4,13 +4,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import admin.about.AboutMainPage;
 import admin.help.HelpPage;
+import admin.inventory.InventoryPage;
 import admin.maintenance.MaintenancePage;
 import admin.product.ProductPage;
 import admin.records.RecordsMainPage;
 import admin.reports.ReportsPage;
+import admin.reports.inventory.InventoryDAO;
+import admin.reports.inventory.Product;
 import admin.return_product.ReturnPage;
 import customcomponents.RoundedButton;
 import login.Login;
@@ -66,7 +70,7 @@ public class AdminMenu extends JPanel {
                             openProductPage();
                             break;
                         case "Inventory":
-                            // Open Inventory Page
+                            openInventoryPage();
                             break;
                         case "Reports":
                             openReportsPage();
@@ -148,6 +152,12 @@ public class AdminMenu extends JPanel {
         mainFrame.repaint();
     }
 
+    private void openInventoryPage() {
+        mainFrame.setContentPane(new InventoryPage(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
     private void openAboutPage() {
         mainFrame.setContentPane(new AboutMainPage(mainFrame));
         mainFrame.revalidate();
@@ -166,6 +176,28 @@ public class AdminMenu extends JPanel {
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (response == JOptionPane.YES_OPTION) {
             openLoginPage();
+        }
+    }
+
+    private void showCriticalInventory() {
+        InventoryDAO inventoryDAO = new InventoryDAO();
+        List<Product> criticalProducts = inventoryDAO.getCriticalInventory();
+
+        if (criticalProducts.isEmpty()) {
+            JOptionPane.showMessageDialog(mainFrame, "No products are at critical level.", "Inventory Notification",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            StringBuilder message = new StringBuilder("The following products are at critical level:\n\n");
+            for (Product product : criticalProducts) {
+                message.append("Product Code: ").append(product.getProductCode()).append("\n");
+                message.append("Product Name: ").append(product.getProductName()).append("\n");
+                message.append("Stock Quantity: ").append(product.getProductTotalQuantity()).append("\n\n");
+
+                // Update status to REO (Reordering)
+                inventoryDAO.updateProductStatusToReordering(product.getProductCode());
+            }
+            JOptionPane.showMessageDialog(mainFrame, message.toString(), "Critical Inventory Notification",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 

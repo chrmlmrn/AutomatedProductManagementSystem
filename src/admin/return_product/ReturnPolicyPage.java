@@ -51,7 +51,7 @@ public class ReturnPolicyPage extends JPanel {
         RoundedPanel contentPanel = new RoundedPanel(15);
         contentPanel.setLayout(null);
         contentPanel.setBackground(new Color(30, 144, 255));
-        contentPanel.setBounds((1925 - 800) / 2, (1000 - 600) / 2, 800, 600); // Center the panel
+        contentPanel.setBounds((1400 - 800) / 2, (800 - 600) / 2, 800, 600); // Center the panel
         add(contentPanel);
 
         // Return policy label inside content panel

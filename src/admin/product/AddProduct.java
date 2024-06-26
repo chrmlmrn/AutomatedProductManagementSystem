@@ -604,11 +604,11 @@ public class AddProduct extends JPanel {
             }
 
             // Save barcode image to file
-            String folderPath = "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/barcodes_images/"; // Replace
-                                                                                                                       // with
-                                                                                                                       // your
-                                                                                                                       // folder
-                                                                                                                       // path
+            String folderPath = "C:/Users/ismai/OneDrive/Documents/SoftEng/AutomatedProductManagementSystem/barcode/"; // Replace
+            // with
+            // your
+            // folder
+            // path
             String fileName = productName + "_barcode.png"; // Example: ProductName_barcode.png
             File barcodeFile = new File(folderPath + fileName);
             ImageIO.write(barcodeImage, "png", barcodeFile);

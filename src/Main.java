@@ -1,10 +1,7 @@
 import javax.swing.*;
 
 import admin.AdminMenu;
-import admin.product.AddProduct;
 import cashier.CashierMenu;
-import cashier.POS.ScanProduct;
-import cashier.POS.ScanProduct;
 import login.Login;
 
 import java.awt.*;

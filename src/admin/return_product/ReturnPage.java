@@ -78,8 +78,19 @@ public class ReturnPage extends JPanel {
 
         productIdField = new JTextField(15);
         cpc.gridx = 1;
-        cpc.gridwidth = 2;
+        cpc.gridwidth = 1;
         containerPanel.add(productIdField, cpc);
+
+        // Add verify button next to product ID field
+        JButton verifyButton = new JButton("Verify");
+        verifyButton.setFont(new Font("Arial", Font.BOLD, 14));
+        verifyButton.setBackground(Color.WHITE);
+        verifyButton.setForeground(Color.BLACK);
+        verifyButton.setFocusPainted(false);
+        verifyButton.addActionListener(e -> verifyProduct());
+        cpc.gridx = 2;
+        cpc.gridwidth = 1;
+        containerPanel.add(verifyButton, cpc);
 
         // Add quantity label and field
         JLabel quantityLabel = new JLabel("Quantity");
@@ -94,18 +105,6 @@ public class ReturnPage extends JPanel {
         cpc.gridx = 1;
         cpc.gridwidth = 2;
         containerPanel.add(quantityField, cpc);
-
-        // Add verify button
-        JButton verifyButton = new JButton("Verify");
-        verifyButton.setFont(new Font("Arial", Font.BOLD, 14));
-        verifyButton.setBackground(Color.WHITE);
-        verifyButton.setForeground(Color.BLACK);
-        verifyButton.setFocusPainted(false);
-        verifyButton.addActionListener(e -> verifyProduct());
-        cpc.gridx = 3;
-        cpc.gridy = 1;
-        cpc.gridwidth = 1;
-        containerPanel.add(verifyButton, cpc);
 
         // Add reason label and combo box
         JLabel reasonLabel = new JLabel("Return Reason");

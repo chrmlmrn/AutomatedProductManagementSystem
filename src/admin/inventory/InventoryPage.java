@@ -1,23 +1,26 @@
-package admin.reports.inventory;
+package admin.inventory;
 
 import java.awt.*;
 import java.awt.print.PrinterException;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.*;
+
+import admin.reports.inventory.InventoryDAO;
 import admin.reports.inventory.Product;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import admin.AdminMenu;
 import admin.reports.ReportsPage;
 
-public class InventoryReport extends JPanel {
+public class InventoryPage extends JPanel {
 
     private DefaultTableModel model;
     private InventoryDAO inventoryDAO;
     private JFrame mainFrame;
 
-    public InventoryReport(JFrame mainFrame) {
+    public InventoryPage(JFrame mainFrame) {
         this.mainFrame = mainFrame;
         inventoryDAO = new InventoryDAO();
         initComponents();
@@ -37,14 +40,14 @@ public class InventoryReport extends JPanel {
         backButton.setFont(new Font("Arial", Font.BOLD, 30));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new ReportsPage(mainFrame));
+            mainFrame.setContentPane(new AdminMenu(mainFrame));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
         add(backButton);
 
         // Title Label
-        JLabel titleLabel = new JLabel("Inventory Reports");
+        JLabel titleLabel = new JLabel("Inventory");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setBounds(80, 30, 300, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
@@ -76,30 +79,12 @@ public class InventoryReport extends JPanel {
         tableScrollPane.setBounds(50, 100, 1300, 500);
         add(tableScrollPane);
 
-        // Print Button
-        JButton printButton = new JButton("Print");
-        printButton.setBounds(1300, 30, 100, 30);
-        printButton.setBackground(new Color(30, 144, 255));
-        printButton.setForeground(Color.WHITE);
-        printButton.setFocusPainted(false);
-        printButton.setFont(new Font("Arial", Font.BOLD, 16));
-        printButton.setBorder(BorderFactory.createEmptyBorder());
-        printButton.addActionListener(e -> {
-            try {
-                table.print(JTable.PrintMode.FIT_WIDTH, new MessageFormat("Inventory Report"), null);
-            } catch (PrinterException pe) {
-                pe.printStackTrace();
-            }
-        });
-        add(printButton);
-
         // Add component listener to keep elements centered and resized properly
         addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
                 int frameWidth = getWidth();
                 int frameHeight = getHeight();
                 tableScrollPane.setBounds(50, 100, frameWidth - 100, frameHeight - 200);
-                printButton.setBounds(frameWidth - 150, 30, 100, 30);
             }
         });
     }

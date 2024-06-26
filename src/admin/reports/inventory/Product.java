@@ -11,7 +11,8 @@ public class Product {
     private double productPrice;
     private String productStatus;
     private Date productExpirationDate;
-    private String productType; // Add product type
+    private String productType;
+    private String supplierName;
 
     // Getters and setters
     public String getProductCode() {
@@ -84,5 +85,13 @@ public class Product {
 
     public void setProductType(String productType) {
         this.productType = productType;
+    }
+
+    public void setSupplierName(String supplierName) {
+        this.supplierName = supplierName;
+    }
+
+    public String getSupplierName() {
+        return supplierName;
     }
 }
