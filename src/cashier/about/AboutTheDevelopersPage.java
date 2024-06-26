@@ -1,4 +1,4 @@
-package about;
+package cashier.about;
 
 import javax.swing.*;
 
@@ -11,10 +11,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class AboutTheSystemPage extends JPanel {
+public class AboutTheDevelopersPage extends JPanel {
     private JFrame mainFrame;
 
-    public AboutTheSystemPage(JFrame mainFrame) {
+    public AboutTheDevelopersPage(JFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
     }
@@ -56,7 +56,7 @@ public class AboutTheSystemPage extends JPanel {
         add(contentPanel);
 
         // Add About Us title inside content panel
-        JLabel aboutUsLabel = new JLabel("About the System");
+        JLabel aboutUsLabel = new JLabel("About the Developers");
         aboutUsLabel.setFont(new Font("Arial", Font.BOLD, 24));
         aboutUsLabel.setForeground(Color.WHITE);
         aboutUsLabel.setBounds(30, 20, 640, 30);
@@ -64,10 +64,15 @@ public class AboutTheSystemPage extends JPanel {
 
         // Add text area for content
         JTextArea textArea = new JTextArea();
-        textArea.setText("The Automated Product Management System for Lavega Store utilizes barcode technology to "
-                + "streamline product management and sales processes. The system provides real-time inventory "
-                + "updates, sales automation, and comprehensive reporting tools to enhance operational efficiency "
-                + "and accuracy. With robust security features, the system ensures data integrity and secure access.");
+        textArea.setText("We are a dynamic team of 4 computer science students currently pursuing our Bachelor of "
+                + "Science in Computer Science (BSCS), and we're thrilled to introduce you to our innovative software project. "
+                + "As third-year students, we are passionate about applying our theoretical knowledge to real-world scenarios, "
+                + "and our latest endeavor is a testament to that commitment.\n\n"
+                + "Team Members:\n"
+                + "- Celis John Carlos E.\n"
+                + "- Mariano Charimel C.\n"
+                + "- Molina Gabriel S.\n"
+                + "- Regis Mark Manuelle C.");
         textArea.setFont(new Font("Arial", Font.PLAIN, 16));
         textArea.setForeground(Color.WHITE);
         textArea.setBackground(new Color(30, 144, 255));
@@ -89,9 +94,7 @@ public class AboutTheSystemPage extends JPanel {
         returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AboutMainPage(mainFrame));
-                mainFrame.revalidate();
-                mainFrame.repaint();
+                new AboutMainPage(mainFrame);
             }
         });
         contentPanel.add(returnButton);

@@ -5,14 +5,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import about.AboutMainPage;
+import admin.about.AboutMainPage;
+import admin.help.HelpPage;
 import admin.maintenance.MaintenancePage;
 import admin.product.ProductPage;
 import admin.records.RecordsMainPage;
 import admin.reports.ReportsPage;
 import admin.return_product.ReturnPage;
 import customcomponents.RoundedButton;
-import help.HelpPage;
 import login.Login;
 
 public class AdminMenu extends JPanel {

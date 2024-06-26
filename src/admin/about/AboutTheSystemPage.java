@@ -1,8 +1,7 @@
-package about;
+package admin.about;
 
 import javax.swing.*;
 
-import cashier.CashierMenu;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import login.Login;

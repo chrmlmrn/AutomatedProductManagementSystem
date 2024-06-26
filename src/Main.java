@@ -64,7 +64,7 @@ public class Main extends JFrame {
         mainPanel.add(aboutPage, ABOUT_PANEL);
 
         // Set initial panel to Login
-        cardLayout.show(mainPanel, ADMIN_MENU_PANEL);
+        cardLayout.show(mainPanel, CASHIER_MENU_PANEL);
 
         add(mainPanel);
         setVisible(true);
