@@ -67,7 +67,8 @@ public class SalesRecord extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Product Code", "Product Name", "Date", "Sales Amount", "Tax (VAT 12%)", "Total" };
+        String[] columnNames = { "Transaction ID", "Receipt Number", "Reference Number", "Date", "Subtotal", "Discount",
+                "VAT", "Total" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -126,15 +127,15 @@ public class SalesRecord extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT t.transaction_id, p.product_code, p.product_name, t.date, t.subtotal, t.vat, t.total " +
-                        "FROM transactions t " +
-                        "JOIN products p ON t.product_id = p.product_id";
+                query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total "
+                        +
+                        "FROM transactions";
                 statement = connection.prepareStatement(query);
             } else {
-                query = "SELECT t.transaction_id, p.product_code, p.product_name, t.date, t.subtotal, t.vat, t.total " +
-                        "FROM transactions t " +
-                        "JOIN products p ON t.product_id = p.product_id " +
-                        "WHERE t.date = ?";
+                query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total "
+                        +
+                        "FROM transactions " +
+                        "WHERE date = ?";
                 statement = connection.prepareStatement(query);
                 statement.setString(1, searchText);
             }
@@ -144,14 +145,16 @@ public class SalesRecord extends JPanel {
 
             while (resultSet.next()) {
                 int transactionId = resultSet.getInt("transaction_id");
-                String productCode = resultSet.getString("product_code");
-                String productName = resultSet.getString("product_name");
+                String receiptNumber = resultSet.getString("receipt_number");
+                String referenceNumber = resultSet.getString("reference_number");
                 Date saleDate = resultSet.getDate("date");
-                double salesAmount = resultSet.getDouble("subtotal");
-                double tax = resultSet.getDouble("vat");
+                double subtotal = resultSet.getDouble("subtotal");
+                double discount = resultSet.getDouble("discount");
+                double vat = resultSet.getDouble("vat");
                 double total = resultSet.getDouble("total");
                 tableModel.addRow(
-                        new Object[] { transactionId, productCode, productName, saleDate, salesAmount, tax, total });
+                        new Object[] { transactionId, receiptNumber, referenceNumber, saleDate, subtotal, discount, vat,
+                                total });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -162,10 +165,9 @@ public class SalesRecord extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT t.transaction_id, p.product_code, p.product_name, t.date, t.subtotal, t.vat, t.total "
+            String query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total "
                     +
-                    "FROM transactions t " +
-                    "JOIN products p ON t.product_id = p.product_id";
+                    "FROM transactions";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
@@ -173,14 +175,16 @@ public class SalesRecord extends JPanel {
 
             while (resultSet.next()) {
                 int transactionId = resultSet.getInt("transaction_id");
-                String productCode = resultSet.getString("product_code");
-                String productName = resultSet.getString("product_name");
+                String receiptNumber = resultSet.getString("receipt_number");
+                String referenceNumber = resultSet.getString("reference_number");
                 Date saleDate = resultSet.getDate("date");
-                double salesAmount = resultSet.getDouble("subtotal");
-                double tax = resultSet.getDouble("vat");
+                double subtotal = resultSet.getDouble("subtotal");
+                double discount = resultSet.getDouble("discount");
+                double vat = resultSet.getDouble("vat");
                 double total = resultSet.getDouble("total");
                 tableModel.addRow(
-                        new Object[] { transactionId, productCode, productName, saleDate, salesAmount, tax, total });
+                        new Object[] { transactionId, receiptNumber, referenceNumber, saleDate, subtotal, discount, vat,
+                                total });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -188,5 +192,4 @@ public class SalesRecord extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.*;
+import com.toedter.calendar.JDateChooser;
 import database.DatabaseUtil;
 
 public class UpdateProduct extends JPanel {
@@ -58,7 +59,8 @@ public class UpdateProduct extends JPanel {
         outerPanel.add(headerPanel, BorderLayout.NORTH);
 
         // Product Table
-        String[] columnNames = { "Product Code", "Name", "Category", "Price", "Stock Quantity", "Supplier", "Status" };
+        String[] columnNames = { "Product Code", "Name", "Category", "Price", "Stock Quantity", "Supplier", "Status",
+                "Expiration Date" };
         tableModel = new DefaultTableModel(columnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -81,6 +83,7 @@ public class UpdateProduct extends JPanel {
         columnModel.getColumn(4).setPreferredWidth(150);
         columnModel.getColumn(5).setPreferredWidth(150);
         columnModel.getColumn(6).setPreferredWidth(100);
+        columnModel.getColumn(7).setPreferredWidth(150);
 
         JScrollPane scrollPane = new JScrollPane(productTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding for the scroll pane
@@ -98,33 +101,36 @@ public class UpdateProduct extends JPanel {
         statusComboBox = new JComboBox<>();
         loadStatusesIntoComboBox();
 
-        // Set cell editors for Category and Status columns
+        // Set cell editors for Category, Status, and Expiration Date columns
         productTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(categoryComboBox));
         productTable.getColumnModel().getColumn(6).setCellEditor(new DefaultCellEditor(statusComboBox));
-
-        // Add Cell Editor Listener to capture changes when editing stops
-        productTable.getDefaultEditor(Object.class).addCellEditorListener(new CellEditorListener() {
-            @Override
-            public void editingStopped(ChangeEvent e) {
-                int row = productTable.getSelectedRow();
-                int column = productTable.getSelectedColumn();
-                if (column == 2 || column == 6) {
-                    updateProduct();
-                }
-            }
-
-            @Override
-            public void editingCanceled(ChangeEvent e) {
-                // Do nothing
-            }
-        });
+        productTable.getColumnModel().getColumn(7).setCellEditor(new DateEditor(new JDateChooser()));
 
         // Update Button
         JButton updateButton = new JButton("Update");
         updateButton.setFont(new Font("Arial", Font.BOLD, 18));
         updateButton.setBackground(new Color(30, 144, 255)); // Match button color
         updateButton.setForeground(Color.WHITE);
-        updateButton.addActionListener(e -> updateProduct());
+        updateButton.addActionListener(e -> {
+            int selectedRow = productTable.getSelectedRow();
+            if (selectedRow < 0) {
+                JOptionPane.showMessageDialog(this, "Please select a product to update.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            int column = productTable.getSelectedColumn();
+            int productId = (int) productTable.getClientProperty("productId-" + selectedRow);
+
+            if (column == 4) { // Stock Quantity column
+                int additionalQuantity = Integer.parseInt(tableModel.getValueAt(selectedRow, column).toString());
+                updateStockAndExpiration(productId, additionalQuantity, selectedRow);
+            } else if (column == 7) { // Expiration Date column
+                updateExpirationDate(productId, selectedRow);
+            } else if (column != 0) { // Other editable columns except Product Code
+                updateProduct(selectedRow);
+            }
+        });
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(Color.WHITE);
@@ -134,14 +140,17 @@ public class UpdateProduct extends JPanel {
     }
 
     private void loadProducts() {
-        String query = "SELECT p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_id, s.supplier_name, ps.product_status_name "
+        String query = "SELECT p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_id, s.supplier_name, ps.product_status_name, MAX(pe.product_expiration_date) AS product_expiration_date, SUM(pe.product_quantity) AS total_quantity "
                 +
                 "FROM products p " +
                 "JOIN category c ON p.category_id = c.category_id " +
                 "JOIN inventory i ON p.product_id = i.product_id " +
                 "JOIN supplier s ON p.supplier_id = s.supplier_id " +
                 "JOIN product_status ps ON p.product_status_id = ps.product_status_id " +
-                "ORDER BY p.product_id ASC"; // Add ORDER BY clause;
+                "LEFT JOIN product_expiration pe ON p.product_id = pe.product_id " +
+                "GROUP BY p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_id, s.supplier_name, ps.product_status_name "
+                +
+                "ORDER BY p.product_id ASC"; // Add GROUP BY and ORDER BY clauses
 
         try (Connection conn = DatabaseUtil.getConnection();
                 Statement stmt = conn.createStatement();
@@ -157,10 +166,11 @@ public class UpdateProduct extends JPanel {
                 String supplierId = rs.getString("supplier_id");
                 String supplierName = rs.getString("supplier_name");
                 String productStatus = rs.getString("product_status_name");
+                Date expirationDate = rs.getDate("product_expiration_date");
 
                 // Add rows to the table model
                 tableModel.addRow(new Object[] { productCode, productName, categoryName, productPrice, productQuantity,
-                        supplierName, productStatus });
+                        supplierName, productStatus, expirationDate });
 
                 // Store productId and supplierId in hidden columns (not displayed)
                 productTable.putClientProperty("productId-" + (tableModel.getRowCount() - 1), productId);
@@ -205,20 +215,129 @@ public class UpdateProduct extends JPanel {
         }
     }
 
-    private void updateProduct() {
-        int selectedRow = productTable.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this, "Please select a product to update.", "Error",
+    private void updateStockAndExpiration(int productId, int additionalQuantity, int row) {
+        java.util.Date expirationDate = (java.util.Date) tableModel.getValueAt(row, 7);
+        java.sql.Date sqlExpirationDate = new java.sql.Date(expirationDate.getTime());
+
+        // Update inventory
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(
+                        "UPDATE inventory SET product_total_quantity = product_total_quantity + ? WHERE product_id = ?")) {
+
+            stmt.setInt(1, additionalQuantity);
+            stmt.setInt(2, productId);
+            int rowsUpdated = stmt.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                JOptionPane.showMessageDialog(this, "Stock quantity updated successfully.", "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+                refreshProductRow(productTable.getSelectedRow()); // Refresh the row to display updated stock
+            } else {
+                JOptionPane.showMessageDialog(this, "No rows updated. Please check your data.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error updating stock quantity: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
-            return;
         }
 
+        // Update product expiration quantity and date
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT * FROM product_expiration WHERE product_id = ? AND product_expiration_date = ?")) {
+
+            stmt.setInt(1, productId);
+            stmt.setDate(2, sqlExpirationDate);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                // Record exists, update the quantity
+                int existingQuantity = rs.getInt("product_quantity");
+                int newQuantity = existingQuantity + additionalQuantity;
+                try (PreparedStatement updateStmt = conn.prepareStatement(
+                        "UPDATE product_expiration SET product_quantity = ? WHERE product_id = ? AND product_expiration_date = ?")) {
+                    updateStmt.setInt(1, newQuantity);
+                    updateStmt.setInt(2, productId);
+                    updateStmt.setDate(3, sqlExpirationDate);
+                    updateStmt.executeUpdate();
+                }
+            } else {
+                // Record does not exist, insert a new record
+                try (PreparedStatement insertStmt = conn.prepareStatement(
+                        "INSERT INTO product_expiration (product_id, product_expiration_date, product_quantity) VALUES (?, ?, ?)")) {
+                    insertStmt.setInt(1, productId);
+                    insertStmt.setDate(2, sqlExpirationDate);
+                    insertStmt.setInt(3, additionalQuantity);
+                    insertStmt.executeUpdate();
+                }
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error updating product expiration quantity: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateExpirationDate(int productId, int row) {
+        java.util.Date expirationDate = (java.util.Date) tableModel.getValueAt(row, 7);
+        java.sql.Date sqlExpirationDate = new java.sql.Date(expirationDate.getTime());
+        int additionalQuantity = Integer.parseInt(tableModel.getValueAt(row, 4).toString());
+
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT * FROM product_expiration WHERE product_id = ? AND product_expiration_date = ?")) {
+
+            stmt.setInt(1, productId);
+            stmt.setDate(2, sqlExpirationDate);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                // Record exists, update the quantity
+                int existingQuantity = rs.getInt("product_quantity");
+                int newQuantity = existingQuantity + additionalQuantity;
+                try (PreparedStatement updateStmt = conn.prepareStatement(
+                        "UPDATE product_expiration SET product_quantity = ? WHERE product_id = ? AND product_expiration_date = ?")) {
+                    updateStmt.setInt(1, newQuantity);
+                    updateStmt.setInt(2, productId);
+                    updateStmt.setDate(3, sqlExpirationDate);
+                    updateStmt.executeUpdate();
+                }
+            } else {
+                // Record does not exist, insert a new record
+                try (PreparedStatement insertStmt = conn.prepareStatement(
+                        "INSERT INTO product_expiration (product_id, product_expiration_date, product_quantity) VALUES (?, ?, ?)")) {
+                    insertStmt.setInt(1, productId);
+                    insertStmt.setDate(2, sqlExpirationDate);
+                    insertStmt.setInt(3, additionalQuantity);
+                    insertStmt.executeUpdate();
+                }
+            }
+
+            // Update inventory table to reflect the new stock quantity
+            try (PreparedStatement updateInventoryStmt = conn.prepareStatement(
+                    "UPDATE inventory SET product_total_quantity = product_total_quantity + ? WHERE product_id = ?")) {
+                updateInventoryStmt.setInt(1, additionalQuantity);
+                updateInventoryStmt.setInt(2, productId);
+                updateInventoryStmt.executeUpdate();
+            }
+
+            JOptionPane.showMessageDialog(this, "Expiration date and stock quantity updated successfully.", "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error updating expiration date: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateProduct(int selectedRow) {
         int productId = (int) productTable.getClientProperty("productId-" + selectedRow);
         String updatedName = (String) tableModel.getValueAt(selectedRow, 1);
         String updatedCategory = (String) tableModel.getValueAt(selectedRow, 2);
         String updatedCategoryId = getCategoryIDByName(updatedCategory); // Get category ID by name
         BigDecimal updatedPrice = new BigDecimal(tableModel.getValueAt(selectedRow, 3).toString());
-        int updatedQuantity = Integer.parseInt(tableModel.getValueAt(selectedRow, 4).toString());
         String updatedSupplier = (String) tableModel.getValueAt(selectedRow, 5);
         String supplierId = (String) productTable.getClientProperty("supplierId-" + selectedRow);
         String updatedStatus = (String) tableModel.getValueAt(selectedRow, 6);
@@ -229,7 +348,6 @@ public class UpdateProduct extends JPanel {
         System.out.println("Updated Name: " + updatedName);
         System.out.println("Updated Category ID: " + updatedCategoryId);
         System.out.println("Updated Price: " + updatedPrice);
-        System.out.println("Updated Quantity: " + updatedQuantity);
         System.out.println("Updated Supplier: " + updatedSupplier);
         System.out.println("Supplier ID: " + supplierId);
         System.out.println("Updated Status ID: " + updatedStatusId);
@@ -239,19 +357,14 @@ public class UpdateProduct extends JPanel {
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(
-                        "UPDATE products p " +
-                                "JOIN inventory i ON p.product_id = i.product_id " +
-                                "SET p.product_name = ?, p.category_id = ?, p.product_price = ?, i.product_total_quantity = ?, p.supplier_id = ?, p.product_status_id = ? "
-                                +
-                                "WHERE p.product_id = ?")) {
+                        "UPDATE products SET product_name = ?, category_id = ?, product_price = ?, supplier_id = ?, product_status_id = ? WHERE product_id = ?")) {
 
             stmt.setString(1, updatedName);
             stmt.setString(2, updatedCategoryId);
             stmt.setBigDecimal(3, updatedPrice);
-            stmt.setInt(4, updatedQuantity);
-            stmt.setString(5, supplierId);
-            stmt.setString(6, updatedStatusId);
-            stmt.setInt(7, productId);
+            stmt.setString(4, supplierId);
+            stmt.setString(5, updatedStatusId);
+            stmt.setInt(6, productId);
             int rowsUpdated = stmt.executeUpdate();
 
             if (rowsUpdated > 0) {
@@ -309,14 +422,16 @@ public class UpdateProduct extends JPanel {
 
     private void refreshProductRow(int row) {
         int productId = (int) productTable.getClientProperty("productId-" + row);
-        String query = "SELECT p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_name, ps.product_status_name "
+        String query = "SELECT p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_name, ps.product_status_name, MAX(pe.product_expiration_date) AS product_expiration_date, SUM(pe.product_quantity) AS total_quantity "
                 +
                 "FROM products p " +
                 "JOIN category c ON p.category_id = c.category_id " +
                 "JOIN inventory i ON p.product_id = i.product_id " +
                 "JOIN supplier s ON p.supplier_id = s.supplier_id " +
                 "JOIN product_status ps ON p.product_status_id = ps.product_status_id " +
-                "WHERE p.product_id = ?";
+                "LEFT JOIN product_expiration pe ON p.product_id = pe.product_id " +
+                "WHERE p.product_id = ? " +
+                "GROUP BY p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_name, ps.product_status_name";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -331,6 +446,7 @@ public class UpdateProduct extends JPanel {
                     tableModel.setValueAt(rs.getInt("product_total_quantity"), row, 4);
                     tableModel.setValueAt(rs.getString("supplier_name"), row, 5);
                     tableModel.setValueAt(rs.getString("product_status_name"), row, 6);
+                    tableModel.setValueAt(rs.getDate("product_expiration_date"), row, 7);
                 }
             }
         } catch (SQLException ex) {
@@ -359,6 +475,29 @@ public class UpdateProduct extends JPanel {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error updating supplier name: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // DateEditor class to use JDateChooser in JTable
+    public class DateEditor extends DefaultCellEditor {
+        private JDateChooser dateChooser;
+
+        public DateEditor(JDateChooser dateChooser) {
+            super(new JTextField());
+            this.dateChooser = dateChooser;
+            dateChooser.setDateFormatString("yyyy-MM-dd");
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return dateChooser.getDate();
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row,
+                int column) {
+            dateChooser.setDate((java.util.Date) value);
+            return dateChooser;
         }
     }
 }
