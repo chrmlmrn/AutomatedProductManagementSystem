@@ -202,6 +202,50 @@ VALUES ('DEF', 'Defective Product'),
     ('WRO', 'Wrong Product'),
     ('EXP', 'Expired Product');
 --@block
+CREATE TABLE return_products (
+    return_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    return_quantity INT NOT NULL,
+    return_reason_id CHAR(3) NOT NULL,
+    return_date DATE NOT NULL,
+    return_status_id CHAR(3) NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (return_reason_id) REFERENCES return_reason(return_reason_id),
+    FOREIGN KEY (return_status_id) REFERENCES return_status(return_status_id)
+);
+--@block
+CREATE TABLE sales (
+    sales_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    sales_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    user_id INT NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+--@block
+CREATE TABLE discount (
+    discount_type_id CHAR(3) PRIMARY KEY,
+    discount_type VARCHAR(50) NOT NULL,
+    discount_value DECIMAL(10, 2) NOT NULL
+);
+--@block
+INSERT INTO discount (discount_type_id, discount_type, discount_value)
+VALUES ('SCN', 'Senior Citizen', 20.00),
+    ('PWD', 'Person with Disability', 20.00);
+--@block
+CREATE TABLE product_sales (
+    product_sales_id INT PRIMARY KEY AUTO_INCREMENT,
+    sales_id INT NOT NULL,
+    product_id INT NOT NULL,
+    product_quantity_sold INT NOT NULL,
+    product_unit_price DECIMAL(10, 2) NOT NULL,
+    total_sales DECIMAL(10, 2) NOT NULL,
+    discount_type_id CHAR(3),
+    FOREIGN KEY (sales_id) REFERENCES sales(sales_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (discount_type_id) REFERENCES discount(discount_type_id)
+);
+--@block
 SELECT *
 FROM products;
 --@block

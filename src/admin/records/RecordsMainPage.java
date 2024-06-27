@@ -8,6 +8,7 @@ import java.awt.event.ActionListener;
 import customcomponents.RoundedButton;
 import admin.AdminMenu; // Replace with your actual AdminMenu class
 import admin.records.product.ProductRecords; // Replace with your actual ProductRecords class
+import admin.records.sales.SalesRecord;
 import admin.records.user.UserRecords; // Replace with your actual UserRecords class
 import admin.records.userlogs.UserLog;
 
@@ -85,7 +86,7 @@ public class RecordsMainPage extends JPanel {
                             openInventoryRecords();
                             break;
                         case "Sales":
-                            // Open Sales page
+                            openSalesRecords();
                             break;
                         case "Return":
                             // Open Return page
@@ -135,6 +136,12 @@ public class RecordsMainPage extends JPanel {
 
     private void openUserlogs() {
         mainFrame.setContentPane(new UserLog(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openSalesRecords() {
+        mainFrame.setContentPane(new SalesRecord(mainFrame));
         mainFrame.revalidate();
         mainFrame.repaint();
     }

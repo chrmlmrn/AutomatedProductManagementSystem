@@ -6,6 +6,8 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import admin.reports.sales.Transaction;
+import admin.reports.sales.TransactionService;
 import cashier.CashierMenu;
 
 import javax.swing.table.TableCellEditor;
@@ -17,6 +19,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import database.DatabaseUtil;
@@ -562,6 +565,18 @@ public class ScanProduct extends JPanel {
             System.out.println("Executing query: " + stmt.toString()); // Debugging statement
             stmt.executeUpdate();
             System.out.println("Transaction saved successfully!"); // Debugging statement
+
+            // Handle the new transaction to update sales summary
+            Transaction transaction = new Transaction();
+            transaction.setDate(java.sql.Date.valueOf(currentDate));
+            transaction.setTime(java.sql.Time.valueOf(currentTime));
+            transaction.setProductsSold(soldProductTableModel.getRowCount());
+            transaction.setTax(vatAmount);
+            transaction.setTotal(total);
+
+            TransactionService transactionService = new TransactionService();
+            transactionService.handleNewTransaction(transaction);
+
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error saving transaction to the database: " + e.getMessage());
@@ -569,6 +584,34 @@ public class ScanProduct extends JPanel {
             DatabaseUtil.close(stmt);
             DatabaseUtil.close(conn);
         }
+    }
+
+    private int getProductIdByName(String productName) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        int productId = -1;
+
+        try {
+            conn = DatabaseUtil.getConnection();
+            String sql = "SELECT product_id FROM products WHERE product_name = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, productName);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                productId = rs.getInt("product_id");
+            }
+            System.out.println("Product ID for " + productName + " is " + productId); // Debugging statement
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DatabaseUtil.close(rs);
+            DatabaseUtil.close(stmt);
+            DatabaseUtil.close(conn);
+        }
+
+        return productId;
     }
 
     private void resetPOS() {

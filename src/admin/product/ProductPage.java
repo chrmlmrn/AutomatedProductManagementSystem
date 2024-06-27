@@ -70,9 +70,9 @@ public class ProductPage extends JPanel {
                     if (button.getText().equals("Add Product")) {
                         mainFrame.getContentPane().add(new AddProduct(mainFrame));
                     } else if (button.getText().equals("Update Product")) {
-                        // mainFrame.setContentPane(new UpdateProduct(mainFrame));
-                        // mainFrame.revalidate();
-                        // mainFrame.repaint();
+                        mainFrame.setContentPane(new UpdateProduct(mainFrame));
+                        mainFrame.revalidate();
+                        mainFrame.repaint();
                     }
 
                 }
