@@ -6,7 +6,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import customcomponents.RoundedButton;
-import admin.AdminMenu; // Replace with your actual AdminMenu class
+import admin.AdminMenu;
+import admin.maintenance.backup_and_restore.SystemMaintenance;
 
 public class MaintenancePage extends JPanel {
 
@@ -71,9 +72,9 @@ public class MaintenancePage extends JPanel {
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (buttonText.equals("System Maintenance")) {
-                        // Open System Maintenance Page
-                        // SystemMaintenance systemMaintenance = new SystemMaintenance();
-                        // systemMaintenance.setVisible(true);
+                        mainFrame.setContentPane(new SystemMaintenance(mainFrame));
+                        mainFrame.revalidate();
+                        mainFrame.repaint();
                     }
                 }
             });
