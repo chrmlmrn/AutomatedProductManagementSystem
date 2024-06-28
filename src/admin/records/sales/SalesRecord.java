@@ -1,12 +1,14 @@
 package admin.records.sales;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import admin.records.RecordsMainPage;
+import admin.reports.ReportsPage;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import database.DatabaseUtil;
@@ -15,7 +17,6 @@ public class SalesRecord extends JPanel {
     private DefaultTableModel tableModel;
     private JTable salesTable;
     private JTextField searchField;
-
     private JFrame mainFrame;
 
     public SalesRecord(JFrame mainFrame) {
@@ -25,7 +26,7 @@ public class SalesRecord extends JPanel {
 
         // Initialize table with data
         try (Connection connection = DatabaseUtil.getConnection()) {
-            refreshTable(connection);
+            refreshTable(connection, null);
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
@@ -62,13 +63,13 @@ public class SalesRecord extends JPanel {
         // Rounded Blue Panel
         RoundedPanel bluePanel = new RoundedPanel(30);
         bluePanel.setBackground(new Color(30, 144, 255));
-        bluePanel.setBounds(200, 100, 1200, 600);
+        bluePanel.setBounds(100, 120, 1200, 600);
         bluePanel.setLayout(null); // Use absolute positioning within the panel
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Transaction ID", "Receipt Number", "Reference Number", "Date", "Subtotal", "Discount",
-                "VAT", "Total" };
+        String[] columnNames = { "Date", "Hours Open", "Hours Closed", "Products Sold", "Tax", "Discount",
+                "Total Sales" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -90,13 +91,13 @@ public class SalesRecord extends JPanel {
         // Search Panel
         JPanel searchPanel = new JPanel();
         searchPanel.setBackground(new Color(30, 144, 255));
-        searchPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        searchPanel.setBounds(150, 470, 900, 60); // Center the search panel horizontally
+        searchPanel.setLayout(null);
+        searchPanel.setBounds(350, 470, 600, 60); // Center the search panel horizontally
         bluePanel.add(searchPanel);
 
         searchField = new JTextField();
         searchField.setFont(new Font("Arial", Font.PLAIN, 16));
-        searchField.setPreferredSize(new Dimension(300, 40)); // Center the search field within the search panel
+        searchField.setBounds(50, 10, 300, 40); // Center the search field within the search panel
         searchPanel.add(searchField);
 
         RoundedButton searchButton = new RoundedButton("Search");
@@ -104,87 +105,78 @@ public class SalesRecord extends JPanel {
         searchButton.setBackground(Color.WHITE);
         searchButton.setForeground(Color.BLACK);
         searchButton.setFocusPainted(false);
-        searchButton.setPreferredSize(new Dimension(150, 40)); // Adjust the position of the search button within the
-                                                               // search panel
-        searchButton.addActionListener(e -> searchSales());
+        searchButton.setBounds(370, 10, 150, 40); // Adjust the position of the search button within the search panel
+        searchButton.addActionListener(e -> searchSalesByDate());
         searchPanel.add(searchButton);
+    }
 
-        // Initialize table with data
-        try (Connection connection = DatabaseUtil.getConnection()) {
-            refreshTable(connection);
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
+    private void searchSalesByDate() {
+        String searchText = searchField.getText().trim();
+
+        if (!searchText.isEmpty()) {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                java.util.Date parsedDate = dateFormat.parse(searchText);
+                java.sql.Date sqlDate = new java.sql.Date(parsedDate.getTime());
+
+                try (Connection connection = DatabaseUtil.getConnection()) {
+                    refreshTable(connection, sqlDate);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (ParseException e) {
+                JOptionPane.showMessageDialog(null, "Invalid date format. Please use yyyy-MM-dd.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            try (Connection connection = DatabaseUtil.getConnection()) {
+                refreshTable(connection, null);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
-    private void searchSales() {
-        String searchText = searchField.getText().trim();
+    private void refreshTable(Connection connection, java.sql.Date dateFilter) {
+        try {
+            String query = "SELECT t.date AS sale_date, "
+                    + "SUM(t.subtotal) AS total_sales, "
+                    + "SUM(t.vat) AS tax, "
+                    + "SUM(COALESCE((SELECT SUM(r.return_quantity * p.product_price) "
+                    + "               FROM return_products r "
+                    + "               JOIN products p ON r.product_id = p.product_id "
+                    + "               WHERE DATE(r.return_date) = t.date), 0)) AS return_refund, "
+                    + "COUNT(*) AS products_sold "
+                    + "FROM transactions t ";
 
-        try (Connection connection = DatabaseUtil.getConnection()) {
-            String query;
-            PreparedStatement statement;
+            if (dateFilter != null) {
+                query += "WHERE t.date = ? ";
+            }
 
-            if (searchText.isEmpty()) {
-                query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total "
-                        +
-                        "FROM transactions";
-                statement = connection.prepareStatement(query);
-            } else {
-                query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total "
-                        +
-                        "FROM transactions " +
-                        "WHERE date = ?";
-                statement = connection.prepareStatement(query);
-                statement.setString(1, searchText);
+            query += "GROUP BY t.date";
+
+            PreparedStatement statement = connection.prepareStatement(query);
+
+            if (dateFilter != null) {
+                statement.setDate(1, dateFilter);
             }
 
             ResultSet resultSet = statement.executeQuery();
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int transactionId = resultSet.getInt("transaction_id");
-                String receiptNumber = resultSet.getString("receipt_number");
-                String referenceNumber = resultSet.getString("reference_number");
-                Date saleDate = resultSet.getDate("date");
-                double subtotal = resultSet.getDouble("subtotal");
-                double discount = resultSet.getDouble("discount");
-                double vat = resultSet.getDouble("vat");
-                double total = resultSet.getDouble("total");
-                tableModel.addRow(
-                        new Object[] { transactionId, receiptNumber, referenceNumber, saleDate, subtotal, discount, vat,
-                                total });
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
-    }
+                Date saleDate = resultSet.getDate("sale_date");
+                int productsSold = resultSet.getInt("products_sold");
+                double tax = resultSet.getDouble("tax");
+                double returnRefund = resultSet.getDouble("return_refund");
+                double totalSales = resultSet.getDouble("total_sales");
 
-    private void refreshTable(Connection connection) {
-        try {
-            String query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total "
-                    +
-                    "FROM transactions";
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
-
-            tableModel.setRowCount(0); // Clear existing rows
-
-            while (resultSet.next()) {
-                int transactionId = resultSet.getInt("transaction_id");
-                String receiptNumber = resultSet.getString("receipt_number");
-                String referenceNumber = resultSet.getString("reference_number");
-                Date saleDate = resultSet.getDate("date");
-                double subtotal = resultSet.getDouble("subtotal");
-                double discount = resultSet.getDouble("discount");
-                double vat = resultSet.getDouble("vat");
-                double total = resultSet.getDouble("total");
-                tableModel.addRow(
-                        new Object[] { transactionId, receiptNumber, referenceNumber, saleDate, subtotal, discount, vat,
-                                total });
+                // Assuming fixed hours open/closed for simplicity
+                tableModel.addRow(new Object[] { saleDate, 8, 16, productsSold, tax, returnRefund, totalSales });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

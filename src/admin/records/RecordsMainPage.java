@@ -1,16 +1,17 @@
 package admin.records;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import customcomponents.RoundedButton;
-import admin.AdminMenu; // Replace with your actual AdminMenu class
-import admin.records.product.ProductRecords; // Replace with your actual ProductRecords class
+import admin.AdminMenu;
+import admin.records.inventory.InventoryRecords;
+import admin.records.product.ProductRecords;
+import admin.records.return_records.ReturnRecords;
 import admin.records.sales.SalesRecord;
-import admin.records.user.UserRecords; // Replace with your actual UserRecords class
+import admin.records.user.UserRecords; // Replace with your actual AdminMenu class
 import admin.records.userlogs.UserLog;
+import customcomponents.RoundedButton;
+import java.awt.*; // Replace with your actual ProductRecords class
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener; // Replace with your actual UserRecords class
+import javax.swing.*;
 
 public class RecordsMainPage extends JPanel {
 
@@ -89,7 +90,8 @@ public class RecordsMainPage extends JPanel {
                             openSalesRecords();
                             break;
                         case "Return":
-                            // Open Return page
+                            openReturnRecords();
+                            break;
                         case "User Logs":
                             openUserlogs();
                             break;
@@ -147,8 +149,14 @@ public class RecordsMainPage extends JPanel {
     }
 
     private void openInventoryRecords() {
-        // mainFrame.setContentPane(new ProductRecords(mainFrame));
-        // mainFrame.revalidate();
-        // mainFrame.repaint();
+        mainFrame.setContentPane(new InventoryRecords(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
+    }
+
+    private void openReturnRecords() {
+        mainFrame.setContentPane(new ReturnRecords(mainFrame));
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
 }

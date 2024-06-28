@@ -1,127 +1,88 @@
 package admin.reports.sales;
 
-import customcomponents.RoundedButton;
-import customcomponents.RoundedPanel;
-import customcomponents.RoundedTextField;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
 import admin.reports.ReportsPage;
+import database.DatabaseUtil;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.print.PrinterException;
+import java.awt.event.*;
+import java.sql.*;
 import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.List;
+import java.awt.print.PrinterException;
 
 public class SalesReport extends JPanel {
-
-    private DefaultTableModel model;
-    private SalesDAO salesDAO;
-    private RoundedTextField startDateField;
-    private RoundedTextField endDateField;
-
+    private DefaultTableModel tableModel;
+    private JTable salesTable;
     private JFrame mainFrame;
 
     public SalesReport(JFrame mainFrame) {
         this.mainFrame = mainFrame;
-
-        salesDAO = new SalesDAO();
         initComponents();
+        setVisible(true);
+
+        // Initialize table with data
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
+        setLayout(null); // Use absolute positioning
+        setBackground(Color.WHITE);
 
-        // Main Panel
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(null);
-        mainPanel.setBackground(Color.WHITE);
-
-        // Back arrow button
+        // Back Button
         JButton backButton = new JButton("<");
-        backButton.setBounds(20, 30, 50, 30);
+        backButton.setFont(new Font("Arial", Font.BOLD, 30));
+        backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
-        backButton.setFont(new Font("Arial", Font.BOLD, 30));
-        backButton.setBorder(BorderFactory.createEmptyBorder());
-        backButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new ReportsPage(mainFrame));
-                mainFrame.revalidate();
-                mainFrame.repaint();
-            }
+        backButton.setBounds(20, 20, 50, 50);
+        add(backButton);
+
+        backButton.addActionListener(e -> {
+            mainFrame.setContentPane(new ReportsPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
         });
-        mainPanel.add(backButton);
 
         // Title Label
         JLabel titleLabel = new JLabel("Sales Reports");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
-        titleLabel.setBounds(80, 30, 300, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
-        mainPanel.add(titleLabel);
+        titleLabel.setBounds(100, 30, 500, 30);
+        add(titleLabel);
 
-        // Date Input Panel
-        RoundedPanel datePanel = new RoundedPanel(30);
-        datePanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 20));
-        datePanel.setBackground(new Color(30, 144, 255)); // Blue background
-        datePanel.setBounds(50, 100, 1280, 100);
+        // Table Setup
+        String[] columnNames = { "Transaction ID", "Receipt Number", "Reference Number", "Date", "Subtotal", "Discount",
+                "VAT", "Total" };
+        Object[][] data = {}; // Sample data
 
-        JLabel startDateLabel = new JLabel("Enter Date Start");
-        startDateLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        startDateLabel.setForeground(Color.WHITE);
-
-        startDateField = new RoundedTextField(20, 10);
-
-        JLabel endDateLabel = new JLabel("Enter Date End");
-        endDateLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        endDateLabel.setForeground(Color.WHITE);
-
-        endDateField = new RoundedTextField(20, 10);
-
-        RoundedButton fetchButton = new RoundedButton("Fetch Data");
-        fetchButton.setFont(new Font("Arial", Font.BOLD, 20));
-        fetchButton.setBackground(Color.WHITE);
-        fetchButton.setForeground(new Color(30, 144, 255));
-        fetchButton.addActionListener(new ActionListener() {
+        tableModel = new DefaultTableModel(data, columnNames) {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                fetchData();
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table non-editable
             }
-        });
+        };
 
-        datePanel.add(startDateLabel);
-        datePanel.add(startDateField);
-        datePanel.add(endDateLabel);
-        datePanel.add(endDateField);
-        datePanel.add(fetchButton);
-
-        mainPanel.add(datePanel);
-
-        // Table Data
-        String[] columnNames = { "Date", "Hours Open", "Hours Closed", "Products Sold", "Tax", "Return/Refund",
-                "Total Sales" };
-        Object[][] data = {};
-
-        model = new DefaultTableModel(data, columnNames);
-        JTable table = new JTable(model);
-        table.setRowHeight(30);
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(30, 144, 255));
-        table.getTableHeader().setForeground(Color.WHITE);
-        table.getTableHeader().setReorderingAllowed(false); // Disable column reordering
-        table.setFont(new Font("Arial", Font.PLAIN, 14));
-
-        JScrollPane tableScrollPane = new JScrollPane(table);
-        tableScrollPane.setBounds(50, 250, 1280, 500);
-        mainPanel.add(tableScrollPane);
+        salesTable = new JTable(tableModel);
+        salesTable.setFont(new Font("Arial", Font.PLAIN, 16));
+        salesTable.setRowHeight(30);
+        salesTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+        salesTable.getTableHeader().setBackground(new Color(30, 144, 255));
+        salesTable.getTableHeader().setForeground(Color.WHITE);
+        salesTable.getTableHeader().setReorderingAllowed(false);
+        JScrollPane scrollPane = new JScrollPane(salesTable);
+        scrollPane.setBounds(50, 80, 1300, 500);
+        add(scrollPane);
 
         // Print Button
         JButton printButton = new JButton("Print");
-        printButton.setBounds(1220, 210, 100, 30);
+        printButton.setBounds(1250, 30, 100, 30); // Adjusted position to top-right corner
         printButton.setBackground(new Color(30, 144, 255));
         printButton.setForeground(Color.WHITE);
         printButton.setFocusPainted(false);
@@ -129,47 +90,49 @@ public class SalesReport extends JPanel {
         printButton.setBorder(BorderFactory.createEmptyBorder());
         printButton.addActionListener(e -> {
             try {
-                table.print(JTable.PrintMode.FIT_WIDTH, new MessageFormat("Sales Report"), null);
+                salesTable.print(JTable.PrintMode.FIT_WIDTH, new MessageFormat("Sales Report"), null);
             } catch (PrinterException pe) {
                 pe.printStackTrace();
             }
         });
-        mainPanel.add(printButton);
+        add(printButton);
 
-        // Add main panel to the frame
-        add(mainPanel, BorderLayout.CENTER);
-    }
-
-    private void fetchData() {
-        String startDate = startDateField.getText();
-        String endDate = endDateField.getText();
-
-        if (startDate.isEmpty() || endDate.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please enter both start and end dates.", "Input Error",
+        // Initialize table with data
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        List<Sale> sales = salesDAO.getSales(startDate, endDate);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        model.setRowCount(0); // Clear existing rows
-
-        for (Sale sale : sales) {
-            model.addRow(new Object[] {
-                    dateFormat.format(sale.getSaleDate()),
-                    sale.getHoursOpen(),
-                    sale.getHoursClosed(),
-                    sale.getProductsSold(),
-                    sale.getTax(),
-                    sale.getReturnRefund(),
-                    sale.getTotalSales()
-            });
-        }
-
-        if (sales.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "No sales data found for the given date range.", "No Data",
-                    JOptionPane.INFORMATION_MESSAGE);
         }
     }
 
+    private void refreshTable(Connection connection) {
+        try {
+            String query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total "
+                    + "FROM transactions";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+
+            tableModel.setRowCount(0); // Clear existing rows
+
+            while (resultSet.next()) {
+                int transactionId = resultSet.getInt("transaction_id");
+                String receiptNumber = resultSet.getString("receipt_number");
+                String referenceNumber = resultSet.getString("reference_number");
+                Date saleDate = resultSet.getDate("date");
+                double subtotal = resultSet.getDouble("subtotal");
+                double discount = resultSet.getDouble("discount");
+                double vat = resultSet.getDouble("vat");
+                double total = resultSet.getDouble("total");
+                tableModel.addRow(
+                        new Object[] { transactionId, receiptNumber, referenceNumber, saleDate, subtotal, discount, vat,
+                                total });
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }

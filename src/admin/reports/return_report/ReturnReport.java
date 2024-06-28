@@ -55,6 +55,7 @@ public class ReturnReport extends JPanel {
         String[] columnNames = { "Date of Return", "Product Number", "Product Name", "Quantity Returned",
                 "Reason for Return" };
         model = new DefaultTableModel(new Object[0][0], columnNames);
+
         JTable table = new JTable(model);
         table.setRowHeight(30);
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));

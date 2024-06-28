@@ -1,4 +1,4 @@
-package admin.records.product;
+package admin.records.return_records;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -11,21 +11,31 @@ import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import database.DatabaseUtil;
 
-public class ProductRecords extends JPanel {
+public class ReturnRecords extends JPanel {
     private DefaultTableModel tableModel;
-    private JTable productTable;
+    private JTable returnTable;
     private JTextField searchField;
 
     private JFrame mainFrame;
 
-    public ProductRecords(JFrame mainFrame) {
+    public ReturnRecords(JFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
+        setVisible(true);
+
+        // Initialize table with data
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initComponents() {
-        setBackground(Color.WHITE);
         setLayout(null); // Use absolute positioning
+        setBackground(Color.WHITE);
 
         // Title and Back Button
         JButton backButton = new JButton("<");
@@ -35,7 +45,6 @@ public class ProductRecords extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
-        backButton.setBounds(20, 20, 50, 50);
         add(backButton);
 
         backButton.addActionListener(e -> {
@@ -44,7 +53,7 @@ public class ProductRecords extends JPanel {
             mainFrame.repaint();
         });
 
-        JLabel titleLabel = new JLabel("Product Records");
+        JLabel titleLabel = new JLabel("Return Records");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
         titleLabel.setBounds(100, 30, 500, 30);
@@ -58,8 +67,7 @@ public class ProductRecords extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Product ID", "Product Code", "Barcode", "Product Name", "Price", "Size",
-                "Category ID", "Supplier ID" };
+        String[] columnNames = { "Product Name", "Return Quantity", "Return Reason", "Return Status", "Date" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -69,12 +77,12 @@ public class ProductRecords extends JPanel {
             }
         };
 
-        productTable = new JTable(tableModel);
-        productTable.setFont(new Font("Arial", Font.PLAIN, 16));
-        productTable.setRowHeight(30);
-        productTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
-        productTable.getTableHeader().setReorderingAllowed(false);
-        JScrollPane scrollPane = new JScrollPane(productTable);
+        returnTable = new JTable(tableModel);
+        returnTable.setFont(new Font("Arial", Font.PLAIN, 16));
+        returnTable.setRowHeight(30);
+        returnTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+        returnTable.getTableHeader().setReorderingAllowed(false);
+        JScrollPane scrollPane = new JScrollPane(returnTable);
         scrollPane.setBounds(50, 50, 1100, 400);
         bluePanel.add(scrollPane);
 
@@ -96,7 +104,7 @@ public class ProductRecords extends JPanel {
         searchButton.setForeground(Color.BLACK);
         searchButton.setFocusPainted(false);
         searchButton.setBounds(370, 10, 150, 40); // Adjust the position of the search button within the search panel
-        searchButton.addActionListener(e -> searchProducts());
+        searchButton.addActionListener(e -> searchReturns());
         searchPanel.add(searchButton);
 
         // Initialize table with data
@@ -109,7 +117,7 @@ public class ProductRecords extends JPanel {
         }
     }
 
-    private void searchProducts() {
+    private void searchReturns() {
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {
@@ -117,15 +125,21 @@ public class ProductRecords extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+                query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, rs.return_status_name AS return_status, r.return_date "
                         +
-                        "FROM products p";
+                        "FROM return_products r " +
+                        "JOIN products p ON r.product_id = p.product_id " +
+                        "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id " +
+                        "JOIN return_status rs ON r.return_status_id = rs.return_status_id";
                 statement = connection.prepareStatement(query);
             } else {
-                query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+                query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, rs.return_status_name AS return_status, r.return_date "
                         +
-                        "FROM products p " +
-                        "WHERE p.barcode LIKE ? OR p.product_name LIKE ?";
+                        "FROM return_products r " +
+                        "JOIN products p ON r.product_id = p.product_id " +
+                        "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id " +
+                        "JOIN return_status rs ON r.return_status_id = rs.return_status_id " +
+                        "WHERE p.product_name LIKE ? OR rr.return_reason_name LIKE ?";
                 statement = connection.prepareStatement(query);
                 statement.setString(1, "%" + searchText + "%");
                 statement.setString(2, "%" + searchText + "%");
@@ -135,16 +149,12 @@ public class ProductRecords extends JPanel {
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int productId = resultSet.getInt("product_id");
-                String productCode = resultSet.getString("product_code");
-                String barcode = resultSet.getString("barcode");
                 String productName = resultSet.getString("product_name");
-                double price = resultSet.getDouble("product_price");
-                String size = resultSet.getString("product_size");
-                String categoryId = resultSet.getString("category_id");
-                int supplierId = resultSet.getInt("supplier_id");
-                tableModel.addRow(new Object[] { productId, productCode, barcode, productName, price, size, categoryId,
-                        supplierId });
+                int returnQuantity = resultSet.getInt("return_quantity");
+                String returnReason = resultSet.getString("return_reason");
+                String returnStatus = resultSet.getString("return_status");
+                Date returnDate = resultSet.getDate("return_date");
+                tableModel.addRow(new Object[] { productName, returnQuantity, returnReason, returnStatus, returnDate });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -155,25 +165,24 @@ public class ProductRecords extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+            String query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, rs.return_status_name AS return_status, r.return_date "
                     +
-                    "FROM products p";
+                    "FROM return_products r " +
+                    "JOIN products p ON r.product_id = p.product_id " +
+                    "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id " +
+                    "JOIN return_status rs ON r.return_status_id = rs.return_status_id";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int productId = resultSet.getInt("product_id");
-                String productCode = resultSet.getString("product_code");
-                String barcode = resultSet.getString("barcode");
                 String productName = resultSet.getString("product_name");
-                double price = resultSet.getDouble("product_price");
-                String size = resultSet.getString("product_size");
-                String categoryId = resultSet.getString("category_id");
-                int supplierId = resultSet.getInt("supplier_id");
-                tableModel.addRow(new Object[] { productId, productCode, barcode, productName, price, size, categoryId,
-                        supplierId });
+                int returnQuantity = resultSet.getInt("return_quantity");
+                String returnReason = resultSet.getString("return_reason");
+                String returnStatus = resultSet.getString("return_status");
+                Date returnDate = resultSet.getDate("return_date");
+                tableModel.addRow(new Object[] { productName, returnQuantity, returnReason, returnStatus, returnDate });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

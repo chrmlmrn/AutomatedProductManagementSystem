@@ -3,6 +3,8 @@ package admin.return_product;
 import admin.AdminMenu;
 import admin.records.product.ProductRecords;
 import database.DatabaseUtil;
+import admin.records.RecordsMainPage;
+
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.sql.Connection;
@@ -202,7 +204,11 @@ public class ReturnPage extends JPanel {
         returnPolicyButton.setContentAreaFilled(false);
         returnPolicyButton.setFocusPainted(false);
         returnPolicyButton.setPreferredSize(new Dimension(150, 40));
-        returnPolicyButton.addActionListener(e -> new ReturnPolicyPage(mainFrame));
+        returnPolicyButton.addActionListener(e -> {
+            mainFrame.setContentPane(new ReturnPolicyPage(mainFrame));
+            mainFrame.revalidate();
+            mainFrame.repaint();
+        });
 
         gbc.gridx = 2;
         gbc.gridy = 3;

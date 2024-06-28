@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import database.DatabaseUtil;
@@ -95,7 +94,7 @@ public class ScanProduct extends JPanel {
 
         // Barcode field
         barcodeField = new JTextField();
-        barcodeField.setBounds(50, 80, 400, 50);
+        barcodeField.setBounds(50, 80, 300, 50);
         barcodeField.setFont(new Font("Arial", Font.PLAIN, 30));
         barcodeField.addActionListener(new ActionListener() {
             @Override
@@ -103,11 +102,26 @@ public class ScanProduct extends JPanel {
                 String code = barcodeField.getText().trim();
                 if (!code.isEmpty()) {
                     addProduct(code, "barcode");
-                    barcodeField.setText(""); // Clear the input field after each scan
                 }
             }
         });
         add(barcodeField);
+
+        // Clear Barcode Button
+        RoundedButton clearBarcodeButton = new RoundedButton("Clear Barcode");
+        clearBarcodeButton.setBounds(360, 80, 200, 50);
+        clearBarcodeButton.setBackground(new Color(30, 144, 255));
+        clearBarcodeButton.setForeground(Color.WHITE);
+        clearBarcodeButton.setFont(new Font("Arial", Font.BOLD, 16));
+        clearBarcodeButton.setBorder(BorderFactory.createEmptyBorder());
+        clearBarcodeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                barcodeField.setText("");
+                barcodeField.requestFocus();
+            }
+        });
+        add(clearBarcodeButton);
 
         // Product table (Left table for products being scanned)
         String[] productColumns = { "PRODUCT CODE", "PRODUCT NAME", "SIZE", "PRICE", "TOTAL QUANTITY" };

@@ -107,4 +107,23 @@ public class InventoryDAO {
             e.printStackTrace();
         }
     }
+
+    public String getFullName(String uniqueUserId) {
+        String fullName = "";
+        String sql = "SELECT CONCAT(user_first_name, ' ', user_last_name) AS full_name FROM users WHERE unique_user_id = ?";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, uniqueUserId);
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    fullName = rs.getString("full_name");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return fullName;
+    }
 }

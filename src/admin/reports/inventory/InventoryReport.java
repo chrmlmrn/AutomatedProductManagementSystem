@@ -1,24 +1,24 @@
 package admin.reports.inventory;
 
+import admin.reports.ReportsPage;
 import java.awt.*;
 import java.awt.print.PrinterException;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.*;
-import admin.reports.inventory.Product;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-
-import admin.reports.ReportsPage;
 
 public class InventoryReport extends JPanel {
 
     private DefaultTableModel model;
     private InventoryDAO inventoryDAO;
     private JFrame mainFrame;
+    private String userUniqueId;
 
-    public InventoryReport(JFrame mainFrame) {
+    public InventoryReport(JFrame mainFrame, String userUniqueId) {
         this.mainFrame = mainFrame;
+        this.userUniqueId = userUniqueId;
         inventoryDAO = new InventoryDAO();
         initComponents();
         fetchData();
@@ -37,7 +37,7 @@ public class InventoryReport extends JPanel {
         backButton.setFont(new Font("Arial", Font.BOLD, 30));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new ReportsPage(mainFrame));
+            mainFrame.setContentPane(new ReportsPage(mainFrame, userUniqueId)); // Pass userUniqueId
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -56,6 +56,13 @@ public class InventoryReport extends JPanel {
                 "Stock Quantity", "Product Status" };
         Object[][] data = {};
         model = new DefaultTableModel(data, columnNames);
+
+        model = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table non-editable
+            }
+        };
 
         JTable table = new JTable(model);
         table.setRowHeight(30);
@@ -86,7 +93,9 @@ public class InventoryReport extends JPanel {
         printButton.setBorder(BorderFactory.createEmptyBorder());
         printButton.addActionListener(e -> {
             try {
-                table.print(JTable.PrintMode.FIT_WIDTH, new MessageFormat("Inventory Report"), null);
+                String fullName = inventoryDAO.getFullName(userUniqueId);
+                MessageFormat headerFormat = new MessageFormat("Inventory Report BY: " + fullName);
+                table.print(JTable.PrintMode.FIT_WIDTH, headerFormat, null);
             } catch (PrinterException pe) {
                 pe.printStackTrace();
             }
@@ -118,5 +127,4 @@ public class InventoryReport extends JPanel {
             });
         }
     }
-
 }

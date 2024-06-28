@@ -14,11 +14,17 @@ import java.awt.event.ActionListener;
 
 public class ReportsPage extends JPanel {
     private JFrame mainFrame;
+    private String userUniqueId;
 
-    public ReportsPage(JFrame mainFrame) {
+    public ReportsPage(JFrame mainFrame, String userUniqueId) {
         this.mainFrame = mainFrame;
+        this.userUniqueId = userUniqueId;
 
         initComponents();
+    }
+
+    public ReportsPage(JFrame mainFrame) {
+        this(mainFrame, null);
     }
 
     private void initComponents() {
@@ -70,7 +76,7 @@ public class ReportsPage extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (button.getText().equals("Inventory")) {
-                        mainFrame.setContentPane(new InventoryReport(mainFrame));
+                        mainFrame.setContentPane(new InventoryReport(mainFrame, userUniqueId)); // Pass userUniqueId
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (button.getText().equals("Sales")) {

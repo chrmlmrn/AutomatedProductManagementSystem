@@ -1,4 +1,4 @@
-package admin.records.product;
+package admin.records.inventory;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -11,21 +11,31 @@ import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import database.DatabaseUtil;
 
-public class ProductRecords extends JPanel {
+public class InventoryRecords extends JPanel {
     private DefaultTableModel tableModel;
-    private JTable productTable;
+    private JTable inventoryTable;
     private JTextField searchField;
 
     private JFrame mainFrame;
 
-    public ProductRecords(JFrame mainFrame) {
+    public InventoryRecords(JFrame mainFrame) {
         this.mainFrame = mainFrame;
         initComponents();
+        setVisible(true);
+
+        // Initialize table with data
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void initComponents() {
-        setBackground(Color.WHITE);
         setLayout(null); // Use absolute positioning
+        setBackground(Color.WHITE);
 
         // Title and Back Button
         JButton backButton = new JButton("<");
@@ -35,7 +45,6 @@ public class ProductRecords extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
-        backButton.setBounds(20, 20, 50, 50);
         add(backButton);
 
         backButton.addActionListener(e -> {
@@ -44,7 +53,7 @@ public class ProductRecords extends JPanel {
             mainFrame.repaint();
         });
 
-        JLabel titleLabel = new JLabel("Product Records");
+        JLabel titleLabel = new JLabel("Inventory Records");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
         titleLabel.setBounds(100, 30, 500, 30);
@@ -58,8 +67,8 @@ public class ProductRecords extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Product ID", "Product Code", "Barcode", "Product Name", "Price", "Size",
-                "Category ID", "Supplier ID" };
+        String[] columnNames = { "Last Updated", "Product Code", "Product Name", "Supplier Name", "Product Type",
+                "Critical Stock Level", "Stock Quantity", "Product Status" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -69,12 +78,12 @@ public class ProductRecords extends JPanel {
             }
         };
 
-        productTable = new JTable(tableModel);
-        productTable.setFont(new Font("Arial", Font.PLAIN, 16));
-        productTable.setRowHeight(30);
-        productTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
-        productTable.getTableHeader().setReorderingAllowed(false);
-        JScrollPane scrollPane = new JScrollPane(productTable);
+        inventoryTable = new JTable(tableModel);
+        inventoryTable.setFont(new Font("Arial", Font.PLAIN, 16));
+        inventoryTable.setRowHeight(30);
+        inventoryTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
+        inventoryTable.getTableHeader().setReorderingAllowed(false);
+        JScrollPane scrollPane = new JScrollPane(inventoryTable);
         scrollPane.setBounds(50, 50, 1100, 400);
         bluePanel.add(scrollPane);
 
@@ -96,7 +105,7 @@ public class ProductRecords extends JPanel {
         searchButton.setForeground(Color.BLACK);
         searchButton.setFocusPainted(false);
         searchButton.setBounds(370, 10, 150, 40); // Adjust the position of the search button within the search panel
-        searchButton.addActionListener(e -> searchProducts());
+        searchButton.addActionListener(e -> searchInventory());
         searchPanel.add(searchButton);
 
         // Initialize table with data
@@ -109,7 +118,7 @@ public class ProductRecords extends JPanel {
         }
     }
 
-    private void searchProducts() {
+    private void searchInventory() {
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {
@@ -117,34 +126,44 @@ public class ProductRecords extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+                query = "SELECT DATE_FORMAT(i.last_updated, '%Y-%m-%d') AS last_updated, p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
                         +
-                        "FROM products p";
+                        "FROM inventory i " +
+                        "JOIN products p ON i.product_id = p.product_id " +
+                        "JOIN supplier s ON p.supplier_id = s.supplier_id " +
+                        "JOIN product_type pt ON p.product_type_id = pt.product_type_id " +
+                        "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id";
                 statement = connection.prepareStatement(query);
             } else {
-                query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+                query = "SELECT DATE_FORMAT(i.last_updated, '%Y-%m-%d') AS last_updated, p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
                         +
-                        "FROM products p " +
-                        "WHERE p.barcode LIKE ? OR p.product_name LIKE ?";
+                        "FROM inventory i " +
+                        "JOIN products p ON i.product_id = p.product_id " +
+                        "JOIN supplier s ON p.supplier_id = s.supplier_id " +
+                        "JOIN product_type pt ON p.product_type_id = pt.product_type_id " +
+                        "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id "
+                        +
+                        "WHERE p.product_name LIKE ? OR p.product_code LIKE ? OR s.supplier_name LIKE ?";
                 statement = connection.prepareStatement(query);
                 statement.setString(1, "%" + searchText + "%");
                 statement.setString(2, "%" + searchText + "%");
+                statement.setString(3, "%" + searchText + "%");
             }
 
             ResultSet resultSet = statement.executeQuery();
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int productId = resultSet.getInt("product_id");
+                String lastUpdated = resultSet.getString("last_updated");
                 String productCode = resultSet.getString("product_code");
-                String barcode = resultSet.getString("barcode");
                 String productName = resultSet.getString("product_name");
-                double price = resultSet.getDouble("product_price");
-                String size = resultSet.getString("product_size");
-                String categoryId = resultSet.getString("category_id");
-                int supplierId = resultSet.getInt("supplier_id");
-                tableModel.addRow(new Object[] { productId, productCode, barcode, productName, price, size, categoryId,
-                        supplierId });
+                String supplierName = resultSet.getString("supplier_name");
+                String productType = resultSet.getString("product_type");
+                int criticalStockLevel = resultSet.getInt("critical_stock_level");
+                int stockQuantity = resultSet.getInt("stock_quantity");
+                String productStatus = resultSet.getString("product_status");
+                tableModel.addRow(new Object[] { lastUpdated, productCode, productName, supplierName, productType,
+                        criticalStockLevel, stockQuantity, productStatus });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -155,25 +174,29 @@ public class ProductRecords extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+            String query = "SELECT DATE_FORMAT(i.last_updated, '%Y-%m-%d') AS last_updated, p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
                     +
-                    "FROM products p";
+                    "FROM inventory i " +
+                    "JOIN products p ON i.product_id = p.product_id " +
+                    "JOIN supplier s ON p.supplier_id = s.supplier_id " +
+                    "JOIN product_type pt ON p.product_type_id = pt.product_type_id " +
+                    "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int productId = resultSet.getInt("product_id");
+                String lastUpdated = resultSet.getString("last_updated");
                 String productCode = resultSet.getString("product_code");
-                String barcode = resultSet.getString("barcode");
                 String productName = resultSet.getString("product_name");
-                double price = resultSet.getDouble("product_price");
-                String size = resultSet.getString("product_size");
-                String categoryId = resultSet.getString("category_id");
-                int supplierId = resultSet.getInt("supplier_id");
-                tableModel.addRow(new Object[] { productId, productCode, barcode, productName, price, size, categoryId,
-                        supplierId });
+                String supplierName = resultSet.getString("supplier_name");
+                String productType = resultSet.getString("product_type");
+                int criticalStockLevel = resultSet.getInt("critical_stock_level");
+                int stockQuantity = resultSet.getInt("stock_quantity");
+                String productStatus = resultSet.getString("product_status");
+                tableModel.addRow(new Object[] { lastUpdated, productCode, productName, supplierName, productType,
+                        criticalStockLevel, stockQuantity, productStatus });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
