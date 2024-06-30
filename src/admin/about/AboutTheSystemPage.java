@@ -12,9 +12,12 @@ import java.awt.event.ActionListener;
 
 public class AboutTheSystemPage extends JPanel {
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public AboutTheSystemPage(JFrame mainFrame) {
+    public AboutTheSystemPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -33,7 +36,7 @@ public class AboutTheSystemPage extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AboutMainPage(mainFrame));
+                mainFrame.setContentPane(new AboutMainPage(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }
@@ -88,7 +91,7 @@ public class AboutTheSystemPage extends JPanel {
         returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AboutMainPage(mainFrame));
+                mainFrame.setContentPane(new AboutMainPage(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }

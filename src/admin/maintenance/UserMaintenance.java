@@ -19,9 +19,11 @@ public class UserMaintenance extends JPanel {
     private static JComboBox<String> statusComboBox;
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public UserMaintenance(JFrame mainFrame) {
+    public UserMaintenance(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
 
         initComponents(); // Initialize components
     }
@@ -41,7 +43,7 @@ public class UserMaintenance extends JPanel {
         add(backButton);
 
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new MaintenancePage(mainFrame));
+            mainFrame.setContentPane(new MaintenancePage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -107,7 +109,7 @@ public class UserMaintenance extends JPanel {
         cancelButton.setFocusPainted(false);
         cancelButton.setBounds(650, 400, 150, 40);
         cancelButton.addActionListener(e -> {
-            mainFrame.setContentPane(new MaintenancePage(mainFrame));
+            mainFrame.setContentPane(new MaintenancePage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });

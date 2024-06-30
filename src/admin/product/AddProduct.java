@@ -53,9 +53,12 @@ public class AddProduct extends JPanel {
     private RoundedTextField supplierNameTextField;
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public AddProduct(JFrame mainFrame) {
+    public AddProduct(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -344,7 +347,7 @@ public class AddProduct extends JPanel {
         cancelButton.setFocusPainted(false);
         cancelButton.setPreferredSize(new Dimension(300, 40));
         cancelButton.addActionListener(e -> {
-            mainFrame.setContentPane(new ProductPage(mainFrame));
+            mainFrame.setContentPane(new ProductPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });

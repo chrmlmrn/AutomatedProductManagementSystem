@@ -17,9 +17,12 @@ public class ProductRecords extends JPanel {
     private JTextField searchField;
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public ProductRecords(JFrame mainFrame) {
+    public ProductRecords(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -39,7 +42,7 @@ public class ProductRecords extends JPanel {
         add(backButton);
 
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+            mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });

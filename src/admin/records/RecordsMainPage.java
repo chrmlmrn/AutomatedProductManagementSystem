@@ -16,9 +16,12 @@ import javax.swing.*;
 public class RecordsMainPage extends JPanel {
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public RecordsMainPage(JFrame mainFrame) {
+    public RecordsMainPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -41,7 +44,7 @@ public class RecordsMainPage extends JPanel {
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new AdminMenu(mainFrame));
+            mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -125,37 +128,37 @@ public class RecordsMainPage extends JPanel {
     }
 
     private void openProductRecords() {
-        mainFrame.setContentPane(new ProductRecords(mainFrame));
+        mainFrame.setContentPane(new ProductRecords(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openUserRecords() {
-        mainFrame.setContentPane(new UserRecords(mainFrame));
+        mainFrame.setContentPane(new UserRecords(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openUserlogs() {
-        mainFrame.setContentPane(new UserLog(mainFrame));
+        mainFrame.setContentPane(new UserLog(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openSalesRecords() {
-        mainFrame.setContentPane(new SalesRecord(mainFrame));
+        mainFrame.setContentPane(new SalesRecord(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openInventoryRecords() {
-        mainFrame.setContentPane(new InventoryRecords(mainFrame));
+        mainFrame.setContentPane(new InventoryRecords(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openReturnRecords() {
-        mainFrame.setContentPane(new ReturnRecords(mainFrame));
+        mainFrame.setContentPane(new ReturnRecords(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }

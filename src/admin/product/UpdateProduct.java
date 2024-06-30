@@ -5,6 +5,7 @@ import java.awt.geom.RoundRectangle2D;
 import java.math.BigDecimal;
 import java.sql.*;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.table.*;
 import com.toedter.calendar.JDateChooser;
 import database.DatabaseUtil;
@@ -16,9 +17,12 @@ public class UpdateProduct extends JPanel {
     private DefaultTableModel tableModel;
     private JTable productTable;
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public UpdateProduct(JFrame mainFrame) {
+    public UpdateProduct(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -45,7 +49,7 @@ public class UpdateProduct extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new ProductPage(mainFrame));
+            mainFrame.setContentPane(new ProductPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
         });
         headerPanel.add(backButton);
@@ -178,9 +182,10 @@ public class UpdateProduct extends JPanel {
 
     private void openEditDialog(int productId, String productCode, String productName, String categoryName,
             BigDecimal productPrice, int productQuantity, String supplierName, String productStatus,
-            Date expirationDate,
-            int row) {
+            Date expirationDate, int row) {
+
         JDialog editDialog = new JDialog(mainFrame, "Edit Product", true);
+        editDialog.setUndecorated(true); // Remove window borders and title bar
         editDialog.setLayout(new BorderLayout());
         editDialog.setSize(650, 800); // Adjust the size
         editDialog.setLocationRelativeTo(mainFrame);
@@ -318,7 +323,7 @@ public class UpdateProduct extends JPanel {
         saveButton.setBackground(Color.WHITE);
         saveButton.setForeground(Color.BLACK);
         saveButton.setFocusPainted(false);
-        saveButton.setPreferredSize(new Dimension(300, 40));
+        saveButton.setPreferredSize(new Dimension(140, 40));
         saveButton.addActionListener(e -> {
             String updatedName = nameField.getText();
             String updatedCategory = (String) categoryComboBox.getSelectedItem();
@@ -337,19 +342,33 @@ public class UpdateProduct extends JPanel {
                     "Confirmation", JOptionPane.YES_NO_OPTION);
             if (confirmOption == JOptionPane.YES_OPTION) {
                 updateProductDetails(productId, updatedName, updatedCategoryId, updatedPrice, updatedQuantity,
-                        supplierId,
-                        updatedSupplier, updatedStatusId, sqlExpirationDate);
+                        supplierId, updatedSupplier, updatedStatusId, sqlExpirationDate);
                 refreshProductRow(row);
                 editDialog.dispose();
             }
         });
 
+        RoundedButton cancelButton = new RoundedButton("Cancel");
+        cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
+        cancelButton.setBackground(Color.WHITE);
+        cancelButton.setForeground(Color.BLACK);
+        cancelButton.setFocusPainted(false);
+        cancelButton.setPreferredSize(new Dimension(140, 40));
+        cancelButton.addActionListener(e -> editDialog.dispose());
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBackground(new Color(30, 144, 255));
         buttonPanel.add(saveButton);
+        buttonPanel.add(cancelButton);
+
+        gbc.gridy++;
+        gbc.anchor = GridBagConstraints.CENTER;
+        editPanel.add(buttonPanel, gbc);
 
         editDialog.add(editPanel, BorderLayout.CENTER);
-        editDialog.add(buttonPanel, BorderLayout.SOUTH);
+        editDialog.setShape(new RoundRectangle2D.Double(0, 0, editDialog.getWidth(), editDialog.getHeight(), 30, 30));
+        Border border = BorderFactory.createLineBorder(Color.BLACK, 2);
+        editDialog.getRootPane().setBorder(border);
         editDialog.setVisible(true);
     }
 

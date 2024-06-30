@@ -12,9 +12,12 @@ import java.awt.event.ActionListener;
 
 public class ReturnPolicyPage extends JPanel {
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public ReturnPolicyPage(JFrame mainFrame) {
+    public ReturnPolicyPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -33,7 +36,7 @@ public class ReturnPolicyPage extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new ReturnPage(mainFrame));
+                mainFrame.setContentPane(new ReturnPage(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }
@@ -111,7 +114,7 @@ public class ReturnPolicyPage extends JPanel {
         returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new ReturnPage(mainFrame));
+                mainFrame.setContentPane(new ReturnPage(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }

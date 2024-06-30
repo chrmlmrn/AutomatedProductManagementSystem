@@ -20,9 +20,11 @@ public class UserLog extends JPanel {
     private JTable logTable;
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public UserLog(JFrame mainFrame) {
+    public UserLog(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
 
         initComponents();
         fetchData();
@@ -46,7 +48,7 @@ public class UserLog extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+            mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -65,7 +67,7 @@ public class UserLog extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 20, 10, 20);
 
-        String[] columnNames = { "Log ID", "User ID", "Username", "Action", "Timestamp" };
+        String[] columnNames = { "Log ID", "Unique User ID", "Username", "Action", "Timestamp" };
         tableModel = new DefaultTableModel(columnNames, 0);
 
         logTable = new JTable(tableModel);
@@ -101,7 +103,7 @@ public class UserLog extends JPanel {
         closeButton.setFocusPainted(false);
         closeButton.setPreferredSize(new Dimension(150, 40));
         closeButton.addActionListener(e -> {
-            mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+            mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -128,7 +130,7 @@ public class UserLog extends JPanel {
     }
 
     private void fetchData() {
-        String query = "SELECT ul.user_log_id, ul.user_id, u.username, ul.user_action, ul.action_timestamp " +
+        String query = "SELECT ul.user_log_id, u.unique_user_id, u.username, ul.user_action, ul.action_timestamp " +
                 "FROM user_logs ul " +
                 "JOIN users u ON ul.user_id = u.user_id " +
                 "ORDER BY ul.action_timestamp DESC"; // Order by timestamp in descending order
@@ -141,13 +143,13 @@ public class UserLog extends JPanel {
 
             while (resultSet.next()) {
                 int logId = resultSet.getInt("user_log_id");
-                int userId = resultSet.getInt("user_id");
+                String uniqueUserId = resultSet.getString("unique_user_id");
                 String username = resultSet.getString("username");
                 String action = resultSet.getString("user_action");
                 java.sql.Timestamp timestamp = resultSet.getTimestamp("action_timestamp");
 
                 // Add row to table model
-                tableModel.addRow(new Object[] { logId, userId, username, action, timestamp });
+                tableModel.addRow(new Object[] { logId, uniqueUserId, username, action, timestamp });
             }
         } catch (SQLException e) {
             e.printStackTrace();

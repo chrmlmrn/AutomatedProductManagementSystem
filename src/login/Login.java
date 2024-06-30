@@ -33,9 +33,12 @@ public class Login extends JPanel {
         private final int maxAttempts = 3;
         private Timer loginTimer;
         private JLabel timerLabel;
+        private String uniqueUserId;
 
-        public Login(JFrame mainFrame) {
+        public Login(JFrame mainFrame, String uniqueUserId) {
                 this.mainFrame = mainFrame;
+                this.uniqueUserId = uniqueUserId;
+
                 initComponents();
                 initTimer();
         }
@@ -230,17 +233,20 @@ public class Login extends JPanel {
                 boolean isAuthenticated = authenticateUser(username, password);
 
                 if (isAuthenticated) {
+                        String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id
+                        System.out.println("Fetched user unique ID: " + uniqueUserId); // Debugging log
                         String role = getUserRole(username);
                         System.out.println("Authentication successful. Role: " + role);
 
                         if ("A".equals(role)) {
-                                openAdminPage();
+                                openAdminPage(uniqueUserId);
                         } else if ("C".equals(role)) {
-                                openCashierPage();
+                                openCashierPage(uniqueUserId);
                         }
 
                         loginAttempts = 0;
-                        UserLogUtil.logUserAction(getUserIdByUsername(username), "User logged in");
+                        System.out.println("Logging action for user unique ID: " + uniqueUserId); // Debugging log
+                        UserLogUtil.logUserAction(uniqueUserId, "User logged in");
                         timerLabel.setText("");
                         if (loginTimer.isRunning()) {
                                 loginTimer.stop();
@@ -257,7 +263,10 @@ public class Login extends JPanel {
                                 JOptionPane.showMessageDialog(this, "Invalid username or password",
                                                 "Authentication Error", JOptionPane.ERROR_MESSAGE);
                         }
-                        UserLogUtil.logUserAction(getUserIdByUsername(username), "User login failed");
+                        String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id again for
+                                                                                   // logging failure
+                        System.out.println("Logging action for user unique ID: " + uniqueUserId); // Debugging log
+                        UserLogUtil.logUserAction(uniqueUserId, "User login failed");
                 }
         }
 
@@ -278,22 +287,24 @@ public class Login extends JPanel {
                 }
         }
 
-        private int getUserIdByUsername(String username) {
-                String query = "SELECT user_id FROM users WHERE username = ?";
+        private String getUserUniqueIdByUsername(String username) {
+                String query = "SELECT unique_user_id FROM users WHERE username = ?";
                 try (Connection connection = DatabaseUtil.getConnection();
                                 PreparedStatement statement = connection.prepareStatement(query)) {
                         statement.setString(1, username);
                         try (ResultSet resultSet = statement.executeQuery()) {
                                 if (resultSet.next()) {
-                                        return resultSet.getInt("user_id");
+                                        String uniqueUserId = resultSet.getString("unique_user_id");
+                                        System.out.println("Fetched user unique ID: " + uniqueUserId); // Debugging log
+                                        return uniqueUserId;
                                 } else {
                                         System.err.println("User not found for username: " + username);
-                                        return -1;
+                                        return null;
                                 }
                         }
                 } catch (SQLException e) {
                         e.printStackTrace();
-                        return -1;
+                        return null;
                 }
         }
 
@@ -316,26 +327,26 @@ public class Login extends JPanel {
                 }
         }
 
-        private void openAdminPage() {
-                mainFrame.setContentPane(new AdminMenu(mainFrame));
+        private void openAdminPage(String uniqueUserId) {
+                mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
         }
 
-        private void openCashierPage() {
-                mainFrame.setContentPane(new CashierMenu(mainFrame));
+        private void openCashierPage(String uniqueUserId) {
+                mainFrame.setContentPane(new CashierMenu(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
         }
 
         private void openSignUpPage() {
-                mainFrame.setContentPane(new Signup(mainFrame));
+                mainFrame.setContentPane(new Signup(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
         }
 
         private void openForgotPasswordPage() {
-                mainFrame.setContentPane(new ForgotPassword(mainFrame));
+                mainFrame.setContentPane(new ForgotPassword(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
         }

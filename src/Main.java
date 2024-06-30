@@ -11,10 +11,10 @@ public class Main extends JFrame {
     public static final String LOGIN_PANEL = "Login";
     public static final String CASHIER_MENU_PANEL = "CashierMenu";
     public static final String ADMIN_MENU_PANEL = "AdminMenu";
-    public static final String MAINTENANCE_PAGE_PANEL = "MaintenancePage";
 
     private CardLayout cardLayout;
     private JPanel mainPanel;
+    private String uniqueUserId;
 
     public Main() {
         setTitle("Lavega Store");
@@ -28,16 +28,14 @@ public class Main extends JFrame {
         mainPanel = new JPanel(cardLayout);
 
         // Initialize your panels
-        Login loginPanel = new Login(this);
-        CashierMenu cashierMenuPanel = new CashierMenu(this);
-        AdminMenu adminMenu = new AdminMenu(this);
-        MaintenancePage maintenancePage = new MaintenancePage(this);
+        Login loginPanel = new Login(this, uniqueUserId);
+        CashierMenu cashierMenuPanel = new CashierMenu(this, uniqueUserId);
+        AdminMenu adminMenu = new AdminMenu(this, uniqueUserId);
 
         // Add panels to mainPanel with unique names
         mainPanel.add(loginPanel, LOGIN_PANEL);
         mainPanel.add(cashierMenuPanel, CASHIER_MENU_PANEL);
         mainPanel.add(adminMenu, ADMIN_MENU_PANEL);
-        mainPanel.add(maintenancePage, MAINTENANCE_PAGE_PANEL);
 
         // Set initial panel to Login
         cardLayout.show(mainPanel, LOGIN_PANEL);

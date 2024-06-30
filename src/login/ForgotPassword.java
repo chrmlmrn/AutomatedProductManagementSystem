@@ -27,9 +27,11 @@ public class ForgotPassword extends JPanel {
     private JButton resetButton, fetchQuestionButton;
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public ForgotPassword(JFrame mainFrame) {
+    public ForgotPassword(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
 
         initComponents();
     }
@@ -240,7 +242,7 @@ public class ForgotPassword extends JPanel {
         if (resetPassword(username, newPassword)) {
             // Log password reset attempt
             try {
-                UserLogUtil.logUserAction(getUserIdByUsername(username), "Password reset successful");
+                UserLogUtil.logUserAction(uniqueUserId, "Password reset successful");
             } catch (IllegalArgumentException ex) {
                 System.err.println("Error logging user action: " + ex.getMessage());
             }
@@ -251,7 +253,7 @@ public class ForgotPassword extends JPanel {
 
             // Log failed password reset attempt
             try {
-                UserLogUtil.logUserAction(getUserIdByUsername(username), "Password reset failed");
+                UserLogUtil.logUserAction(uniqueUserId, "Password reset failed");
             } catch (IllegalArgumentException ex) {
                 System.err.println("Error logging user action: " + ex.getMessage());
             }
@@ -321,7 +323,7 @@ public class ForgotPassword extends JPanel {
     }
 
     private void goToLoginPage() {
-        mainFrame.setContentPane(new Login(mainFrame));
+        mainFrame.setContentPane(new Login(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }

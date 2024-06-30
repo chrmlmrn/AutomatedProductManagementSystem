@@ -34,9 +34,11 @@ public class Signup extends JPanel {
         private boolean isAdminSelected = false;
         private boolean isCashierSelected = false;
         private JFrame mainFrame;
+        private String uniqueUserId;
 
-        public Signup(JFrame mainFrame) {
+        public Signup(JFrame mainFrame, String uniqueUserId) {
                 this.mainFrame = mainFrame;
+                this.uniqueUserId = uniqueUserId;
 
                 initComponents();
         }
@@ -347,7 +349,7 @@ public class Signup extends JPanel {
         }
 
         private void goToLoginPage() {
-                mainFrame.setContentPane(new Login(mainFrame));
+                mainFrame.setContentPane(new Login(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
         }
@@ -472,7 +474,7 @@ public class Signup extends JPanel {
                                 }
 
                                 // Log user registration action
-                                UserLogUtil.logUserAction(userId, "User registered");
+                                UserLogUtil.logUserAction(uniqueUserId, "User registered");
 
                                 // Insert security answer
                                 PreparedStatement insertSecurityAnswerStatement = connection

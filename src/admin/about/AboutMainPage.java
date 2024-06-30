@@ -17,9 +17,12 @@ public class AboutMainPage extends JPanel {
     private int gap = 20;
     private int totalButtonHeight;
     private int buttonCount;
+    private String uniqueUserId;
 
-    public AboutMainPage(JFrame mainFrame) {
+    public AboutMainPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponent();
     }
 
@@ -39,7 +42,7 @@ public class AboutMainPage extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AdminMenu(mainFrame));
+                mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }
@@ -74,11 +77,11 @@ public class AboutMainPage extends JPanel {
                     String buttonText = button.getText();
                     // Perform action based on the button clicked
                     if (buttonText.equals("About The System")) {
-                        mainFrame.setContentPane(new AboutTheSystemPage(mainFrame));
+                        mainFrame.setContentPane(new AboutTheSystemPage(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (buttonText.equals("About the Developers")) {
-                        mainFrame.setContentPane(new AboutTheDevelopersPage(mainFrame));
+                        mainFrame.setContentPane(new AboutTheDevelopersPage(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     }

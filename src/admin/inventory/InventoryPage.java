@@ -19,10 +19,14 @@ public class InventoryPage extends JPanel {
     private DefaultTableModel model;
     private InventoryDAO inventoryDAO;
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public InventoryPage(JFrame mainFrame) {
+    public InventoryPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         inventoryDAO = new InventoryDAO();
+
         initComponents();
         fetchData();
     }
@@ -40,7 +44,7 @@ public class InventoryPage extends JPanel {
         backButton.setFont(new Font("Arial", Font.BOLD, 30));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new AdminMenu(mainFrame));
+            mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });

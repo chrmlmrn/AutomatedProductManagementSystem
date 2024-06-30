@@ -15,9 +15,12 @@ import java.awt.event.ActionListener;
 public class CashierMenu extends JPanel {
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public CashierMenu(JFrame mainFrame) {
+    public CashierMenu(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponent();
     }
 
@@ -110,25 +113,25 @@ public class CashierMenu extends JPanel {
     }
 
     private void openScanProductPage() {
-        mainFrame.setContentPane(new ScanProduct(mainFrame));
+        mainFrame.setContentPane(new ScanProduct(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openHelpPage() {
-        mainFrame.setContentPane(new HelpPage(mainFrame));
+        mainFrame.setContentPane(new HelpPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openAboutPage() {
-        mainFrame.setContentPane(new AboutMainPage(mainFrame));
+        mainFrame.setContentPane(new AboutMainPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openLoginPage() {
-        mainFrame.setContentPane(new Login(mainFrame));
+        mainFrame.setContentPane(new Login(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }

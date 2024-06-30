@@ -13,9 +13,11 @@ public class AboutTheDevelopersPage extends JPanel {
     private int contentPanelHeight = 400;
     private int contentPanelX;
     private int contentPanelY;
+    private String uniqueUserId;
 
-    public AboutTheDevelopersPage(JFrame mainFrame) {
+    public AboutTheDevelopersPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
         initComponent();
     }
 
@@ -35,7 +37,7 @@ public class AboutTheDevelopersPage extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AboutMainPage(mainFrame));
+                mainFrame.setContentPane(new AboutMainPage(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }
@@ -96,7 +98,7 @@ public class AboutTheDevelopersPage extends JPanel {
         returnButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AboutMainPage(mainFrame));
+                mainFrame.setContentPane(new AboutMainPage(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }

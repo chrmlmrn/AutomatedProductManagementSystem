@@ -21,10 +21,14 @@ import login.Login;
 
 public class AdminMenu extends JPanel {
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public AdminMenu(JFrame mainFrame) {
+    public AdminMenu(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
+
     }
 
     private void initComponents() {
@@ -102,6 +106,7 @@ public class AdminMenu extends JPanel {
 
         // Add component listener to dynamically adjust button positions on resize
         addComponentListener(new java.awt.event.ComponentAdapter() {
+
             @Override
             public void componentResized(java.awt.event.ComponentEvent e) {
                 int frameWidth = getWidth();
@@ -113,59 +118,60 @@ public class AdminMenu extends JPanel {
                     }
                 }
             }
+
         });
     }
 
     private void openProductPage() {
-        mainFrame.setContentPane(new ProductPage(mainFrame));
+        mainFrame.setContentPane(new ProductPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openReportsPage() {
-        mainFrame.setContentPane(new ReportsPage(mainFrame));
+        mainFrame.setContentPane(new ReportsPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openRecordsPage() {
-        mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+        mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openReturnPage() {
-        mainFrame.setContentPane(new ReturnPage(mainFrame));
+        mainFrame.setContentPane(new ReturnPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openMaintenancePage() {
-        mainFrame.setContentPane(new MaintenancePage(mainFrame));
+        mainFrame.setContentPane(new MaintenancePage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openHelpPage() {
-        mainFrame.setContentPane(new HelpPage(mainFrame));
+        mainFrame.setContentPane(new HelpPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openInventoryPage() {
-        mainFrame.setContentPane(new InventoryPage(mainFrame));
+        mainFrame.setContentPane(new InventoryPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openAboutPage() {
-        mainFrame.setContentPane(new AboutMainPage(mainFrame));
+        mainFrame.setContentPane(new AboutMainPage(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }
 
     private void openLoginPage() {
-        mainFrame.setContentPane(new Login(mainFrame));
+        mainFrame.setContentPane(new Login(mainFrame, uniqueUserId));
         mainFrame.revalidate();
         mainFrame.repaint();
     }

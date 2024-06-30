@@ -12,9 +12,12 @@ import admin.maintenance.backup_and_restore.SystemMaintenance;
 public class MaintenancePage extends JPanel {
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public MaintenancePage(JFrame mainFrame) {
+    public MaintenancePage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -40,7 +43,7 @@ public class MaintenancePage extends JPanel {
         add(backButton);
 
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new AdminMenu(mainFrame));
+            mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -68,11 +71,11 @@ public class MaintenancePage extends JPanel {
                     String buttonText = button.getText();
                     // Perform action based on the button clicked
                     if (buttonText.equals("User Maintenance")) {
-                        mainFrame.setContentPane(new UserMaintenance(mainFrame));
+                        mainFrame.setContentPane(new UserMaintenance(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (buttonText.equals("System Maintenance")) {
-                        mainFrame.setContentPane(new SystemMaintenance(mainFrame));
+                        mainFrame.setContentPane(new SystemMaintenance(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     }

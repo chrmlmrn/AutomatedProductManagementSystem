@@ -14,17 +14,13 @@ import java.awt.event.ActionListener;
 
 public class ReportsPage extends JPanel {
     private JFrame mainFrame;
-    private String userUniqueId;
+    private String uniqueUserId;
 
-    public ReportsPage(JFrame mainFrame, String userUniqueId) {
+    public ReportsPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
-        this.userUniqueId = userUniqueId;
+        this.uniqueUserId = uniqueUserId;
 
         initComponents();
-    }
-
-    public ReportsPage(JFrame mainFrame) {
-        this(mainFrame, null);
     }
 
     private void initComponents() {
@@ -42,7 +38,7 @@ public class ReportsPage extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AdminMenu(mainFrame));
+                mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }
@@ -76,15 +72,15 @@ public class ReportsPage extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (button.getText().equals("Inventory")) {
-                        mainFrame.setContentPane(new InventoryReport(mainFrame, userUniqueId)); // Pass userUniqueId
+                        mainFrame.setContentPane(new InventoryReport(mainFrame, uniqueUserId)); // Pass userUniqueId
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (button.getText().equals("Sales")) {
-                        mainFrame.setContentPane(new SalesReport(mainFrame, userUniqueId));
+                        mainFrame.setContentPane(new SalesReport(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (button.getText().equals("Return")) {
-                        mainFrame.setContentPane(new ReturnReport(mainFrame, userUniqueId));
+                        mainFrame.setContentPane(new ReturnReport(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     }

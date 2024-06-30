@@ -33,11 +33,10 @@ CREATE TABLE users (
 --@block
 CREATE TABLE user_logs (
     user_log_id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
+    unique_user_id VARCHAR(20),
     user_action VARCHAR(100),
     action_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    action_timeout_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (unique_user_id) REFERENCES users(unique_user_id)
 );
 --@block
 CREATE TABLE report_type (

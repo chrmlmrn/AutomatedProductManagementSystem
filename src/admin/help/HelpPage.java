@@ -20,9 +20,12 @@ public class HelpPage extends JPanel {
     private int gap = 20;
     private int totalButtonHeight;
     private int startY;
+    private String uniqueUserId;
 
-    public HelpPage(JFrame mainFrame) {
+    public HelpPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -42,7 +45,7 @@ public class HelpPage extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AdminMenu(mainFrame));
+                mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }
@@ -75,11 +78,11 @@ public class HelpPage extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     String buttonText = button.getText();
                     if (buttonText.equals("Frequently Asked Questions")) {
-                        mainFrame.setContentPane(new FAQPage(mainFrame));
+                        mainFrame.setContentPane(new FAQPage(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (buttonText.equals("User Manual")) {
-                        mainFrame.setContentPane(new UserManual(mainFrame));
+                        mainFrame.setContentPane(new UserManual(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     }

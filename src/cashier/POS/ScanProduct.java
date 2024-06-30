@@ -47,9 +47,11 @@ public class ScanProduct extends JPanel {
     private double total;
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public ScanProduct(JFrame mainFrame) {
+    public ScanProduct(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
 
         initComponents();
     }
@@ -85,7 +87,7 @@ public class ScanProduct extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new CashierMenu(mainFrame));
+                mainFrame.setContentPane(new CashierMenu(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }

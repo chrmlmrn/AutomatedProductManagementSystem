@@ -11,9 +11,12 @@ import java.util.Date;
 
 public class SystemMaintenance extends JPanel {
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public SystemMaintenance(JFrame mainFrame) {
+    public SystemMaintenance(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -35,7 +38,7 @@ public class SystemMaintenance extends JPanel {
         add(backButton);
 
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new MaintenancePage(mainFrame));
+            mainFrame.setContentPane(new MaintenancePage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });

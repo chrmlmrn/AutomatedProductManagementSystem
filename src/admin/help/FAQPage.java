@@ -1,18 +1,21 @@
 package admin.help;
 
-import java.awt.*;
-import javax.swing.*;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
+import java.awt.*;
+import javax.swing.*;
 
 public class FAQPage extends JPanel {
     private JFrame mainFrame;
     private int buttonWidth = 1000;
     private int buttonHeight = 50;
     private int gap = 20;
+    private String uniqueUserId;
 
-    public FAQPage(JFrame mainFrame) {
+    public FAQPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponent();
     }
 
@@ -30,7 +33,7 @@ public class FAQPage extends JPanel {
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new HelpPage(mainFrame));
+            mainFrame.setContentPane(new HelpPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });

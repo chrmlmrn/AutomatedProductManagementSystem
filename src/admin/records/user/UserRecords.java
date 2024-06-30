@@ -17,9 +17,12 @@ public class UserRecords extends JPanel {
     private JTextField searchField;
 
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public UserRecords(JFrame mainFrame) {
+    public UserRecords(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
         setVisible(true);
 
@@ -48,7 +51,7 @@ public class UserRecords extends JPanel {
         add(backButton);
 
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new RecordsMainPage(mainFrame));
+            mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });

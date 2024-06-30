@@ -12,9 +12,12 @@ import java.awt.event.ActionListener;
 
 public class ProductPage extends JPanel {
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public ProductPage(JFrame mainFrame) {
+    public ProductPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -34,7 +37,7 @@ public class ProductPage extends JPanel {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mainFrame.setContentPane(new AdminMenu(mainFrame));
+                mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
                 mainFrame.revalidate();
                 mainFrame.repaint();
             }
@@ -68,9 +71,9 @@ public class ProductPage extends JPanel {
                 public void actionPerformed(ActionEvent e) {
                     mainFrame.getContentPane().removeAll();
                     if (button.getText().equals("Add Product")) {
-                        mainFrame.getContentPane().add(new AddProduct(mainFrame));
+                        mainFrame.getContentPane().add(new AddProduct(mainFrame, uniqueUserId));
                     } else if (button.getText().equals("Update Product")) {
-                        mainFrame.setContentPane(new UpdateProduct(mainFrame));
+                        mainFrame.setContentPane(new UpdateProduct(mainFrame, uniqueUserId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     }

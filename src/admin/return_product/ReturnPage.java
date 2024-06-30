@@ -19,10 +19,13 @@ public class ReturnPage extends JPanel {
     private JComboBox<String> reasonComboBox;
     private ReturnDAO returnDAO;
     private JFrame mainFrame;
+    private String uniqueUserId;
 
-    public ReturnPage(JFrame mainFrame) {
+    public ReturnPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
         returnDAO = new ReturnDAO();
+        this.uniqueUserId = uniqueUserId;
+
         initComponents();
     }
 
@@ -51,7 +54,7 @@ public class ReturnPage extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.addActionListener(e -> {
-            mainFrame.setContentPane(new AdminMenu(mainFrame));
+            mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -155,7 +158,7 @@ public class ReturnPage extends JPanel {
         cancelButton.setFocusPainted(false);
         cancelButton.setPreferredSize(new Dimension(150, 40));
         cancelButton.addActionListener(e -> {
-            mainFrame.setContentPane(new AdminMenu(mainFrame));
+            mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
@@ -205,7 +208,7 @@ public class ReturnPage extends JPanel {
         returnPolicyButton.setFocusPainted(false);
         returnPolicyButton.setPreferredSize(new Dimension(150, 40));
         returnPolicyButton.addActionListener(e -> {
-            mainFrame.setContentPane(new ReturnPolicyPage(mainFrame));
+            mainFrame.setContentPane(new ReturnPolicyPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
