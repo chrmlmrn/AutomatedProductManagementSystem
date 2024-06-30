@@ -80,11 +80,11 @@ public class ReportsPage extends JPanel {
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (button.getText().equals("Sales")) {
-                        mainFrame.setContentPane(new SalesReport(mainFrame));
+                        mainFrame.setContentPane(new SalesReport(mainFrame, userUniqueId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     } else if (button.getText().equals("Return")) {
-                        mainFrame.setContentPane(new ReturnReport(mainFrame));
+                        mainFrame.setContentPane(new ReturnReport(mainFrame, userUniqueId));
                         mainFrame.revalidate();
                         mainFrame.repaint();
                     }

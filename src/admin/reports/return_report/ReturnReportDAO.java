@@ -35,4 +35,8 @@ public class ReturnReportDAO {
         }
         return returnReports;
     }
+
+    public String getFullName(String userUniqueId) {
+        return "John Doe";
+    }
 }
