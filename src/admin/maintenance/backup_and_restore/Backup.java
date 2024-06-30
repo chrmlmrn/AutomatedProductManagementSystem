@@ -26,7 +26,7 @@ public class Backup {
         String username = "root";
         String password = "root";
         String databaseName = "lavega_store_db";
-        String backupFilePath = "C:\\Users\\ismai\\OneDrive\\Documents\\SoftEng\\AutomatedProductManagementSystem\\database\\backup\\backup_lavega_store_db.sql";
+        String backupFilePath = "C:\\Users\\Rin\\Documents\\SoftEng\\AutomatedProductManagementSystem-7\\database\\backup\\backup_lavega_store_db.sql";
 
         backupDatabase(username, password, databaseName, backupFilePath);
     }
