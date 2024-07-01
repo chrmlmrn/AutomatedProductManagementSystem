@@ -7,15 +7,15 @@ import javax.swing.*;
 
 public class UserManual extends JPanel {
     private JFrame mainFrame;
-    private int buttonWidth = 1000;
-    private int buttonHeight = 50;
-    private int gap = 20;
+    private static final int BUTTON_WIDTH = 1000;
+    private static final int BUTTON_HEIGHT = 50;
+    private static final int GAP = 20;
     private String uniqueUserId;
+    private static final String BASE_IMAGE_PATH = "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/";
 
     public UserManual(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
-
         initComponent();
     }
 
@@ -23,30 +23,16 @@ public class UserManual extends JPanel {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-        add(createHeaderPanel(), BorderLayout.NORTH);
+        addTopPanel();
+        addManualContentPanel();
 
-        JPanel manualContentPanel = new JPanel();
-        manualContentPanel.setLayout(new BoxLayout(manualContentPanel, BoxLayout.Y_AXIS));
-        manualContentPanel.setBackground(Color.WHITE);
-
-        populateContent(manualContentPanel);
-
-        JScrollPane scrollPane = new JScrollPane(manualContentPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        add(scrollPane, BorderLayout.CENTER);
-
-        // Adjusting the size and location of the scroll pane dynamically
-        scrollPane.setPreferredSize(new Dimension(buttonWidth + 40, 600)); // Set preferred size to manage the visible
-                                                                           // area
-        revalidate();
-        repaint();
+        mainFrame.revalidate();
+        mainFrame.repaint();
     }
 
-    private JPanel createHeaderPanel() {
-        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        headerPanel.setBackground(Color.WHITE);
+    private void addTopPanel() {
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.setBackground(Color.WHITE);
 
         RoundedButton backButton = new RoundedButton("<");
         backButton.setFont(new Font("Arial", Font.BOLD, 20));
@@ -54,22 +40,36 @@ public class UserManual extends JPanel {
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
+        backButton.setPreferredSize(new Dimension(50, 50));
         backButton.addActionListener(e -> {
             mainFrame.setContentPane(new HelpPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
-        headerPanel.add(backButton);
 
         JLabel titleLabel = new JLabel("User Manual");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
-        headerPanel.add(titleLabel);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 10));
 
-        return headerPanel;
+        topPanel.add(backButton);
+        topPanel.add(titleLabel);
+
+        add(topPanel, BorderLayout.NORTH);
     }
 
-    private void populateContent(JPanel manualContentPanel) {
+    private void addManualContentPanel() {
+        JPanel manualContentPanel = new JPanel();
+        manualContentPanel.setLayout(new BoxLayout(manualContentPanel, BoxLayout.Y_AXIS));
+        manualContentPanel.setBackground(Color.WHITE);
+        manualContentPanel.setBorder(BorderFactory.createEmptyBorder());
+
+        JScrollPane scrollPane = new JScrollPane(manualContentPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollPane, BorderLayout.CENTER);
+
         String[][] manualSections = {
                 { "How to Use the System", getHowToUseSystemContent() },
                 { "Common Problems", getCommonProblemsContent() },
@@ -77,105 +77,109 @@ public class UserManual extends JPanel {
         };
 
         for (String[] section : manualSections) {
-            JPanel sectionPanel = new RoundedPanel(20);
-            sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
-            sectionPanel.setBackground(Color.WHITE);
-            sectionPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-            sectionPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
-
-            RoundedButton sectionButton = new RoundedButton(section[0]);
-            sectionButton.setFont(new Font("Arial", Font.PLAIN, 18));
-            sectionButton.setBackground(new Color(30, 144, 255));
-            sectionButton.setForeground(Color.WHITE);
-            sectionButton.setFocusPainted(false);
-            sectionButton.setMaximumSize(new Dimension(buttonWidth, buttonHeight));
-            sectionButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-            sectionButton.addActionListener(e -> toggleContentVisibility(sectionPanel));
-            sectionPanel.add(sectionButton);
-
-            JLabel contentLabel = new JLabel(section[1]);
-            contentLabel.setFont(new Font("Arial", Font.PLAIN, 16));
-            contentLabel.setForeground(Color.BLACK);
-
-            JPanel contentPanel = new JPanel();
-            contentPanel.setLayout(new BorderLayout());
-            contentPanel.add(contentLabel, BorderLayout.NORTH);
-            contentPanel.setBackground(Color.WHITE);
-            contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            contentPanel.setVisible(false);
-
-            sectionPanel.add(contentPanel);
-            manualContentPanel.add(Box.createRigidArea(new Dimension(0, gap)));
-            manualContentPanel.add(sectionPanel);
+            addSection(manualContentPanel, section[0], section[1]);
         }
-    }
 
-    private void toggleContentVisibility(JPanel panel) {
-        Component[] components = panel.getComponents();
-        for (Component comp : components) {
-            if (comp instanceof JPanel && comp != panel.getComponent(0)) { // Skip the button
-                comp.setVisible(!comp.isVisible());
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                revalidate();
+                repaint();
             }
-        }
-        mainFrame.revalidate();
-        mainFrame.repaint();
+        });
     }
 
-    private String getHowToUseSystemContent() {
-        return "<html><body>" +
+    private void addSection(JPanel manualContentPanel, String sectionTitle, String sectionContent) {
+        JPanel sectionPanel = new RoundedPanel(20);
+        sectionPanel.setLayout(new BoxLayout(sectionPanel, BoxLayout.Y_AXIS));
+        sectionPanel.setBackground(Color.WHITE);
+        sectionPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sectionPanel.setBorder(BorderFactory.createEmptyBorder());
+
+        RoundedButton sectionButton = new RoundedButton(sectionTitle);
+        sectionButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        sectionButton.setBackground(new Color(30, 144, 255));
+        sectionButton.setForeground(Color.WHITE);
+        sectionButton.setFocusPainted(false);
+        sectionButton.setMaximumSize(new Dimension(BUTTON_WIDTH, BUTTON_HEIGHT));
+        sectionButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sectionPanel.add(sectionButton);
+
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBackground(Color.WHITE);
+        contentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        contentPanel.setVisible(false);
+        contentPanel.setMaximumSize(new Dimension(BUTTON_WIDTH, 400));
+
+        JEditorPane contentEditorPane = new JEditorPane("text/html", sectionContent);
+        contentEditorPane.setFont(new Font("Arial", Font.PLAIN, 16));
+        contentEditorPane.setForeground(Color.BLACK);
+        contentEditorPane.setEditable(false);
+
+        JScrollPane contentScrollPane = new JScrollPane(contentEditorPane);
+        contentScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        contentScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        contentPanel.add(contentScrollPane, BorderLayout.CENTER);
+
+        sectionButton.addActionListener(e -> {
+            contentPanel.setVisible(!contentPanel.isVisible());
+            revalidate();
+            repaint();
+        });
+
+        sectionPanel.add(contentPanel);
+        manualContentPanel.add(Box.createRigidArea(new Dimension(0, GAP)));
+        manualContentPanel.add(sectionPanel);
+    }
+
+    private static String getImageHtml(String relativeImagePath) {
+        String imagePath = BASE_IMAGE_PATH + relativeImagePath;
+        return "<p><img src='file:///" + imagePath + "' width='600' height='300'/></p>";
+    }
+
+    private static String getHowToUseSystemContent() {
+        return "<html><body style='width: 800px; font-family: Arial; font-size: 13px; color: black;'>" +
                 "<h2>How to Use the System</h2>" +
                 "<ol>" +
                 "<li><strong>Log in</strong> using your username and password.</li>" +
-                "<br><li><strong>Navigate</strong> to the dashboard to view your main options.</li>" +
-                "<img src='file:///C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/howtouse/USERMANUALLogin.png' width='600' height= '350'/>"
-                +
+                getImageHtml("howtouse/USERMANUALLogin.png") +
                 "<li>To add a new product, go to the <strong>'Product' module</strong>:" +
                 "<ul>" +
                 "<li>Enter product code, unique barcode, product name, category, supplier, price, quantity, and status.</li>"
                 +
-                "<img src='assets/images/usermanual/howtouse/USERMANUALProduct.png' width='500' height='600'/>"
-                +
+                getImageHtml("howtouse/USERMANUALProduct.png") +
                 "<li>Save the product to the database.</li>" +
                 "</ul></li>" +
                 "<li>For sales transactions, use the <strong>'POS' module</strong>:" +
                 "<ul>" +
                 "<li>Scan or manually enter the product number.</li>" +
-                "<img src='file:///C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/howtouse/USERMANUALPOS.png' width='295' height='130'/>"
-                +
-                "<br> OR" +
-                "<br><br><img src='file:///C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/howtouse/USERMANUALPOS-1.png' width='295' height='100'/>"
-                +
+                "<br><br>" +
+                getImageHtml("howtouse/USERMANUALPOS-1.png") +
                 "<li>Complete the transaction to generate a receipt.</li>" +
                 "</ul></li>" +
                 "<li>To view and generate reports, access the <strong>'Reports' module</strong>:" +
                 "<ul>" +
                 "<li>Select the type of report (e.g., sales, inventory, return).</li>" +
-                "<img src='file:///C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/howtouse/USERMANUALReports.png' width='600' height='350'/>"
-                +
+                getImageHtml("howtouse/USERMANUALReports.png") +
                 "<li>Generate and print the report if needed.</li>" +
                 "</ul></li>" +
                 "<li>For help and troubleshooting, access the <strong>'Help' module</strong>:" +
                 "<ul>" +
                 "<li>View FAQs or the user manual.</li>" +
-                "<img src='file:///C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/howtouse/USERMANUALHelp.png' width='600' height='350'/>"
-                +
+                getImageHtml("howtouse/USERMANUALHelp.png") +
                 "<li>Contact support if further assistance is needed.</li>" +
                 "</ul></li>" +
-                "</body></html>";
+                "</ol></body></html>";
     }
 
-    private String getCommonProblemsContent() {
-        return "<html><body>" +
+    private static String getCommonProblemsContent() {
+        return "<html><body style='width: 800px; font-family: Arial; font-size: 13px; color: black;'>" +
                 "<h2>Common Problems</h2>" +
                 "<ol>" +
                 "<li><strong>Forgot Password:</strong>" +
-                "<ul>" +
-                "<li>Use the 'Forgot Password' feature on the login page.</li>" +
-                "<img src='file:///C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/commonproblem/USERMANUALForgotPassword.png' width='300' height='340'/>"
-                +
+                getImageHtml("commonproblem/USERMANUALForgotPassword.png") +
                 "<li>Answer the security question to reset your password.</li>" +
-                "<img src='file:///C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/commonproblem/USERMANUALSecurityQuestion.png' width='475' height='580'/>"
-                +
+                getImageHtml("commonproblem/USERMANUALSecurityQuestion.png") +
                 "</ul></li>" +
                 "<li><strong>Cannot Add Product:</strong>" +
                 "<ul>" +
@@ -187,27 +191,22 @@ public class UserManual extends JPanel {
                 "<li>Check your internet connection.</li>" +
                 "<li>Contact the admin to check for system maintenance.</li>" +
                 "</ul></li>" +
-                "<li><strong>Report Generation Issues:</strong>" +
-                "<ul>" +
-                "<li>Ensure the date range and report type are correctly selected.</li>" +
-                "<li>Contact support if the problem persists.</li>" +
-                "</ul></li>" +
                 "</ol></body></html>";
     }
 
-    private String getRulesAndRegulationsContent() {
-        return "<html><body>" +
+    private static String getRulesAndRegulationsContent() {
+        return "<html><body style='width: 800px; font-family: Arial; font-size: 13px; color: black;'>" +
                 "<h2>Rules and Regulations of the Business</h2>" +
                 "<ol>" +
-                "<li><strong>User Access Levels:</strong>" +
+                "<li><strong>User Roles:</strong>" +
                 "<ul>" +
-                "<li>Admins have full access to all modules and can add, update, or delete products and users.</li>" +
+                "<li>Admin has access to all modules and users.</li>" +
                 "<li>Cashiers have access to the POS module and can process sales transactions.</li>" +
                 "</ul></li>" +
                 "<li><strong>Password Policy:</strong>" +
                 "<ul>" +
                 "<li>Passwords must be 8-12 characters long, containing numbers and special characters.</li>" +
-                "<li>Passwords must be changed every 90 days.</li>" +
+                "<li>Change passwords every 90 days.</li>" +
                 "</ul></li>" +
                 "<li><strong>Data Privacy:</strong>" +
                 "<ul>" +

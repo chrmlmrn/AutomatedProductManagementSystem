@@ -234,9 +234,7 @@ public class Login extends JPanel {
 
                 if (isAuthenticated) {
                         String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id
-                        System.out.println("Fetched user unique ID: " + uniqueUserId); // Debugging log
                         String role = getUserRole(username);
-                        System.out.println("Authentication successful. Role: " + role);
 
                         if ("A".equals(role)) {
                                 openAdminPage(uniqueUserId);
@@ -245,7 +243,6 @@ public class Login extends JPanel {
                         }
 
                         loginAttempts = 0;
-                        System.out.println("Logging action for user unique ID: " + uniqueUserId); // Debugging log
                         UserLogUtil.logUserAction(uniqueUserId, "User logged in");
                         timerLabel.setText("");
                         if (loginTimer.isRunning()) {
@@ -265,7 +262,6 @@ public class Login extends JPanel {
                         }
                         String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id again for
                                                                                    // logging failure
-                        System.out.println("Logging action for user unique ID: " + uniqueUserId); // Debugging log
                         UserLogUtil.logUserAction(uniqueUserId, "User login failed");
                 }
         }
@@ -295,7 +291,6 @@ public class Login extends JPanel {
                         try (ResultSet resultSet = statement.executeQuery()) {
                                 if (resultSet.next()) {
                                         String uniqueUserId = resultSet.getString("unique_user_id");
-                                        System.out.println("Fetched user unique ID: " + uniqueUserId); // Debugging log
                                         return uniqueUserId;
                                 } else {
                                         System.err.println("User not found for username: " + username);

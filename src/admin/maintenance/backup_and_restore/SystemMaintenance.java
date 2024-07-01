@@ -4,6 +4,7 @@ import customcomponents.RoundedButton;
 
 import javax.swing.*;
 import admin.maintenance.MaintenancePage;
+import admin.records.userlogs.UserLogUtil;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
@@ -47,7 +48,7 @@ public class SystemMaintenance extends JPanel {
         JLabel titleLabel = new JLabel("System Maintenance");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
-        titleLabel.setBounds(90, 20, 500, 30);
+        titleLabel.setBounds(90, 30, 500, 30);
         add(titleLabel);
 
         int buttonWidth = 200;
@@ -77,12 +78,14 @@ public class SystemMaintenance extends JPanel {
 
             if (confirmed == JOptionPane.YES_OPTION) {
                 String dateStr = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-                String backupFilePath = "C:\\Users\\Rin\\Documents\\SoftEng\\AutomatedProductManagementSystem-7\\database\\backup\\backup_lavega_store_db_"
+                String backupFilePath = "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\database\\backup\\backup_lavega_store_db_"
                         + dateStr + ".sql";
 
                 Backup.backupDatabase("root", "root", "lavega_store_db", backupFilePath);
                 JOptionPane.showMessageDialog(this, "Backup created successfully.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
+                UserLogUtil.logUserAction(uniqueUserId, "Created Backup");
+
             }
         });
 
@@ -111,13 +114,15 @@ public class SystemMaintenance extends JPanel {
 
             if (confirmed == JOptionPane.YES_OPTION) {
                 JFileChooser fileChooser = new JFileChooser(
-                        "C:\\Users\\Rin\\Documents\\SoftEng\\AutomatedProductManagementSystem-7\\database\\backup");
+                        "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\database\\backup");
                 int returnValue = fileChooser.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     String backupFilePath = fileChooser.getSelectedFile().getPath();
                     Restore.restoreDatabase("root", "root", "lavega_store_db", backupFilePath);
                     JOptionPane.showMessageDialog(this, "Database restored successfully.", "Success",
                             JOptionPane.INFORMATION_MESSAGE);
+                    UserLogUtil.logUserAction(uniqueUserId, "Restored Database");
+
                 }
             }
         });
@@ -148,6 +153,8 @@ public class SystemMaintenance extends JPanel {
                 Reset.resetDatabase("root", "root", "lavega_store_db");
                 JOptionPane.showMessageDialog(this, "Database reset to default successfully.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
+                UserLogUtil.logUserAction(uniqueUserId, "Reset Database to default");
+
             }
         });
 

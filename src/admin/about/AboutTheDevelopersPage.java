@@ -13,12 +13,12 @@ public class AboutTheDevelopersPage extends JPanel {
     private int contentPanelHeight = 768;
     private int contentPanelX;
     private int contentPanelY;
+
     private String uniqueUserId;
 
-    public AboutTheDevelopersPage(JFrame mainFrame, String uniqueUserId) {
+    public AboutTheDevelopersPage(JFrame mainFrame, String uniqueStringId) {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
-
         initComponent();
     }
 
@@ -69,16 +69,16 @@ public class AboutTheDevelopersPage extends JPanel {
         // Developer details and images
         int baseY = 350; // Adjust baseY position based on new description area
         addDeveloperDetail(contentPanel, "John Carlos E. Celis",
-                "assets\\images\\developers\\john.jpg",
+                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\john.jpg",
                 100, baseY);
         addDeveloperDetail(contentPanel, "Charimel C. Mariano",
-                "assets\\images\\developers\\charimel.jpg",
+                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\charimel.jpg",
                 400, baseY);
         addDeveloperDetail(contentPanel, " Gabriel S. Molina",
-                "assets\\images\\developers\\gab.png",
+                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\gab.png",
                 700, baseY);
         addDeveloperDetail(contentPanel, "Mark Manuelle C. Regis",
-                "assets\\images\\developers\\mark.png",
+                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\mark.png",
                 1000, baseY);
 
         // Add return button inside content panel

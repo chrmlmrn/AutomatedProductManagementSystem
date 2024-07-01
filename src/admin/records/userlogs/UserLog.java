@@ -27,48 +27,55 @@ public class UserLog extends JPanel {
         this.uniqueUserId = uniqueUserId;
 
         initComponents();
+        setVisible(true);
+
+        // Initialize table with data
         fetchData();
     }
 
     private void initComponents() {
-        setLayout(new BorderLayout());
+        setLayout(null); // Use absolute positioning
+        setBackground(Color.WHITE);
 
-        JPanel mainPanel = new JPanel(new GridBagLayout());
-        mainPanel.setBackground(Color.WHITE);
-        add(mainPanel, BorderLayout.CENTER);
-
-        JPanel headerPanel = new JPanel();
-        headerPanel.setBackground(Color.WHITE);
-        headerPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-
+        // Title and Back Button
         JButton backButton = new JButton("<");
-        backButton.setFont(new Font("Arial", Font.BOLD, 24));
+        backButton.setFont(new Font("Arial", Font.BOLD, 30));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
+        backButton.setBounds(20, 20, 50, 50);
+        add(backButton);
+
         backButton.addActionListener(e -> {
             mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
-        headerPanel.add(backButton);
 
         JLabel titleLabel = new JLabel("User Logs");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setForeground(new Color(24, 26, 78));
-        headerPanel.add(titleLabel);
+        titleLabel.setBounds(100, 30, 500, 30);
+        add(titleLabel);
 
-        RoundedPanel containerPanel = new RoundedPanel(30);
-        containerPanel.setBackground(new Color(30, 144, 255));
-        containerPanel.setPreferredSize(new Dimension(1200, 600));
-        containerPanel.setLayout(new GridBagLayout());
+        // Rounded Blue Panel
+        RoundedPanel bluePanel = new RoundedPanel(30);
+        bluePanel.setBackground(new Color(30, 144, 255));
+        bluePanel.setBounds(100, 120, 1200, 600);
+        bluePanel.setLayout(null); // Use absolute positioning within the panel
+        add(bluePanel);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 20, 10, 20);
-
+        // Table Setup
         String[] columnNames = { "Log ID", "Unique User ID", "Username", "Action", "Timestamp" };
-        tableModel = new DefaultTableModel(columnNames, 0);
+        Object[][] data = {}; // Sample data
+
+        tableModel = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table non-editable
+            }
+        };
 
         logTable = new JTable(tableModel);
         logTable.setFont(new Font("Arial", Font.PLAIN, 16));
@@ -76,57 +83,37 @@ public class UserLog extends JPanel {
         logTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         logTable.getTableHeader().setReorderingAllowed(false);
         JScrollPane scrollPane = new JScrollPane(logTable);
-        scrollPane.setPreferredSize(new Dimension(1100, 400));
+        scrollPane.setBounds(50, 50, 1100, 400);
+        bluePanel.add(scrollPane);
 
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(20, 50, 20, 50);
-        containerPanel.add(scrollPane, gbc);
-
+        // Button Panel
         JPanel buttonPanel = new JPanel();
         buttonPanel.setBackground(new Color(30, 144, 255));
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
+        buttonPanel.setLayout(null);
+        buttonPanel.setBounds(450, 470, 300, 60); // Center the button panel horizontally
+        bluePanel.add(buttonPanel);
 
         RoundedButton refreshButton = new RoundedButton("Refresh");
         refreshButton.setFont(new Font("Arial", Font.BOLD, 16));
         refreshButton.setBackground(Color.WHITE);
         refreshButton.setForeground(Color.BLACK);
         refreshButton.setFocusPainted(false);
-        refreshButton.setPreferredSize(new Dimension(150, 40));
+        refreshButton.setBounds(20, 10, 120, 40); // Adjust the position of the refresh button within the button panel
         refreshButton.addActionListener(e -> fetchData());
+        buttonPanel.add(refreshButton);
 
         RoundedButton closeButton = new RoundedButton("Close");
         closeButton.setFont(new Font("Arial", Font.BOLD, 16));
         closeButton.setBackground(Color.WHITE);
         closeButton.setForeground(Color.BLACK);
         closeButton.setFocusPainted(false);
-        closeButton.setPreferredSize(new Dimension(150, 40));
+        closeButton.setBounds(160, 10, 120, 40); // Adjust the position of the close button within the button panel
         closeButton.addActionListener(e -> {
             mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
-
-        buttonPanel.add(refreshButton);
         buttonPanel.add(closeButton);
-
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.insets = new Insets(20, 50, 20, 50);
-        containerPanel.add(buttonPanel, gbc);
-
-        GridBagConstraints mainGbc = new GridBagConstraints();
-        mainGbc.gridx = 0;
-        mainGbc.gridy = 0;
-        mainGbc.anchor = GridBagConstraints.NORTHWEST;
-        mainGbc.insets = new Insets(10, 10, 10, 10);
-        mainPanel.add(headerPanel, mainGbc);
-
-        mainGbc.gridy = 1;
-        mainGbc.anchor = GridBagConstraints.CENTER;
-        mainPanel.add(containerPanel, mainGbc);
     }
 
     private void fetchData() {

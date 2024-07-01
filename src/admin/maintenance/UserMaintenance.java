@@ -126,7 +126,7 @@ public class UserMaintenance extends JPanel {
         }
     }
 
-    private static void updateUser() {
+    private void updateUser() {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow == -1) {
             JOptionPane.showMessageDialog(null, "Please select a user to update.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -179,8 +179,6 @@ public class UserMaintenance extends JPanel {
                 userAccountStatusId = statusIdResult.getString("user_account_status_id");
             }
 
-            System.out.println("Role ID: " + userRoleId + ", Status ID: " + userAccountStatusId);
-
             String updateQuery = "UPDATE users SET user_first_name = ?, user_last_name = ?, user_role_id = ?, user_account_status_id = ? WHERE user_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
             preparedStatement.setString(1, firstName);
@@ -194,6 +192,8 @@ public class UserMaintenance extends JPanel {
                 JOptionPane.showMessageDialog(null, "User updated successfully.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
                 refreshTable(connection); // Refresh table after update
+                // Log user action
+                UserLogUtil.logUserAction(uniqueUserId, "Updated user: " + username);
             } else {
                 JOptionPane.showMessageDialog(null, "Failed to update user.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -205,7 +205,7 @@ public class UserMaintenance extends JPanel {
         }
     }
 
-    private static void refreshTable(Connection connection) {
+    private void refreshTable(Connection connection) {
         try {
             String query = "SELECT u.user_first_name, u.user_last_name, u.username, r.user_role_name, s.account_status "
                     +
@@ -231,5 +231,4 @@ public class UserMaintenance extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

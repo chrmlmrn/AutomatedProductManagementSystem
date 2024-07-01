@@ -119,6 +119,16 @@ VALUES ('FR', 'Fruits'),
     ('PI', 'Personal Items'),
     ('OT', 'Other');
 --@block
+CREATE TABLE product_status (
+    product_status_id CHAR(3) PRIMARY KEY,
+    product_status_name VARCHAR(50)
+);
+--@block
+INSERT INTO product_status (product_status_id, product_status_name)
+VALUES ('ACT', 'Active'),
+    ('INA', 'Inactive'),
+    ('DIS', 'Discontinued');
+--@block
 CREATE TABLE products (
     product_id INT PRIMARY KEY AUTO_INCREMENT,
     product_code VARCHAR(20) NOT NULL UNIQUE,
@@ -138,27 +148,6 @@ CREATE TABLE products (
     FOREIGN KEY (product_status_id) REFERENCES product_status(product_status_id)
 );
 --@block
-CREATE TABLE product_status (
-    product_status_id CHAR(3) PRIMARY KEY,
-    product_status_name VARCHAR(50)
-);
---@block
-INSERT INTO product_status (product_status_id, product_status_name)
-VALUES ('ACT', 'Active'),
-    ('INA', 'Inactive'),
-    ('DIS', 'Discontinued');
---@block
-CREATE TABLE inventory (
-    inventory_id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id INT NOT NULL,
-    product_total_quantity INT NOT NULL,
-    critical_stock_level INT NOT NULL,
-    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    product_inventory_status_id CHAR(3) NOT NULL DEFAULT 'INS',
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (product_inventory_status_id) REFERENCES product_inventory_status(product_inventory_status_id)
-);
---@block
 CREATE TABLE product_inventory_status (
     product_inventory_status_id CHAR(3) PRIMARY KEY,
     product_inventory_status_name VARCHAR(50)
@@ -171,6 +160,17 @@ INSERT INTO product_inventory_status (
 VALUES ('OOS', 'Out of Stock'),
     ('INS', 'In Stock'),
     ('ROG', 'Reordering');
+--@block
+CREATE TABLE inventory (
+    inventory_id INT PRIMARY KEY AUTO_INCREMENT,
+    product_id INT NOT NULL,
+    product_total_quantity INT NOT NULL,
+    critical_stock_level INT NOT NULL,
+    last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    product_inventory_status_id CHAR(3) NOT NULL DEFAULT 'INS',
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (product_inventory_status_id) REFERENCES product_inventory_status(product_inventory_status_id)
+);
 --@block
 CREATE TABLE product_expiration (
     product_expiration_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -229,8 +229,8 @@ CREATE TABLE discount (
 );
 --@block
 INSERT INTO discount (discount_type_id, discount_type, discount_value)
-VALUES ('SCN', 'Senior Citizen', 20.00),
-    ('PWD', 'Person with Disability', 20.00);
+VALUES ('SCN', 'Senior Citizen', 5.00),
+    ('PWD', 'Person with Disability', 5.00);
 --@block
 CREATE TABLE product_sales (
     product_sales_id INT PRIMARY KEY AUTO_INCREMENT,

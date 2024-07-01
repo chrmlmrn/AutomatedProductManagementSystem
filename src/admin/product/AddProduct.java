@@ -689,7 +689,7 @@ public class AddProduct extends JPanel {
             conn.close();
             JOptionPane.showMessageDialog(null, "Product added successfully!", "Success",
                     JOptionPane.INFORMATION_MESSAGE);
-            UserLogUtil.logUserAction(uniqueUserId, "Added Product");
+            UserLogUtil.logUserAction(uniqueUserId, "Added Product" + productCode);
         } catch (SQLException | ParseException | IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error adding product to database.", "Error",

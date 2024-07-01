@@ -8,6 +8,8 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.*;
 import com.toedter.calendar.JDateChooser;
+
+import admin.records.userlogs.UserLogUtil;
 import database.DatabaseUtil;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
@@ -498,6 +500,8 @@ public class UpdateProduct extends JPanel {
 
                 JOptionPane.showMessageDialog(this, "Product updated successfully.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
+                UserLogUtil.logUserAction(uniqueUserId, "Updated Product");
+
             } else {
                 JOptionPane.showMessageDialog(this, "No rows updated. Please check your data.", "Error",
                         JOptionPane.ERROR_MESSAGE);

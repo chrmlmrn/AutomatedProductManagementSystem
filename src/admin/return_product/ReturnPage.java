@@ -3,6 +3,7 @@ package admin.return_product;
 import admin.AdminMenu;
 import database.DatabaseUtil;
 import admin.records.userlogs.UserLogUtil;
+import customcomponents.RoundedPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,196 +27,120 @@ public class ReturnPage extends JPanel {
         this.uniqueUserId = uniqueUserId;
 
         initComponents();
+        setVisible(true);
     }
 
     private void initComponents() {
-        // Create a main panel for centering the blue container
-        setLayout(new GridBagLayout());
+        setLayout(null); // Use absolute positioning
         setBackground(Color.WHITE);
 
-        // Create the blue container panel
-        JPanel containerPanel = new JPanel();
-        containerPanel.setBackground(new Color(30, 144, 255));
-        containerPanel.setPreferredSize(new Dimension(600, 300)); // Adjusted size to match the image
-        containerPanel.setLayout(new GridBagLayout());
-        containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding
-
-        // Create constraints for layout inside the blue container
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Adjust spacing
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-
-        // Add back button
+        // Title and Back Button
         JButton backButton = new JButton("<");
-        backButton.setFont(new Font("Arial", Font.BOLD, 20));
+        backButton.setFont(new Font("Arial", Font.BOLD, 30));
         backButton.setBorder(BorderFactory.createEmptyBorder());
         backButton.setBackground(Color.WHITE);
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
+        backButton.setBounds(20, 20, 50, 50);
+        add(backButton);
+
         backButton.addActionListener(e -> {
             mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        add(backButton, gbc);
+        JLabel titleLabel = new JLabel("Return");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        titleLabel.setForeground(new Color(24, 26, 78));
+        titleLabel.setBounds(100, 30, 500, 30);
+        add(titleLabel);
 
-        // Add title label
-        JLabel returnLabel = new JLabel("Return");
-        returnLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        returnLabel.setForeground(new Color(24, 26, 78));
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        add(returnLabel, gbc);
+        // Rounded Blue Panel
+        RoundedPanel bluePanel = new RoundedPanel(30);
+        bluePanel.setBackground(new Color(30, 144, 255));
+        bluePanel.setBounds(100, 120, 600, 350); // Increased the height to fit the Return Policy button
+        bluePanel.setLayout(null); // Use absolute positioning within the panel
+        add(bluePanel);
 
-        // Create labels and text fields for the product code and quantity
+        // Labels and text fields for product code and quantity
         JLabel productCodeLabel = new JLabel("Enter Product Code");
         productCodeLabel.setFont(new Font("Arial", Font.BOLD, 14));
         productCodeLabel.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(productCodeLabel, gbc);
+        productCodeLabel.setBounds(50, 30, 200, 30);
+        bluePanel.add(productCodeLabel);
 
         productCodeField = new JTextField("", 15);
-        productCodeField.setPreferredSize(new Dimension(200, 30));
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(productCodeField, gbc);
-
-        JLabel quantityLabel = new JLabel("Quantity");
-        quantityLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        quantityLabel.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(quantityLabel, gbc);
-
-        quantityField = new JTextField("", 5);
-        quantityField.setPreferredSize(new Dimension(40, 30));
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(quantityField, gbc);
+        productCodeField.setBounds(250, 30, 200, 30);
+        bluePanel.add(productCodeField);
 
         JButton verifyButton = new JButton("Verify");
         verifyButton.setFont(new Font("Arial", Font.BOLD, 14));
         verifyButton.setBackground(Color.WHITE);
         verifyButton.setForeground(Color.BLACK);
+        verifyButton.setBounds(460, 30, 90, 30);
         verifyButton.setFocusPainted(false);
-        verifyButton.setPreferredSize(new Dimension(90, 30));
         verifyButton.addActionListener(e -> verifyProduct());
-        gbc.gridx = 2;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.LINE_END;
-        containerPanel.add(verifyButton);
+        bluePanel.add(verifyButton);
+
+        JLabel quantityLabel = new JLabel("Quantity");
+        quantityLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        quantityLabel.setForeground(Color.WHITE);
+        quantityLabel.setBounds(50, 80, 200, 30);
+        bluePanel.add(quantityLabel);
+
+        quantityField = new JTextField("", 5);
+        quantityField.setBounds(250, 80, 40, 30);
+        bluePanel.add(quantityField);
 
         JLabel reasonLabel = new JLabel("Return Reason");
         reasonLabel.setFont(new Font("Arial", Font.BOLD, 14));
         reasonLabel.setForeground(Color.WHITE);
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(reasonLabel, gbc);
+        reasonLabel.setBounds(50, 130, 200, 30);
+        bluePanel.add(reasonLabel);
 
-        // Create a combo box for return reasons
+        // Combo box for return reasons
         String[] reasons = { "Wrong Item", "Damaged Item", "Expired Item" };
         reasonComboBox = new JComboBox<>(reasons);
-        reasonComboBox.setPreferredSize(new Dimension(200, 30));
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(reasonComboBox, gbc);
+        reasonComboBox.setBounds(250, 130, 200, 30);
+        bluePanel.add(reasonComboBox);
 
-        // Add confirm and cancel buttons
+        // Confirm and Cancel buttons
         JButton confirmButton = new JButton("Confirm");
         confirmButton.setFont(new Font("Arial", Font.BOLD, 16));
         confirmButton.setBackground(Color.WHITE);
         confirmButton.setForeground(Color.BLACK);
+        confirmButton.setBounds(100, 200, 150, 40);
         confirmButton.setFocusPainted(false);
-        confirmButton.setPreferredSize(new Dimension(150, 40));
         confirmButton.addActionListener(e -> processReturn());
+        bluePanel.add(confirmButton);
 
         JButton cancelButton = new JButton("Cancel");
         cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
         cancelButton.setBackground(Color.WHITE);
         cancelButton.setForeground(Color.BLACK);
+        cancelButton.setBounds(300, 200, 150, 40);
         cancelButton.setFocusPainted(false);
-        cancelButton.setPreferredSize(new Dimension(150, 40));
         cancelButton.addActionListener(e -> {
             mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
         });
+        bluePanel.add(cancelButton);
 
-        // Create button panel with horizontal box layout
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(new Color(30, 144, 255));
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 50, 0));
-        buttonPanel.add(confirmButton);
-        buttonPanel.add(cancelButton);
-
-        // Add the button panel to the container
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 3;
-        gbc.anchor = GridBagConstraints.CENTER;
-        containerPanel.add(buttonPanel, gbc);
-
-        // Add the blue container panel to the main panel
-        GridBagConstraints mainGbc = new GridBagConstraints();
-        mainGbc.gridx = 0;
-        mainGbc.gridy = 1;
-        mainGbc.gridwidth = 3;
-        mainGbc.anchor = GridBagConstraints.CENTER;
-        add(containerPanel, mainGbc);
-
-        // Create and add the rounded "Return Policy" button on the right side
-        JButton returnPolicyButton = new JButton("Return Policy") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(new Color(30, 144, 255));
-                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 30, 30));
-                super.paintComponent(g);
-            }
-
-            @Override
-            protected void paintBorder(Graphics g) {
-                g.setColor(new Color(30, 144, 255));
-                g.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 30, 30);
-            }
-        };
+        // Add Return Policy button inside the blue panel
+        JButton returnPolicyButton = new JButton("Return Policy");
         returnPolicyButton.setFont(new Font("Arial", Font.BOLD, 16));
-        returnPolicyButton.setForeground(Color.WHITE);
-        returnPolicyButton.setContentAreaFilled(false);
+        returnPolicyButton.setBackground(Color.WHITE);
+        returnPolicyButton.setForeground(Color.BLACK);
+        returnPolicyButton.setBounds(200, 270, 150, 40);
         returnPolicyButton.setFocusPainted(false);
-        returnPolicyButton.setPreferredSize(new Dimension(150, 40));
         returnPolicyButton.addActionListener(e -> {
-            // Handle Return Policy button click here
+            mainFrame.setContentPane(new ReturnPolicyPage(mainFrame, uniqueUserId));
+            mainFrame.revalidate();
+            mainFrame.repaint();
         });
-
-        mainGbc.gridx = 2;
-        mainGbc.gridy = 1;
-        mainGbc.gridwidth = 1;
-        mainGbc.anchor = GridBagConstraints.EAST;
-        mainGbc.insets = new Insets(0, 0, 0, 20); // Add some padding on the right
-        add(returnPolicyButton, mainGbc);
+        bluePanel.add(returnPolicyButton);
     }
 
     private void verifyProduct() {
@@ -261,7 +186,7 @@ public class ReturnPage extends JPanel {
             if (returnDAO.processReturn(productId, quantity, reason)) {
                 JOptionPane.showMessageDialog(mainFrame, "Return processed successfully.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-                UserLogUtil.logUserAction(uniqueUserId, "Returned a Product");
+                UserLogUtil.logUserAction(uniqueUserId, "Returned a Product" + productCode);
 
             } else {
                 JOptionPane.showMessageDialog(mainFrame, "Failed to process return.", "Error",
