@@ -15,6 +15,21 @@
       "username": "root",
       "password": "root",
       "connectionTimeout": 30
+    },
+    {
+      "mysqlOptions": {
+        "authProtocol": "xprotocol",
+        "enableSsl": "Disabled"
+      },
+      "previewLimit": 50,
+      "server": "192.168.235.173",
+      "port": 33060,
+      "driver": "MySQL",
+      "name": "SoftEngRemote",
+      "database": "lavega_store_db",
+      "username": "root",
+      "password": "root",
+      "connectionTimeout": 30
     }
   ],
   "java.debug.settings.onBuildFailureProceed": true,

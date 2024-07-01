@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DatabaseUtil {
-    private static final String URL = "jdbc:mysql://localhost:3306/lavega_store_db";
+    private static final String URL = "jdbc:mysql://192.168.235.173:3306/lavega_store_db";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "root";
 

@@ -299,26 +299,3 @@ CREATE TABLE sales_summary (
     return_refund DECIMAL(10, 2) NOT NULL,
     total_sales DECIMAL(10, 2) NOT NULL
 );
-ALTER TABLE transactions
-ADD COLUMN product_id INT;
--- Add the foreign key constraint to ensure referential integrity
-ALTER TABLE transactions
-ADD CONSTRAINT fk_product_id FOREIGN KEY (product_id) REFERENCES products(product_id);
-SELECT p.product_code,
-    p.product_name,
-    c.category_name,
-    p.product_price,
-    i.product_total_quantity,
-    i.critical_stock_level,
-    ps.product_inventory_status_name,
-    pe.product_expiration_date,
-    pt.product_type_name,
-    s.supplier_name
-FROM products p
-    JOIN category c ON p.category_id = c.category_id
-    JOIN inventory i ON p.product_id = i.product_id
-    JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id
-    LEFT JOIN product_expiration pe ON p.product_id = pe.product_id
-    JOIN product_type pt ON p.product_type_id = pt.product_type_id
-    JOIN supplier s ON p.supplier_id = s.supplier_id
-ORDER BY p.product_name;

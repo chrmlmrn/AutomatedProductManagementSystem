@@ -9,6 +9,7 @@ import javax.swing.table.TableColumn;
 
 import admin.AdminMenu;
 import database.DatabaseUtil;
+import admin.records.userlogs.UserLogUtil;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 

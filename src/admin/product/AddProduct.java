@@ -4,6 +4,7 @@ import com.toedter.calendar.JDateChooser;
 
 import database.DatabaseUtil;
 import admin.product.barcode.BarcodeGenerator;
+import admin.records.userlogs.UserLogUtil;
 import cashier.CashierMenu;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
@@ -607,7 +608,7 @@ public class AddProduct extends JPanel {
             }
 
             // Save barcode image to file
-            String folderPath = "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/barcode/"; // Replace
+            String folderPath = "C:/Users/ismai/OneDrive/Documents/SoftEng/AutomatedProductManagementSystem/barcode/"; // Replace
             // with
             // your
             // folder
@@ -688,6 +689,7 @@ public class AddProduct extends JPanel {
             conn.close();
             JOptionPane.showMessageDialog(null, "Product added successfully!", "Success",
                     JOptionPane.INFORMATION_MESSAGE);
+            UserLogUtil.logUserAction(uniqueUserId, "Added Product");
         } catch (SQLException | ParseException | IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error adding product to database.", "Error",

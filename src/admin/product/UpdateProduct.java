@@ -97,16 +97,16 @@ public class UpdateProduct extends JPanel {
         // Load products into the table
         loadProducts();
 
-        // Bottom Panel with centered Edit button
+        // Bottom Panel with centered Select button
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         bottomPanel.setBackground(Color.WHITE);
         outerPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        JButton editButton = new JButton("Edit");
-        editButton.setFont(new Font("Arial", Font.BOLD, 18));
-        editButton.setBackground(new Color(30, 144, 255));
-        editButton.setForeground(Color.WHITE);
-        editButton.addActionListener(e -> {
+        JButton selectButton = new JButton("Select");
+        selectButton.setFont(new Font("Arial", Font.BOLD, 18));
+        selectButton.setBackground(new Color(30, 144, 255));
+        selectButton.setForeground(Color.WHITE);
+        selectButton.addActionListener(e -> {
             int selectedRow = productTable.getSelectedRow();
             if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(this, "Please select a product to edit.", "Error",
@@ -124,16 +124,11 @@ public class UpdateProduct extends JPanel {
             String productStatus = (String) tableModel.getValueAt(selectedRow, 6);
             Date expirationDate = (Date) tableModel.getValueAt(selectedRow, 7);
 
-            // Display confirmation dialog
-            int option = JOptionPane.showConfirmDialog(this, "Are you sure you want to update this product?",
-                    "Confirmation", JOptionPane.YES_NO_OPTION);
-            if (option == JOptionPane.YES_OPTION) {
-                openEditDialog(productId, productCode, productName, categoryName, productPrice, productQuantity,
-                        supplierName, productStatus, expirationDate, selectedRow);
-            }
+            openEditDialog(productId, productCode, productName, categoryName, productPrice, productQuantity,
+                    supplierName, productStatus, expirationDate, selectedRow);
         });
 
-        bottomPanel.add(editButton);
+        bottomPanel.add(selectButton);
     }
 
     private void loadProducts() {
@@ -187,7 +182,7 @@ public class UpdateProduct extends JPanel {
         JDialog editDialog = new JDialog(mainFrame, "Edit Product", true);
         editDialog.setUndecorated(true); // Remove window borders and title bar
         editDialog.setLayout(new BorderLayout());
-        editDialog.setSize(650, 800); // Adjust the size
+        editDialog.setSize(650, 700); // Adjust the size
         editDialog.setLocationRelativeTo(mainFrame);
 
         RoundedPanel editPanel = new RoundedPanel(30);
@@ -223,6 +218,7 @@ public class UpdateProduct extends JPanel {
         RoundedTextField nameField = new RoundedTextField(5, 20);
         nameField.setText(productName);
         nameField.setPreferredSize(new Dimension(500, 30));
+        nameField.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2;
@@ -238,6 +234,7 @@ public class UpdateProduct extends JPanel {
         JComboBox<String> categoryComboBox = new JComboBox<>();
         loadCategoriesIntoComboBox(categoryComboBox);
         categoryComboBox.setSelectedItem(categoryName);
+        categoryComboBox.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
@@ -253,6 +250,7 @@ public class UpdateProduct extends JPanel {
         RoundedTextField priceField = new RoundedTextField(5, 20);
         priceField.setText(productPrice.toString());
         priceField.setPreferredSize(new Dimension(500, 30));
+        priceField.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 2;
@@ -268,6 +266,7 @@ public class UpdateProduct extends JPanel {
         RoundedTextField quantityField = new RoundedTextField(5, 20);
         quantityField.setText(String.valueOf(productQuantity));
         quantityField.setPreferredSize(new Dimension(500, 30));
+        quantityField.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 8;
         gbc.gridwidth = 2;
@@ -283,6 +282,7 @@ public class UpdateProduct extends JPanel {
         RoundedTextField supplierField = new RoundedTextField(5, 20);
         supplierField.setText(supplierName);
         supplierField.setPreferredSize(new Dimension(500, 30));
+        supplierField.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 10;
         gbc.gridwidth = 2;
@@ -298,6 +298,7 @@ public class UpdateProduct extends JPanel {
         JComboBox<String> statusComboBox = new JComboBox<>();
         loadStatusesIntoComboBox(statusComboBox);
         statusComboBox.setSelectedItem(productStatus);
+        statusComboBox.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 12;
         gbc.gridwidth = 2;
@@ -313,10 +314,27 @@ public class UpdateProduct extends JPanel {
         JDateChooser expirationDateChooser = new JDateChooser();
         expirationDateChooser.setDate(expirationDate);
         expirationDateChooser.setPreferredSize(new Dimension(500, 30));
+        expirationDateChooser.setEnabled(false);
         gbc.gridx = 0;
         gbc.gridy = 14;
         gbc.gridwidth = 2;
         editPanel.add(expirationDateChooser, gbc);
+
+        RoundedButton editButton = new RoundedButton("Edit");
+        editButton.setFont(new Font("Arial", Font.BOLD, 16));
+        editButton.setBackground(Color.WHITE);
+        editButton.setForeground(Color.BLACK);
+        editButton.setFocusPainted(false);
+        editButton.setPreferredSize(new Dimension(140, 40));
+        editButton.addActionListener(e -> {
+            nameField.setEnabled(true);
+            categoryComboBox.setEnabled(true);
+            priceField.setEnabled(true);
+            quantityField.setEnabled(true);
+            supplierField.setEnabled(true);
+            statusComboBox.setEnabled(true);
+            expirationDateChooser.setEnabled(true);
+        });
 
         RoundedButton saveButton = new RoundedButton("Save");
         saveButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -358,6 +376,7 @@ public class UpdateProduct extends JPanel {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setBackground(new Color(30, 144, 255));
+        buttonPanel.add(editButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(cancelButton);
 

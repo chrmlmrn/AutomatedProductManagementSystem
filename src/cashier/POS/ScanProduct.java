@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import database.DatabaseUtil;
+import admin.records.userlogs.UserLogUtil;
 import customcomponents.RoundedButton;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -33,6 +34,7 @@ public class ScanProduct extends JPanel {
     private DefaultTableModel soldProductTableModel;
     private JLabel subTotalLabel;
     private JLabel totalLabel;
+    private JLabel discountValueLabel; // New label for discount value
     private JTextField barcodeField;
     private JTable summaryTable;
     private Map<String, Integer> originalStockMap;
@@ -59,12 +61,15 @@ public class ScanProduct extends JPanel {
     private void initComponents() {
         originalStockMap = new HashMap<>();
 
-        // Initialize subTotalLabel and totalLabel
+        // Initialize subTotalLabel, totalLabel, and discountValueLabel
         subTotalLabel = new JLabel("Sub Total: 0.00");
         subTotalLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
         totalLabel = new JLabel("Total: 0.00");
         totalLabel.setFont(new Font("Arial", Font.BOLD, 18));
+
+        discountValueLabel = new JLabel("0%"); // Initialize discount value label
+        discountValueLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
         // Set panel properties
         setLayout(null);
@@ -168,18 +173,11 @@ public class ScanProduct extends JPanel {
 
         JLabel discountLabel = new JLabel("Discount:");
         discountLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        JLabel discountValueLabel = new JLabel("0%");
-        discountValueLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        JLabel subTotalTextLabel = new JLabel("Sub Total:");
-        subTotalTextLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        JLabel totalTextLabel = new JLabel("Total:");
-        totalTextLabel.setFont(new Font("Arial", Font.BOLD, 18));
-
         totalPanel.add(discountLabel);
-        totalPanel.add(discountValueLabel);
-        totalPanel.add(subTotalTextLabel);
+        totalPanel.add(discountValueLabel); // Add the discount value label to the panel
+        totalPanel.add(new JLabel("Sub Total:"));
         totalPanel.add(subTotalLabel);
-        totalPanel.add(totalTextLabel);
+        totalPanel.add(new JLabel("Total:"));
         totalPanel.add(totalLabel);
 
         add(totalPanel);
@@ -187,13 +185,11 @@ public class ScanProduct extends JPanel {
         // Buttons
         RoundedButton discountButton = new RoundedButton("Discount");
         RoundedButton productCodeButton = new RoundedButton("Product Code");
-        RoundedButton voidButton = new RoundedButton("Void");
         RoundedButton checkoutButton = new RoundedButton("Checkout");
 
         discountButton.setBounds(50, 680, 200, 50);
         productCodeButton.setBounds(275, 680, 200, 50);
-        voidButton.setBounds(800, 600, 200, 50);
-        checkoutButton.setBounds(1080, 600, 200, 50);
+        checkoutButton.setBounds(800, 600, 480, 50); // Expand the checkout button to take over void button's space
 
         discountButton.setBackground(new Color(30, 144, 255));
         discountButton.setForeground(Color.WHITE);
@@ -205,11 +201,6 @@ public class ScanProduct extends JPanel {
         productCodeButton.setFont(new Font("Arial", Font.BOLD, 16));
         productCodeButton.setBorder(BorderFactory.createEmptyBorder());
 
-        voidButton.setBackground(new Color(30, 144, 255));
-        voidButton.setForeground(Color.WHITE);
-        voidButton.setFont(new Font("Arial", Font.BOLD, 16));
-        voidButton.setBorder(BorderFactory.createEmptyBorder());
-
         checkoutButton.setBackground(new Color(30, 144, 255));
         checkoutButton.setForeground(Color.WHITE);
         checkoutButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -217,7 +208,6 @@ public class ScanProduct extends JPanel {
 
         add(discountButton);
         add(productCodeButton);
-        add(voidButton);
         add(checkoutButton);
 
         // Add action listeners for buttons
@@ -239,17 +229,9 @@ public class ScanProduct extends JPanel {
             }
         });
 
-        voidButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                resetPOS();
-            }
-        });
-
         checkoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Checkout button clicked."); // Debugging statement
                 saveTransaction();
                 updateInventory(); // Update the inventory after saving the transaction
                 int response = JOptionPane.showConfirmDialog(null, "Would you like to print the receipt?",
@@ -257,6 +239,7 @@ public class ScanProduct extends JPanel {
                 if (response == JOptionPane.YES_OPTION) {
                     showReceiptUI();
                     resetPOS();
+                    UserLogUtil.logUserAction(uniqueUserId, "Printed a receipt");
                 } else if (response == JOptionPane.NO_OPTION) {
                     resetPOS();
                 }
@@ -405,6 +388,7 @@ public class ScanProduct extends JPanel {
         subTotalLabel.setText(String.format("Sub Total: %.2f", subtotal));
         total = subtotal * (1 - discountPercentage / 100);
         totalLabel.setText(String.format("Total: %.2f", total));
+        discountValueLabel.setText(String.format("%.0f%%", discountPercentage)); // Update discount value label
     }
 
     private void applyDiscount() {
@@ -745,7 +729,11 @@ public class ScanProduct extends JPanel {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    deleteRow(selectedRow);
+                    int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this item?",
+                            "Delete Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (response == JOptionPane.YES_OPTION) {
+                        deleteRow(selectedRow);
+                    }
                     stopCellEditing();
                     updateInventoryTable();
                     updateTotals();

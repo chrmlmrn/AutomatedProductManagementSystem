@@ -17,6 +17,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -115,6 +116,7 @@ public class SalesReport extends JPanel {
     }
 
     private void fetchData() {
+        DecimalFormat df = new DecimalFormat("0.00");
         try (Connection connection = DatabaseUtil.getConnection()) {
             String query = "SELECT transaction_id, receipt_number, reference_number, date, subtotal, discount, vat, total FROM transactions";
             Statement statement = connection.createStatement();
@@ -131,8 +133,8 @@ public class SalesReport extends JPanel {
                 double discount = resultSet.getDouble("discount");
                 double vat = resultSet.getDouble("vat");
                 double total = resultSet.getDouble("total");
-                model.addRow(new Object[] { transactionId, receiptNumber, referenceNumber, saleDate, subtotal, discount,
-                        vat, total });
+                model.addRow(new Object[] { transactionId, receiptNumber, referenceNumber, saleDate,
+                        df.format(subtotal), df.format(discount), df.format(vat), df.format(total) });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -310,7 +312,7 @@ public class SalesReport extends JPanel {
             String userIdDate = uniqueUserId + "_" + new SimpleDateFormat("yyyyMMdd").format(new Date())
                     + "_SALES_REPORT.pdf";
             File outputFile = new File(
-                    "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/generated_reports/sales/"
+                    "C:/Users/ismai/OneDrive/Documents/SoftEng/AutomatedProductManagementSystem/generated_reports/sales/"
                             + userIdDate); // specify your desired output path
             document.save(outputFile);
             JOptionPane.showMessageDialog(this, "Sales report generated successfully!");

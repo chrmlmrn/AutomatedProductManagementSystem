@@ -294,7 +294,7 @@ public class InventoryReport extends JPanel {
             contentStream.close();
 
             // Save the document with the specified filename format
-            String filePath = "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/generated_reports/inventory/"
+            String filePath = "C:/Users/ismai/OneDrive/Documents/SoftEng/AutomatedProductManagementSystem/generated_reports/inventory/"
                     + uniqueUserId + "_"
                     + new SimpleDateFormat("yyyyMMdd").format(new Date()) + "_INVENTORY_REPORT.pdf";
             document.save(new File(filePath));

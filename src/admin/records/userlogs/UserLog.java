@@ -132,7 +132,7 @@ public class UserLog extends JPanel {
     private void fetchData() {
         String query = "SELECT ul.user_log_id, u.unique_user_id, u.username, ul.user_action, ul.action_timestamp " +
                 "FROM user_logs ul " +
-                "JOIN users u ON ul.user_id = u.user_id " +
+                "JOIN users u ON ul.unique_user_id = u.unique_user_id " +
                 "ORDER BY ul.action_timestamp DESC"; // Order by timestamp in descending order
 
         try (Connection connection = DatabaseUtil.getConnection();

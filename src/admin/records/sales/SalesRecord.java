@@ -2,13 +2,12 @@ package admin.records.sales;
 
 import java.awt.*;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.DecimalFormat;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
+import com.toedter.calendar.JDateChooser;
 import admin.records.RecordsMainPage;
-import admin.reports.ReportsPage;
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import database.DatabaseUtil;
@@ -16,20 +15,20 @@ import database.DatabaseUtil;
 public class SalesRecord extends JPanel {
     private DefaultTableModel tableModel;
     private JTable salesTable;
-    private JTextField searchField;
+    private JDateChooser startDateChooser;
+    private JDateChooser endDateChooser;
     private JFrame mainFrame;
     private String uniqueUserId;
 
     public SalesRecord(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
-
         initComponents();
         setVisible(true);
 
         // Initialize table with data
         try (Connection connection = DatabaseUtil.getConnection()) {
-            refreshTable(connection, null);
+            refreshTable(connection, null, null);
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
@@ -95,56 +94,65 @@ public class SalesRecord extends JPanel {
         JPanel searchPanel = new JPanel();
         searchPanel.setBackground(new Color(30, 144, 255));
         searchPanel.setLayout(null);
-        searchPanel.setBounds(350, 470, 600, 60); // Center the search panel horizontally
+        searchPanel.setBounds(280, 470, 600, 80); // Center the search panel horizontally
         bluePanel.add(searchPanel);
 
-        searchField = new JTextField();
-        searchField.setFont(new Font("Arial", Font.PLAIN, 16));
-        searchField.setBounds(50, 10, 300, 40); // Center the search field within the search panel
-        searchPanel.add(searchField);
+        JLabel startDateLabel = new JLabel("Start Date:");
+        startDateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        startDateLabel.setForeground(Color.WHITE);
+        startDateLabel.setBounds(50, 10, 80, 30);
+        searchPanel.add(startDateLabel);
+
+        startDateChooser = new JDateChooser();
+        startDateChooser.setDateFormatString("yyyy-MM-dd");
+        startDateChooser.setBounds(140, 10, 150, 30);
+        searchPanel.add(startDateChooser);
+
+        JLabel endDateLabel = new JLabel("End Date:");
+        endDateLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        endDateLabel.setForeground(Color.WHITE);
+        endDateLabel.setBounds(300, 10, 80, 30);
+        searchPanel.add(endDateLabel);
+
+        endDateChooser = new JDateChooser();
+        endDateChooser.setDateFormatString("yyyy-MM-dd");
+        endDateChooser.setBounds(390, 10, 150, 30);
+        searchPanel.add(endDateChooser);
 
         RoundedButton searchButton = new RoundedButton("Search");
         searchButton.setFont(new Font("Arial", Font.BOLD, 16));
         searchButton.setBackground(Color.WHITE);
         searchButton.setForeground(Color.BLACK);
         searchButton.setFocusPainted(false);
-        searchButton.setBounds(370, 10, 150, 40); // Adjust the position of the search button within the search panel
+        searchButton.setBounds(250, 50, 150, 30); // Adjust the position of the search button within the search panel
         searchButton.addActionListener(e -> searchSalesByDate());
         searchPanel.add(searchButton);
     }
 
     private void searchSalesByDate() {
-        String searchText = searchField.getText().trim();
+        java.util.Date startDate = startDateChooser.getDate();
+        java.util.Date endDate = endDateChooser.getDate();
 
-        if (!searchText.isEmpty()) {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            try {
-                java.util.Date parsedDate = dateFormat.parse(searchText);
-                java.sql.Date sqlDate = new java.sql.Date(parsedDate.getTime());
+        java.sql.Date sqlStartDate = null;
+        java.sql.Date sqlEndDate = null;
 
-                try (Connection connection = DatabaseUtil.getConnection()) {
-                    refreshTable(connection, sqlDate);
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            } catch (ParseException e) {
-                JOptionPane.showMessageDialog(null, "Invalid date format. Please use yyyy-MM-dd.", "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            try (Connection connection = DatabaseUtil.getConnection()) {
-                refreshTable(connection, null);
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
-                        JOptionPane.ERROR_MESSAGE);
-            }
+        if (startDate != null) {
+            sqlStartDate = new java.sql.Date(startDate.getTime());
+        }
+        if (endDate != null) {
+            sqlEndDate = new java.sql.Date(endDate.getTime());
+        }
+
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            refreshTable(connection, sqlStartDate, sqlEndDate);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void refreshTable(Connection connection, java.sql.Date dateFilter) {
+    private void refreshTable(Connection connection, java.sql.Date startDate, java.sql.Date endDate) {
         try {
             String query = "SELECT t.date AS sale_date, "
                     + "SUM(t.subtotal) AS total_sales, "
@@ -156,20 +164,31 @@ public class SalesRecord extends JPanel {
                     + "COUNT(*) AS products_sold "
                     + "FROM transactions t ";
 
-            if (dateFilter != null) {
-                query += "WHERE t.date = ? ";
+            if (startDate != null && endDate != null) {
+                query += "WHERE t.date BETWEEN ? AND ? ";
+            } else if (startDate != null) {
+                query += "WHERE t.date >= ? ";
+            } else if (endDate != null) {
+                query += "WHERE t.date <= ? ";
             }
 
             query += "GROUP BY t.date";
 
             PreparedStatement statement = connection.prepareStatement(query);
 
-            if (dateFilter != null) {
-                statement.setDate(1, dateFilter);
+            if (startDate != null && endDate != null) {
+                statement.setDate(1, startDate);
+                statement.setDate(2, endDate);
+            } else if (startDate != null) {
+                statement.setDate(1, startDate);
+            } else if (endDate != null) {
+                statement.setDate(1, endDate);
             }
 
             ResultSet resultSet = statement.executeQuery();
             tableModel.setRowCount(0); // Clear existing rows
+
+            DecimalFormat df = new DecimalFormat("0.00");
 
             while (resultSet.next()) {
                 Date saleDate = resultSet.getDate("sale_date");
@@ -179,7 +198,8 @@ public class SalesRecord extends JPanel {
                 double totalSales = resultSet.getDouble("total_sales");
 
                 // Assuming fixed hours open/closed for simplicity
-                tableModel.addRow(new Object[] { saleDate, 8, 16, productsSold, tax, returnRefund, totalSales });
+                tableModel.addRow(new Object[] { saleDate, 8, 16, productsSold, df.format(tax), df.format(returnRefund),
+                        df.format(totalSales) });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

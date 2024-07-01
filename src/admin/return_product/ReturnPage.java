@@ -1,20 +1,19 @@
 package admin.return_product;
 
 import admin.AdminMenu;
-import admin.records.product.ProductRecords;
 import database.DatabaseUtil;
-import admin.records.RecordsMainPage;
+import admin.records.userlogs.UserLogUtil;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.swing.*;
 
 public class ReturnPage extends JPanel {
-    private JTextField productIdField;
+    private JTextField productCodeField;
     private JTextField quantityField;
     private JComboBox<String> reasonComboBox;
     private ReturnDAO returnDAO;
@@ -75,23 +74,23 @@ public class ReturnPage extends JPanel {
         gbc.anchor = GridBagConstraints.LINE_START;
         add(returnLabel, gbc);
 
-        // Create labels and text fields for the product id and quantity
-        JLabel productIdLabel = new JLabel("Enter Product ID");
-        productIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        productIdLabel.setForeground(Color.WHITE);
+        // Create labels and text fields for the product code and quantity
+        JLabel productCodeLabel = new JLabel("Enter Product Code");
+        productCodeLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        productCodeLabel.setForeground(Color.WHITE);
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(productIdLabel, gbc);
+        containerPanel.add(productCodeLabel, gbc);
 
-        productIdField = new JTextField("", 15);
-        productIdField.setPreferredSize(new Dimension(200, 30));
+        productCodeField = new JTextField("", 15);
+        productCodeField.setPreferredSize(new Dimension(200, 30));
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         gbc.anchor = GridBagConstraints.LINE_START;
-        containerPanel.add(productIdField, gbc);
+        containerPanel.add(productCodeField, gbc);
 
         JLabel quantityLabel = new JLabel("Quantity");
         quantityLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -208,28 +207,28 @@ public class ReturnPage extends JPanel {
         returnPolicyButton.setFocusPainted(false);
         returnPolicyButton.setPreferredSize(new Dimension(150, 40));
         returnPolicyButton.addActionListener(e -> {
-            mainFrame.setContentPane(new ReturnPolicyPage(mainFrame, uniqueUserId));
-            mainFrame.revalidate();
-            mainFrame.repaint();
+            // Handle Return Policy button click here
         });
 
-        gbc.gridx = 2;
-        gbc.gridy = 3;
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.LINE_END;
-        add(returnPolicyButton, gbc);
+        mainGbc.gridx = 2;
+        mainGbc.gridy = 1;
+        mainGbc.gridwidth = 1;
+        mainGbc.anchor = GridBagConstraints.EAST;
+        mainGbc.insets = new Insets(0, 0, 0, 20); // Add some padding on the right
+        add(returnPolicyButton, mainGbc);
     }
 
     private void verifyProduct() {
-        String productId = productIdField.getText().trim();
-        if (productId.isEmpty()) {
-            JOptionPane.showMessageDialog(mainFrame, "Please enter a product ID.", "Error",
+        String productCode = productCodeField.getText().trim();
+        if (productCode.isEmpty()) {
+            JOptionPane.showMessageDialog(mainFrame, "Please enter the product code.", "Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        if (returnDAO.isProductExists(productId)) {
-            JOptionPane.showMessageDialog(mainFrame, "Product exists. You can proceed with the return.", "Success",
+        String productId = returnDAO.getProductIdByCode(productCode);
+        if (productId != null) {
+            JOptionPane.showMessageDialog(mainFrame, "Product verified successfully.", "Success",
                     JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(mainFrame, "Product does not exist.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -237,12 +236,12 @@ public class ReturnPage extends JPanel {
     }
 
     private void processReturn() {
-        String productId = productIdField.getText().trim();
+        String productCode = productCodeField.getText().trim();
         String quantityStr = quantityField.getText().trim();
         int quantity;
 
-        if (productId.isEmpty() || quantityStr.isEmpty()) {
-            JOptionPane.showMessageDialog(mainFrame, "Please enter both product ID and quantity.", "Error",
+        if (productCode.isEmpty() || quantityStr.isEmpty()) {
+            JOptionPane.showMessageDialog(mainFrame, "Please enter both product code and quantity.", "Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -256,11 +255,14 @@ public class ReturnPage extends JPanel {
         }
 
         String reason = (String) reasonComboBox.getSelectedItem();
+        String productId = returnDAO.getProductIdByCode(productCode);
 
-        if (returnDAO.isProductExists(productId)) {
+        if (productId != null) {
             if (returnDAO.processReturn(productId, quantity, reason)) {
                 JOptionPane.showMessageDialog(mainFrame, "Return processed successfully.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
+                UserLogUtil.logUserAction(uniqueUserId, "Returned a Product");
+
             } else {
                 JOptionPane.showMessageDialog(mainFrame, "Failed to process return.", "Error",
                         JOptionPane.ERROR_MESSAGE);
@@ -272,20 +274,20 @@ public class ReturnPage extends JPanel {
 
     // ReturnDAO class to handle database operations
     class ReturnDAO {
-        public boolean isProductExists(String productId) {
-            String sql = "SELECT COUNT(*) FROM products WHERE product_id = ?";
+        public String getProductIdByCode(String productCode) {
+            String sql = "SELECT product_id FROM products WHERE product_code = ?";
             try (Connection conn = DatabaseUtil.getConnection();
                     PreparedStatement stmt = conn.prepareStatement(sql)) {
-                stmt.setString(1, productId);
+                stmt.setString(1, productCode);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        return rs.getInt(1) > 0;
+                        return rs.getString("product_id");
                     }
                 }
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            return false;
+            return null;
         }
 
         public boolean processReturn(String productId, int quantity, String reason) {

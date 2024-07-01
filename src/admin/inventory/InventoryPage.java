@@ -1,18 +1,16 @@
 package admin.inventory;
 
 import java.awt.*;
-import java.awt.print.PrinterException;
-import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import admin.reports.inventory.InventoryDAO;
 import admin.reports.inventory.Product;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-
 import admin.AdminMenu;
-import admin.reports.ReportsPage;
 
 public class InventoryPage extends JPanel {
 
@@ -20,6 +18,8 @@ public class InventoryPage extends JPanel {
     private InventoryDAO inventoryDAO;
     private JFrame mainFrame;
     private String uniqueUserId;
+    private JTable table;
+    private Timer timer;
 
     public InventoryPage(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
@@ -29,6 +29,9 @@ public class InventoryPage extends JPanel {
 
         initComponents();
         fetchData();
+
+        // Start the auto-refresh timer
+        startAutoRefresh();
     }
 
     private void initComponents() {
@@ -47,6 +50,7 @@ public class InventoryPage extends JPanel {
             mainFrame.setContentPane(new AdminMenu(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
+            stopAutoRefresh();
         });
         add(backButton);
 
@@ -64,7 +68,7 @@ public class InventoryPage extends JPanel {
         Object[][] data = {};
         model = new DefaultTableModel(data, columnNames);
 
-        JTable table = new JTable(model);
+        table = new JTable(model);
         table.setRowHeight(30);
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
         table.getTableHeader().setBackground(new Color(30, 144, 255));
@@ -95,6 +99,7 @@ public class InventoryPage extends JPanel {
 
     private void fetchData() {
         List<Product> products = inventoryDAO.getInventory();
+        model.setRowCount(0); // Clear existing data
         for (Product product : products) {
             model.addRow(new Object[] {
                     product.getProductCode(),
@@ -108,4 +113,19 @@ public class InventoryPage extends JPanel {
         }
     }
 
+    private void startAutoRefresh() {
+        timer = new Timer(true);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> fetchData());
+            }
+        }, 0, 5000); // Refresh every 5 seconds
+    }
+
+    private void stopAutoRefresh() {
+        if (timer != null) {
+            timer.cancel();
+        }
+    }
 }
