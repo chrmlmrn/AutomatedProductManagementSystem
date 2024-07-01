@@ -103,6 +103,10 @@ public class ReturnPolicyPage extends JPanel {
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setBounds(30, 60, 740, 500); // Adjust size and position as needed
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
+
+        // Make the scroll bar invisible but still functional
+        scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+        scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
         contentPanel.add(scrollPane);
 
         // Return button inside content panel

@@ -68,6 +68,7 @@ public class UserManual extends JPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
         add(scrollPane, BorderLayout.CENTER);
 
         String[][] manualSections = {
@@ -118,7 +119,7 @@ public class UserManual extends JPanel {
 
         JScrollPane contentScrollPane = new JScrollPane(contentEditorPane);
         contentScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        contentScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        contentScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         contentPanel.add(contentScrollPane, BorderLayout.CENTER);
 
         sectionButton.addActionListener(e -> {
