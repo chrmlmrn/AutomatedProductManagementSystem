@@ -53,11 +53,11 @@ CREATE TABLE reports (
     report_id INT AUTO_INCREMENT PRIMARY KEY,
     report_type_id INT,
     report_date DATE,
-    user_id INT,
+    unique_user_id VARCHAR(20),
     file_name VARCHAR(255),
     file_data LONGBLOB,
     FOREIGN KEY (report_type_id) REFERENCES report_type(report_type_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (unique_user_id) REFERENCES users(unique_user_id)
 );
 --@block
 CREATE TABLE security_question (
