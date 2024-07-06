@@ -2,6 +2,7 @@ package cashier;
 
 import javax.swing.*;
 
+import admin.records.userlogs.UserLogUtil;
 import login.Login;
 import cashier.POS.ScanProduct;
 import cashier.about.AboutMainPage;
@@ -141,6 +142,7 @@ public class CashierMenu extends JPanel {
                 "Logout Confirmation",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (response == JOptionPane.YES_OPTION) {
+            UserLogUtil.logUserAction(uniqueUserId, "User logged out");
             openLoginPage();
         }
     }

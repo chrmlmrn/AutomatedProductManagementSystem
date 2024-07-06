@@ -2,6 +2,8 @@ package admin.reports.inventory;
 
 import admin.records.userlogs.UserLogUtil;
 import admin.reports.ReportsPage;
+import database.DatabaseUtil;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -14,7 +16,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -130,7 +137,8 @@ public class InventoryReport extends JPanel {
     }
 
     private void generatePDF() {
-        try (PDDocument document = new PDDocument()) {
+        PDDocument document = new PDDocument();
+        try {
             PDPage page = new PDPage(PDRectangle.A4);
             page.setRotation(90); // Rotate page to landscape
             document.addPage(page);
@@ -294,17 +302,54 @@ public class InventoryReport extends JPanel {
             contentStream.close();
 
             // Save the document with the specified filename format
-            String filePath = "C:/Users/ismai/OneDrive/Documents/SoftEng/AutomatedProductManagementSystem/generated_reports/inventory/"
-                    + uniqueUserId + "_"
-                    + new SimpleDateFormat("yyyyMMdd").format(new Date()) + "_INVENTORY_REPORT.pdf";
+            String fileName = uniqueUserId + "_" + new SimpleDateFormat("yyyyMMdd").format(new Date())
+                    + "_INVENTORY_REPORT.pdf";
+            String filePath = "generated_reports/inventory/"
+                    + fileName;
             document.save(new File(filePath));
             JOptionPane.showMessageDialog(this, "Inventory report generated successfully!");
 
-            System.out.println("User ID for logging: " + uniqueUserId); // Debugging log
             UserLogUtil.logUserAction(uniqueUserId, "Generated Inventory Report");
+
+            // Store the PDF file in the database
+            storePDFInDatabase(filePath, fileName);
+
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                document.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+    }
+
+    private void storePDFInDatabase(String filePath, String fileName) {
+
+        String insertSQL = "INSERT INTO reports (report_type_id, report_date, unique_user_id, file_name, file_data) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(insertSQL);
+                FileInputStream fis = new FileInputStream(new File(filePath))) {
+
+            pstmt.setInt(1, getReportTypeId("Inventory Report")); // Assuming you have a method to get the
+                                                                  // report_type_id
+            pstmt.setString(2, new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+            pstmt.setString(3, uniqueUserId); // Assuming uniqueUserId is an integer
+            pstmt.setString(4, fileName);
+            pstmt.setBinaryStream(5, fis, (int) new File(filePath).length());
+
+            pstmt.executeUpdate();
+            System.out.println("PDF report stored in the database successfully.");
+
+        } catch (SQLException | IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int getReportTypeId(String reportType) {
+        return 2;
     }
 
     private float getStringWidth(String text, PDType1Font font, int fontSize) throws IOException {

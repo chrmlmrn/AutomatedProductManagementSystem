@@ -1,22 +1,19 @@
 package admin.reports.sales;
 
-import java.sql.Date;
-import java.sql.Time;
+import java.util.Date;
 
 public class Transaction {
     private String receiptNumber;
     private String referenceNumber;
     private Date date;
-    private Time time;
+    private Date time;
     private double subtotal;
     private double discount;
     private double vat;
     private double total;
-    private int productId;
-    private int productsSold; // Added this field
-    private double tax; // Added this field
+    private int productsSold;
 
-    // Getters and setters for each field
+    // Getters and setters
     public String getReceiptNumber() {
         return receiptNumber;
     }
@@ -41,16 +38,11 @@ public class Transaction {
         this.date = date;
     }
 
-    // Adjust setDate to accept java.util.Date and convert to java.sql.Date
-    public void setDate(java.util.Date date) {
-        this.date = new java.sql.Date(date.getTime());
-    }
-
-    public Time getTime() {
+    public Date getTime() {
         return time;
     }
 
-    public void setTime(Time time) {
+    public void setTime(Date time) {
         this.time = time;
     }
 
@@ -86,15 +78,6 @@ public class Transaction {
         this.total = total;
     }
 
-    public int getProductId() {
-        return productId;
-    }
-
-    public void setProductId(int productId) {
-        this.productId = productId;
-    }
-
-    // Add missing methods
     public int getProductsSold() {
         return productsSold;
     }
@@ -104,10 +87,10 @@ public class Transaction {
     }
 
     public double getTax() {
-        return tax;
+        return vat;
     }
 
     public void setTax(double tax) {
-        this.tax = tax;
+        this.vat = tax;
     }
 }

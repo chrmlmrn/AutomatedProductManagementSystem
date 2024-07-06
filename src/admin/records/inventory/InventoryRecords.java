@@ -70,7 +70,7 @@ public class InventoryRecords extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Last Updated", "Product Code", "Product Name", "Supplier Name", "Product Type",
+        String[] columnNames = { "Product Code", "Product Name", "Supplier Name", "Product Type",
                 "Critical Stock Level", "Stock Quantity", "Product Status" };
         Object[][] data = {}; // Sample data
 
@@ -129,16 +129,7 @@ public class InventoryRecords extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT DATE_FORMAT(i.last_updated, '%Y-%m-%d') AS last_updated, p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
-                        +
-                        "FROM inventory i " +
-                        "JOIN products p ON i.product_id = p.product_id " +
-                        "JOIN supplier s ON p.supplier_id = s.supplier_id " +
-                        "JOIN product_type pt ON p.product_type_id = pt.product_type_id " +
-                        "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id";
-                statement = connection.prepareStatement(query);
-            } else {
-                query = "SELECT DATE_FORMAT(i.last_updated, '%Y-%m-%d') AS last_updated, p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
+                query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
                         +
                         "FROM inventory i " +
                         "JOIN products p ON i.product_id = p.product_id " +
@@ -146,7 +137,19 @@ public class InventoryRecords extends JPanel {
                         "JOIN product_type pt ON p.product_type_id = pt.product_type_id " +
                         "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id "
                         +
-                        "WHERE p.product_name LIKE ? OR p.product_code LIKE ? OR s.supplier_name LIKE ?";
+                        "ORDER BY p.product_code DESC";
+                statement = connection.prepareStatement(query);
+            } else {
+                query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
+                        +
+                        "FROM inventory i " +
+                        "JOIN products p ON i.product_id = p.product_id " +
+                        "JOIN supplier s ON p.supplier_id = s.supplier_id " +
+                        "JOIN product_type pt ON p.product_type_id = pt.product_type_id " +
+                        "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id "
+                        +
+                        "WHERE p.product_name LIKE ? OR p.product_code LIKE ? OR s.supplier_name LIKE ? " +
+                        "ORDER BY p.product_code DESC";
                 statement = connection.prepareStatement(query);
                 statement.setString(1, "%" + searchText + "%");
                 statement.setString(2, "%" + searchText + "%");
@@ -157,7 +160,6 @@ public class InventoryRecords extends JPanel {
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                String lastUpdated = resultSet.getString("last_updated");
                 String productCode = resultSet.getString("product_code");
                 String productName = resultSet.getString("product_name");
                 String supplierName = resultSet.getString("supplier_name");
@@ -165,7 +167,7 @@ public class InventoryRecords extends JPanel {
                 int criticalStockLevel = resultSet.getInt("critical_stock_level");
                 int stockQuantity = resultSet.getInt("stock_quantity");
                 String productStatus = resultSet.getString("product_status");
-                tableModel.addRow(new Object[] { lastUpdated, productCode, productName, supplierName, productType,
+                tableModel.addRow(new Object[] { productCode, productName, supplierName, productType,
                         criticalStockLevel, stockQuantity, productStatus });
             }
         } catch (SQLException ex) {
@@ -177,20 +179,21 @@ public class InventoryRecords extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT DATE_FORMAT(i.last_updated, '%Y-%m-%d') AS last_updated, p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
+            String query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
                     +
                     "FROM inventory i " +
                     "JOIN products p ON i.product_id = p.product_id " +
                     "JOIN supplier s ON p.supplier_id = s.supplier_id " +
                     "JOIN product_type pt ON p.product_type_id = pt.product_type_id " +
-                    "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id";
+                    "JOIN product_inventory_status ps ON i.product_inventory_status_id = ps.product_inventory_status_id "
+                    +
+                    "ORDER BY p.product_code DESC";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                String lastUpdated = resultSet.getString("last_updated");
                 String productCode = resultSet.getString("product_code");
                 String productName = resultSet.getString("product_name");
                 String supplierName = resultSet.getString("supplier_name");
@@ -198,7 +201,7 @@ public class InventoryRecords extends JPanel {
                 int criticalStockLevel = resultSet.getInt("critical_stock_level");
                 int stockQuantity = resultSet.getInt("stock_quantity");
                 String productStatus = resultSet.getString("product_status");
-                tableModel.addRow(new Object[] { lastUpdated, productCode, productName, supplierName, productType,
+                tableModel.addRow(new Object[] { productCode, productName, supplierName, productType,
                         criticalStockLevel, stockQuantity, productStatus });
             }
         } catch (SQLException ex) {

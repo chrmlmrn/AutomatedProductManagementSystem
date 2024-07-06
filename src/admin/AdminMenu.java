@@ -12,6 +12,7 @@ import admin.inventory.InventoryPage;
 import admin.maintenance.MaintenancePage;
 import admin.product.ProductPage;
 import admin.records.RecordsMainPage;
+import admin.records.userlogs.UserLogUtil;
 import admin.reports.ReportsPage;
 import admin.reports.inventory.InventoryDAO;
 import admin.reports.inventory.Product;
@@ -181,6 +182,7 @@ public class AdminMenu extends JPanel {
                 "Logout Confirmation",
                 JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (response == JOptionPane.YES_OPTION) {
+            UserLogUtil.logUserAction(uniqueUserId, "User logged out");
             openLoginPage();
         }
     }

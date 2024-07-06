@@ -67,7 +67,7 @@ public class UserLog extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Log ID", "Unique User ID", "Username", "Action", "Timestamp" };
+        String[] columnNames = { "Unique User ID", "Username", "Action", "Timestamp" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -117,7 +117,7 @@ public class UserLog extends JPanel {
     }
 
     private void fetchData() {
-        String query = "SELECT ul.user_log_id, u.unique_user_id, u.username, ul.user_action, ul.action_timestamp " +
+        String query = "SELECT u.unique_user_id, u.username, ul.user_action, ul.action_timestamp " +
                 "FROM user_logs ul " +
                 "JOIN users u ON ul.unique_user_id = u.unique_user_id " +
                 "ORDER BY ul.action_timestamp DESC"; // Order by timestamp in descending order
@@ -129,14 +129,13 @@ public class UserLog extends JPanel {
             tableModel.setRowCount(0); // Clear existing data
 
             while (resultSet.next()) {
-                int logId = resultSet.getInt("user_log_id");
                 String uniqueUserId = resultSet.getString("unique_user_id");
                 String username = resultSet.getString("username");
                 String action = resultSet.getString("user_action");
                 java.sql.Timestamp timestamp = resultSet.getTimestamp("action_timestamp");
 
                 // Add row to table model
-                tableModel.addRow(new Object[] { logId, uniqueUserId, username, action, timestamp });
+                tableModel.addRow(new Object[] { uniqueUserId, username, action, timestamp });
             }
         } catch (SQLException e) {
             e.printStackTrace();

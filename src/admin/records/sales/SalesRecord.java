@@ -3,7 +3,6 @@ package admin.records.sales;
 import java.awt.*;
 import java.sql.*;
 import java.text.DecimalFormat;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import com.toedter.calendar.JDateChooser;
@@ -70,7 +69,7 @@ public class SalesRecord extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Date", "Hours Open", "Hours Closed", "Products Sold", "Tax", "Discount",
+        String[] columnNames = { "Date", "Hours Open", "Hours Closed", "Products Sold", "Tax", "Return Refund",
                 "Total Sales" };
         Object[][] data = {}; // Sample data
 
@@ -161,8 +160,9 @@ public class SalesRecord extends JPanel {
                     + "               FROM return_products r "
                     + "               JOIN products p ON r.product_id = p.product_id "
                     + "               WHERE DATE(r.return_date) = t.date), 0)) AS return_refund, "
-                    + "COUNT(*) AS products_sold "
-                    + "FROM transactions t ";
+                    + "SUM(sp.quantity) AS products_sold "
+                    + "FROM transactions t "
+                    + "JOIN sold_products sp ON t.transaction_id = sp.transaction_id ";
 
             if (startDate != null && endDate != null) {
                 query += "WHERE t.date BETWEEN ? AND ? ";
@@ -207,4 +207,5 @@ public class SalesRecord extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+
 }

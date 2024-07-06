@@ -69,16 +69,16 @@ public class AboutTheDevelopersPage extends JPanel {
         // Developer details and images
         int baseY = 350; // Adjust baseY position based on new description area
         addDeveloperDetail(contentPanel, "John Carlos E. Celis",
-                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\john.jpg",
+                "assets\\images\\developers\\john.jpg",
                 100, baseY);
         addDeveloperDetail(contentPanel, "Charimel C. Mariano",
-                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\charimel.jpg",
+                "assets\\images\\developers\\charimel.jpg",
                 400, baseY);
         addDeveloperDetail(contentPanel, " Gabriel S. Molina",
-                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\gab.png",
+                "assets\\images\\developers\\gab.png",
                 700, baseY);
         addDeveloperDetail(contentPanel, "Mark Manuelle C. Regis",
-                "C:\\Users\\ADMIN\\OneDrive\\Documents\\AutomatedProductManagementSystem\\assets\\images\\developers\\mark.png",
+                "assets\\images\\developers\\mark.png",
                 1000, baseY);
 
         // Add return button inside content panel

@@ -70,7 +70,7 @@ public class ReturnRecords extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Product Name", "Return Quantity", "Return Reason", "Return Status", "Date" };
+        String[] columnNames = { "Product Name", "Return Quantity", "Return Reason", "Date" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -128,20 +128,18 @@ public class ReturnRecords extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, rs.return_status_name AS return_status, r.return_date "
+                query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, r.return_date "
                         +
                         "FROM return_products r " +
                         "JOIN products p ON r.product_id = p.product_id " +
-                        "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id " +
-                        "JOIN return_status rs ON r.return_status_id = rs.return_status_id";
+                        "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id";
                 statement = connection.prepareStatement(query);
             } else {
-                query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, rs.return_status_name AS return_status, r.return_date "
+                query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, r.return_date "
                         +
                         "FROM return_products r " +
                         "JOIN products p ON r.product_id = p.product_id " +
                         "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id " +
-                        "JOIN return_status rs ON r.return_status_id = rs.return_status_id " +
                         "WHERE p.product_name LIKE ? OR rr.return_reason_name LIKE ?";
                 statement = connection.prepareStatement(query);
                 statement.setString(1, "%" + searchText + "%");
@@ -155,9 +153,8 @@ public class ReturnRecords extends JPanel {
                 String productName = resultSet.getString("product_name");
                 int returnQuantity = resultSet.getInt("return_quantity");
                 String returnReason = resultSet.getString("return_reason");
-                String returnStatus = resultSet.getString("return_status");
                 Date returnDate = resultSet.getDate("return_date");
-                tableModel.addRow(new Object[] { productName, returnQuantity, returnReason, returnStatus, returnDate });
+                tableModel.addRow(new Object[] { productName, returnQuantity, returnReason, returnDate });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -168,12 +165,11 @@ public class ReturnRecords extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, rs.return_status_name AS return_status, r.return_date "
+            String query = "SELECT p.product_name, r.return_quantity, rr.return_reason_name AS return_reason, r.return_date "
                     +
                     "FROM return_products r " +
                     "JOIN products p ON r.product_id = p.product_id " +
-                    "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id " +
-                    "JOIN return_status rs ON r.return_status_id = rs.return_status_id";
+                    "JOIN return_reason rr ON r.return_reason_id = rr.return_reason_id";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
@@ -183,9 +179,8 @@ public class ReturnRecords extends JPanel {
                 String productName = resultSet.getString("product_name");
                 int returnQuantity = resultSet.getInt("return_quantity");
                 String returnReason = resultSet.getString("return_reason");
-                String returnStatus = resultSet.getString("return_status");
                 Date returnDate = resultSet.getDate("return_date");
-                tableModel.addRow(new Object[] { productName, returnQuantity, returnReason, returnStatus, returnDate });
+                tableModel.addRow(new Object[] { productName, returnQuantity, returnReason, returnDate });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

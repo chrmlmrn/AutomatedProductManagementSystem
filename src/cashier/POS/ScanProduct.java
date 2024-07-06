@@ -6,6 +6,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import admin.reports.sales.SoldProduct;
 import admin.reports.sales.Transaction;
 import admin.reports.sales.TransactionService;
 import cashier.CashierMenu;
@@ -19,15 +20,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import database.DatabaseUtil;
 import admin.records.userlogs.UserLogUtil;
 import customcomponents.RoundedButton;
+
+import java.util.ArrayList;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.UUID;
 import java.util.Random;
+import java.util.List;
 
 public class ScanProduct extends JPanel {
     private DefaultTableModel productTableModel;
@@ -300,6 +305,8 @@ public class ScanProduct extends JPanel {
                 double productPrice = rs.getDouble("product_price");
                 int productTotalQuantity = rs.getInt("product_total_quantity");
 
+                System.out.println("Adding product: " + productName + ", Code: " + productCode);
+
                 originalStockMap.put(productCode, productTotalQuantity);
 
                 boolean foundInSoldProducts = false;
@@ -522,7 +529,6 @@ public class ScanProduct extends JPanel {
         return String.format("%08d", random.nextInt(100000000));
     }
 
-    // Method to save the transaction to the database
     private void saveTransaction() {
         // Get the current date and time
         Date now = new Date();
@@ -537,10 +543,21 @@ public class ScanProduct extends JPanel {
 
         // Calculate totals
         subtotal = 0.0;
+        List<SoldProduct> soldProducts = new ArrayList<>();
         for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
             double price = (double) soldProductTableModel.getValueAt(i, 2);
             int quantity = (int) soldProductTableModel.getValueAt(i, 1);
             subtotal += price * quantity;
+
+            String productName = (String) soldProductTableModel.getValueAt(i, 0);
+            int productId = getProductIdByName(productName);
+            if (productId != -1) {
+                SoldProduct soldProduct = new SoldProduct();
+                soldProduct.setProductId(productId);
+                soldProduct.setQuantity(quantity);
+                soldProducts.add(soldProduct);
+                System.out.println("Adding SoldProduct: " + productName + ", Quantity: " + quantity);
+            }
         }
         discountAmount = subtotal * (discountPercentage / 100);
         vatAmount = (subtotal - discountAmount) * 0.12; // VAT is 12%
@@ -548,11 +565,12 @@ public class ScanProduct extends JPanel {
 
         Connection conn = null;
         PreparedStatement stmt = null;
+        ResultSet generatedKeys = null;
 
         try {
             conn = DatabaseUtil.getConnection();
             String sql = "INSERT INTO transactions (receipt_number, reference_number, date, time, subtotal, discount, vat, total) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            stmt = conn.prepareStatement(sql);
+            stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, receiptNumber);
             stmt.setString(2, referenceNumber);
             stmt.setDate(3, java.sql.Date.valueOf(currentDate)); // Using java.sql.Date for date
@@ -562,25 +580,44 @@ public class ScanProduct extends JPanel {
             stmt.setDouble(7, vatAmount);
             stmt.setDouble(8, total);
 
-            System.out.println("Executing query: " + stmt.toString()); // Debugging statement
             stmt.executeUpdate();
+
+            // Retrieve the generated transaction ID
+            generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                int transactionId = generatedKeys.getInt(1);
+                System.out.println("Transaction ID: " + transactionId);
+
+                // Insert the sold products into the sold_products table
+                String soldProductsSql = "INSERT INTO sold_products (transaction_id, product_id, quantity) VALUES (?, ?, ?)";
+                try (PreparedStatement soldProductsStmt = conn.prepareStatement(soldProductsSql)) {
+                    for (SoldProduct soldProduct : soldProducts) {
+                        soldProductsStmt.setInt(1, transactionId);
+                        soldProductsStmt.setInt(2, soldProduct.getProductId());
+                        soldProductsStmt.setInt(3, soldProduct.getQuantity());
+                        soldProductsStmt.addBatch();
+                    }
+                    soldProductsStmt.executeBatch();
+                }
+
+                // Handle the new transaction to update sales summary
+                Transaction transaction = new Transaction();
+                transaction.setDate(java.sql.Date.valueOf(currentDate));
+                transaction.setTime(java.sql.Time.valueOf(currentTime));
+                transaction.setTax(vatAmount);
+                transaction.setTotal(total);
+
+                TransactionService transactionService = new TransactionService();
+                transactionService.handleNewTransaction(transaction, soldProducts);
+            }
+
             System.out.println("Transaction saved successfully!"); // Debugging statement
-
-            // Handle the new transaction to update sales summary
-            Transaction transaction = new Transaction();
-            transaction.setDate(java.sql.Date.valueOf(currentDate));
-            transaction.setTime(java.sql.Time.valueOf(currentTime));
-            transaction.setProductsSold(soldProductTableModel.getRowCount());
-            transaction.setTax(vatAmount);
-            transaction.setTotal(total);
-
-            TransactionService transactionService = new TransactionService();
-            transactionService.handleNewTransaction(transaction);
 
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error saving transaction to the database: " + e.getMessage());
         } finally {
+            DatabaseUtil.close(generatedKeys);
             DatabaseUtil.close(stmt);
             DatabaseUtil.close(conn);
         }
@@ -602,15 +639,14 @@ public class ScanProduct extends JPanel {
             if (rs.next()) {
                 productId = rs.getInt("product_id");
             }
-            System.out.println("Product ID for " + productName + " is " + productId); // Debugging statement
         } catch (SQLException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving product ID from database");
         } finally {
             DatabaseUtil.close(rs);
             DatabaseUtil.close(stmt);
             DatabaseUtil.close(conn);
         }
-
         return productId;
     }
 

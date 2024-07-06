@@ -54,6 +54,8 @@ CREATE TABLE reports (
     report_type_id INT,
     report_date DATE,
     user_id INT,
+    file_name VARCHAR(255),
+    file_data LONGBLOB,
     FOREIGN KEY (report_type_id) REFERENCES report_type(report_type_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
@@ -81,10 +83,6 @@ CREATE TABLE security_answer (
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (security_question_id) REFERENCES security_question(security_question_id)
 );
-SELECT *
-FROM users;
-SELECT *
-FROM user_logs;
 --@block
 CREATE TABLE product_type (
     product_type_id CHAR(1) PRIMARY KEY,
@@ -180,17 +178,6 @@ CREATE TABLE product_expiration (
     FOREIGN KEY (product_id) REFERENCES products(product_id)
 );
 --@block
-CREATE TABLE return_status (
-    return_status_id CHAR(3) PRIMARY KEY,
-    return_status_name VARCHAR(50) NOT NULL
-);
---@block
-INSERT INTO return_status (return_status_id, return_status_name)
-VALUES ('PRO', 'Processing'),
-    ('COM', 'Completed'),
-    ('REJ', 'Rejected'),
-    ('CAN', 'Cancelled');
---@block
 CREATE TABLE return_reason (
     return_reason_id CHAR(3) PRIMARY KEY,
     return_reason_name VARCHAR(50) NOT NULL
@@ -207,19 +194,8 @@ CREATE TABLE return_products (
     return_quantity INT NOT NULL,
     return_reason_id CHAR(3) NOT NULL,
     return_date DATE NOT NULL,
-    return_status_id CHAR(3) NOT NULL,
     FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (return_reason_id) REFERENCES return_reason(return_reason_id),
-    FOREIGN KEY (return_status_id) REFERENCES return_status(return_status_id)
-);
---@block
-CREATE TABLE sales (
-    sales_id INT PRIMARY KEY AUTO_INCREMENT,
-    product_id INT NOT NULL,
-    sales_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_id INT NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (return_reason_id) REFERENCES return_reason(return_reason_id)
 );
 --@block
 CREATE TABLE discount (
@@ -232,51 +208,11 @@ INSERT INTO discount (discount_type_id, discount_type, discount_value)
 VALUES ('SCN', 'Senior Citizen', 5.00),
     ('PWD', 'Person with Disability', 5.00);
 --@block
-CREATE TABLE product_sales (
-    product_sales_id INT PRIMARY KEY AUTO_INCREMENT,
-    sales_id INT NOT NULL,
-    product_id INT NOT NULL,
-    product_quantity_sold INT NOT NULL,
-    product_unit_price DECIMAL(10, 2) NOT NULL,
-    total_sales DECIMAL(10, 2) NOT NULL,
-    discount_type_id CHAR(3),
-    FOREIGN KEY (sales_id) REFERENCES sales(sales_id),
-    FOREIGN KEY (product_id) REFERENCES products(product_id),
-    FOREIGN KEY (discount_type_id) REFERENCES discount(discount_type_id)
-);
---@block
-SELECT *
-FROM products;
---@block
-SELECT *
-FROM supplier;
---@block
-SELECT *
-FROM category;
---@block
-SELECT *
-FROM inventory;
---@block
 SELECT DATE_FORMAT(last_updated, '%Y-%m-%d') AS formatted_date
 FROM inventory;
 --@block
-SELECT *
-FROM product_expiration;
---@block
 SELECT DATE_FORMAT(product_expiration_date, '%Y-%m-%d') AS formatted_date
 FROM product_expiration;
---@block
-SELECT *
-FROM users;
---@block
-SELECT *
-FROM user_logs;
---@block
-SELECT *
-FROM security_answer;
---@block
-SELECT *
-FROM users;
 --@block
 CREATE TABLE transactions (
     transaction_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -294,8 +230,16 @@ CREATE TABLE sales_summary (
     sale_date DATE PRIMARY KEY,
     hours_open INT NOT NULL,
     hours_closed INT NOT NULL,
-    products_sold INT NOT NULL,
     tax DECIMAL(10, 2) NOT NULL,
     return_refund DECIMAL(10, 2) NOT NULL,
     total_sales DECIMAL(10, 2) NOT NULL
+);
+--@block
+CREATE TABLE sold_products (
+    sold_product_id INT AUTO_INCREMENT PRIMARY KEY,
+    transaction_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
 );

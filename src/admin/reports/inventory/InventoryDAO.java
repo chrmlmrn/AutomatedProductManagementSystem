@@ -26,7 +26,7 @@ public class InventoryDAO {
                 + "JOIN product_type pt ON p.product_type_id = pt.product_type_id "
                 + "JOIN supplier s ON p.supplier_id = s.supplier_id "
                 + "GROUP BY p.product_code, p.product_name, c.category_name, p.product_price "
-                + "ORDER BY p.product_name";
+                + "ORDER BY p.product_code";
 
         try (Connection conn = DatabaseUtil.getConnection();
                 Statement stmt = conn.createStatement();

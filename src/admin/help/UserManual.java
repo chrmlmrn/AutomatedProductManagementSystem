@@ -4,6 +4,8 @@ import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import java.awt.*;
 import javax.swing.*;
+import java.io.File;
+import java.net.MalformedURLException;
 
 public class UserManual extends JPanel {
     private JFrame mainFrame;
@@ -11,7 +13,7 @@ public class UserManual extends JPanel {
     private static final int BUTTON_HEIGHT = 50;
     private static final int GAP = 20;
     private String uniqueUserId;
-    private static final String BASE_IMAGE_PATH = "C:/Users/ADMIN/OneDrive/Documents/AutomatedProductManagementSystem/assets/images/usermanual/";
+    private static final String BASE_IMAGE_PATH = "assets/images/usermanual/";
 
     public UserManual(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
@@ -135,7 +137,13 @@ public class UserManual extends JPanel {
 
     private static String getImageHtml(String relativeImagePath) {
         String imagePath = BASE_IMAGE_PATH + relativeImagePath;
-        return "<p><img src='file:///" + imagePath + "' width='600' height='300'/></p>";
+        try {
+            File imageFile = new File(imagePath);
+            return "<p><img src='" + imageFile.toURI().toURL() + "' width='600' height='300'/></p>";
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            return "<p>Image not found: " + relativeImagePath + "</p>";
+        }
     }
 
     private static String getHowToUseSystemContent() {

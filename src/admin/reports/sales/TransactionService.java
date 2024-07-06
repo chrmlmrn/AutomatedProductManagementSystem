@@ -1,48 +1,26 @@
 package admin.reports.sales;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import database.DatabaseUtil;
+import java.util.List;
 
 public class TransactionService {
-    private SalesDAO salesDAO;
-
-    public TransactionService() {
-        salesDAO = new SalesDAO();
-    }
-
-    public void handleNewTransaction(Transaction transaction) {
-        // Logic to record the transaction...
-        recordTransaction(transaction);
-
-        // Update sales summary
-        salesDAO.updateSalesSummary();
-    }
-
-    private void recordTransaction(Transaction transaction) {
-        String sql = "INSERT INTO transactions (receipt_number, reference_number, date, time, subtotal, discount, vat, total, product_id) "
-                +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (Connection conn = DatabaseUtil.getConnection();
-                PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            pstmt.setString(1, transaction.getReceiptNumber());
-            pstmt.setString(2, transaction.getReferenceNumber());
-            pstmt.setDate(3, new java.sql.Date(transaction.getDate().getTime()));
-            pstmt.setTime(4, new java.sql.Time(transaction.getTime().getTime()));
-            pstmt.setDouble(5, transaction.getSubtotal());
-            pstmt.setDouble(6, transaction.getDiscount());
-            pstmt.setDouble(7, transaction.getVat());
-            pstmt.setDouble(8, transaction.getTotal());
-            pstmt.setInt(9, transaction.getProductId());
-
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
+    public void handleNewTransaction(Transaction transaction, List<SoldProduct> soldProducts) {
+        System.out.println("Handling new transaction...");
+        System.out.println("Transaction Date: " + transaction.getDate());
+        System.out.println("Transaction Time: " + transaction.getTime());
+        System.out.println("Sold Products:");
+        for (SoldProduct soldProduct : soldProducts) {
+            System.out
+                    .println("Product ID: " + soldProduct.getProductId() + ", Quantity: " + soldProduct.getQuantity());
         }
-    }
 
-    // Other methods related to transactions...
+        // Your existing logic to handle the transaction
+
+        // For debugging, log the transaction and sold products
+        System.out.println("Transaction Details:");
+        System.out.println("Subtotal: " + transaction.getSubtotal());
+        System.out.println("Discount: " + transaction.getDiscount());
+        System.out.println("VAT: " + transaction.getVat());
+        System.out.println("Total: " + transaction.getTotal());
+        System.out.println("Products Sold: " + transaction.getProductsSold());
+    }
 }
