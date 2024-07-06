@@ -1,6 +1,7 @@
 package cashier.POS;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
@@ -11,7 +12,6 @@ import admin.reports.sales.SoldProduct;
 import admin.reports.sales.Transaction;
 import admin.reports.sales.TransactionService;
 import cashier.CashierMenu;
-
 import javax.swing.table.TableCellEditor;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -27,7 +27,10 @@ import java.util.Map;
 import database.DatabaseUtil;
 import admin.records.userlogs.UserLogUtil;
 import customcomponents.RoundedButton;
-
+import java.awt.print.PageFormat;
+import java.awt.print.Paper;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.util.ArrayList;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -40,7 +43,8 @@ public class ScanProduct extends JPanel {
     private DefaultTableModel soldProductTableModel;
     private JLabel subTotalLabel;
     private JLabel totalLabel;
-    private JLabel discountValueLabel; // New label for discount value
+    private JLabel vatLabel;
+    private JLabel discountValueLabel;
     private JTextField barcodeField;
     private JTable summaryTable;
     private Map<String, Integer> originalStockMap;
@@ -53,35 +57,28 @@ public class ScanProduct extends JPanel {
     private double discountAmount;
     private double vatAmount;
     private double total;
-
     private JFrame mainFrame;
     private String uniqueUserId;
 
     public ScanProduct(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
-
         initComponents();
     }
 
     private void initComponents() {
         originalStockMap = new HashMap<>();
-
-        // Initialize subTotalLabel, totalLabel, and discountValueLabel
-        subTotalLabel = new JLabel("Sub Total: 0.00");
-        subTotalLabel.setFont(new Font("Arial", Font.BOLD, 18));
-
-        totalLabel = new JLabel("Total: 0.00");
-        totalLabel.setFont(new Font("Arial", Font.BOLD, 18));
-
-        discountValueLabel = new JLabel("0%"); // Initialize discount value label
-        discountValueLabel.setFont(new Font("Arial", Font.BOLD, 18));
-
-        // Set panel properties
+        subTotalLabel = new JLabel("Sub Total: 0.00", SwingConstants.RIGHT);
+        subTotalLabel.setFont(new Font("Arial", Font.PLAIN, 18)); // Unbolded
+        vatLabel = new JLabel("VAT (12%): 0.00", SwingConstants.RIGHT);
+        vatLabel.setFont(new Font("Arial", Font.PLAIN, 18)); // Unbolded
+        totalLabel = new JLabel("Total: 0.00", SwingConstants.RIGHT);
+        totalLabel.setFont(new Font("Arial", Font.BOLD, 18)); // Bold
+        discountValueLabel = new JLabel("Discount: 0.00", SwingConstants.RIGHT);
+        discountValueLabel.setFont(new Font("Arial", Font.PLAIN, 18)); // Unbolded
         setLayout(null);
         setBackground(Color.WHITE);
 
-        // Title Label
         JLabel titleLabel = new JLabel("Scan Products");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 30));
         titleLabel.setBounds(100, 30, 300, 40);
@@ -105,7 +102,6 @@ public class ScanProduct extends JPanel {
         });
         add(backButton);
 
-        // Barcode field
         barcodeField = new JTextField();
         barcodeField.setBounds(50, 80, 300, 50);
         barcodeField.setFont(new Font("Arial", Font.PLAIN, 30));
@@ -120,7 +116,6 @@ public class ScanProduct extends JPanel {
         });
         add(barcodeField);
 
-        // Clear Barcode Button
         RoundedButton clearBarcodeButton = new RoundedButton("Clear Barcode");
         clearBarcodeButton.setBounds(360, 80, 200, 50);
         clearBarcodeButton.setBackground(new Color(30, 144, 255));
@@ -136,13 +131,12 @@ public class ScanProduct extends JPanel {
         });
         add(clearBarcodeButton);
 
-        // Product table (Left table for products being scanned)
         String[] productColumns = { "PRODUCT CODE", "PRODUCT NAME", "SIZE", "PRICE", "TOTAL QUANTITY" };
         productTableModel = new DefaultTableModel(productColumns, 0);
         JTable productTable = new JTable(productTableModel) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Make the left table non-editable
+                return false;
             }
         };
         productTable.getTableHeader().setBackground(new Color(30, 144, 255));
@@ -153,49 +147,77 @@ public class ScanProduct extends JPanel {
         productScrollPane.setBounds(50, 150, 700, 500);
         add(productScrollPane);
 
-        // Summary table (Right table for products being sold)
-        String[] summaryColumns = { "PRODUCT NAME", "QUANTITY", "PRICE", "ADJUST", "DELETE" };
+        String[] summaryColumns = { "PRODUCT NAME", "QUANTITY", "PRICE", "CATEGORY", "ADJUST", "DELETE" };
         soldProductTableModel = new DefaultTableModel(summaryColumns, 0);
         summaryTable = new JTable(soldProductTableModel) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 3 || column == 4; // Only the "ADJUST" and "DELETE" columns should be editable
+                return column == 4 || column == 5;
             }
         };
         summaryTable.setRowHeight(30);
         summaryTable.getColumn("ADJUST").setCellRenderer(new AdjustCellRenderer());
         summaryTable.getColumn("ADJUST").setCellEditor(new AdjustCellEditor());
+        summaryTable.getColumn("ADJUST").setPreferredWidth(100); // Adjust the width as needed
         summaryTable.getColumn("DELETE").setCellRenderer(new DeleteButtonRenderer());
+        summaryTable.getColumn("DELETE").setPreferredWidth(100); // Adjust the width as needed
         summaryTable.getColumn("DELETE")
                 .setCellEditor(new DeleteButtonEditor(new JCheckBox(), soldProductTableModel, productTableModel));
         JScrollPane summaryScrollPane = new JScrollPane(summaryTable);
         summaryScrollPane.setBounds(800, 150, 500, 300);
         add(summaryScrollPane);
 
-        // Total panel
-        JPanel totalPanel = new JPanel(new GridLayout(3, 2));
-        totalPanel.setBounds(800, 450, 500, 100);
+        JPanel totalPanel = new JPanel(null); // Changed to null layout
+        totalPanel.setBounds(800, 450, 500, 150);
         totalPanel.setBackground(Color.WHITE);
 
         JLabel discountLabel = new JLabel("Discount:");
-        discountLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        discountLabel.setFont(new Font("Arial", Font.PLAIN, 18)); // Unbolded
+        discountLabel.setBounds(0, 0, 150, 30); // Adjusted bounds
         totalPanel.add(discountLabel);
-        totalPanel.add(discountValueLabel); // Add the discount value label to the panel
-        totalPanel.add(new JLabel("Sub Total:"));
+
+        discountValueLabel.setBounds(300, 0, 150, 30); // Adjusted bounds
+        totalPanel.add(discountValueLabel);
+
+        JLabel vatLabelText = new JLabel("VAT (12%):");
+        vatLabelText.setFont(new Font("Arial", Font.PLAIN, 18)); // Unbolded
+        vatLabelText.setBounds(0, 30, 150, 30); // Adjusted bounds
+        totalPanel.add(vatLabelText);
+
+        vatLabel.setBounds(300, 30, 150, 30); // Adjusted bounds
+        totalPanel.add(vatLabel);
+
+        JLabel subTotalLabelText = new JLabel("Sub Total:");
+        subTotalLabelText.setFont(new Font("Arial", Font.PLAIN, 18)); // Unbolded
+        subTotalLabelText.setBounds(0, 60, 150, 30); // Adjusted bounds
+        totalPanel.add(subTotalLabelText);
+
+        subTotalLabel.setBounds(300, 60, 150, 30); // Adjusted bounds
         totalPanel.add(subTotalLabel);
-        totalPanel.add(new JLabel("Total:"));
+
+        // Add a separator line
+        JSeparator separator = new JSeparator();
+        separator.setBorder(new LineBorder(Color.BLACK, 1));
+        separator.setBounds(0, 90, 450, 1); // Adjusted bounds
+        totalPanel.add(separator);
+
+        JLabel totalLabelText = new JLabel("Total:");
+        totalLabelText.setFont(new Font("Arial", Font.BOLD, 18));
+        totalLabelText.setBounds(0, 100, 150, 30); // Adjusted bounds
+        totalPanel.add(totalLabelText);
+
+        totalLabel.setBounds(300, 100, 150, 30); // Adjusted bounds
         totalPanel.add(totalLabel);
 
         add(totalPanel);
 
-        // Buttons
         RoundedButton discountButton = new RoundedButton("Discount");
         RoundedButton productCodeButton = new RoundedButton("Product Code");
         RoundedButton checkoutButton = new RoundedButton("Checkout");
 
         discountButton.setBounds(50, 680, 200, 50);
         productCodeButton.setBounds(275, 680, 200, 50);
-        checkoutButton.setBounds(800, 600, 480, 50); // Expand the checkout button to take over void button's space
+        checkoutButton.setBounds(800, 600, 480, 50);
 
         discountButton.setBackground(new Color(30, 144, 255));
         discountButton.setForeground(Color.WHITE);
@@ -216,7 +238,6 @@ public class ScanProduct extends JPanel {
         add(productCodeButton);
         add(checkoutButton);
 
-        // Add action listeners for buttons
         discountButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -239,7 +260,7 @@ public class ScanProduct extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 saveTransaction();
-                updateInventory(); // Update the inventory after saving the transaction
+                updateInventory();
                 int response = JOptionPane.showConfirmDialog(null, "Would you like to print the receipt?",
                         "Print Receipt", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (response == JOptionPane.YES_OPTION) {
@@ -249,14 +270,11 @@ public class ScanProduct extends JPanel {
                 } else if (response == JOptionPane.NO_OPTION) {
                     resetPOS();
                 }
-                // No action is needed if the response is JOptionPane.CLOSED_OPTION
             }
         });
 
-        // Call updateTotals after initializing the labels
         updateTotals();
 
-        // Add a key listener to close the application
         addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -266,7 +284,6 @@ public class ScanProduct extends JPanel {
             }
         });
 
-        // Add a table model listener to update the inventory when quantity changes
         soldProductTableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
@@ -287,13 +304,15 @@ public class ScanProduct extends JPanel {
             conn = DatabaseUtil.getConnection();
             String sql;
             if (type.equals("barcode")) {
-                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity " +
-                        "FROM products JOIN inventory ON products.product_id = inventory.product_id " +
-                        "WHERE barcode = ?";
+                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity, category_name "
+                        + "FROM products JOIN inventory ON products.product_id = inventory.product_id "
+                        + "JOIN category ON products.category_id = category.category_id "
+                        + "WHERE barcode = ?";
             } else {
-                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity " +
-                        "FROM products JOIN inventory ON products.product_id = inventory.product_id " +
-                        "WHERE product_code = ?";
+                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity, category_name "
+                        + "FROM products JOIN inventory ON products.product_id = inventory.product_id "
+                        + "JOIN category ON products.category_id = category.category_id "
+                        + "WHERE product_code = ?";
             }
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, code);
@@ -305,38 +324,25 @@ public class ScanProduct extends JPanel {
                 String productSize = rs.getString("product_size");
                 double productPrice = rs.getDouble("product_price");
                 int productTotalQuantity = rs.getInt("product_total_quantity");
-
-                System.out.println("Adding product: " + productName + ", Code: " + productCode);
+                String categoryName = rs.getString("category_name");
 
                 originalStockMap.put(productCode, productTotalQuantity);
 
-                boolean foundInSoldProducts = false;
-
-                for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
-                    if (soldProductTableModel.getValueAt(i, 0).equals(productName)) {
-                        int quantity = (int) soldProductTableModel.getValueAt(i, 1);
-                        soldProductTableModel.setValueAt(quantity + 1, i, 1);
-                        foundInSoldProducts = true;
-                        break;
-                    }
-                }
-
-                if (!foundInSoldProducts) {
-                    Object[] soldRow = { productName, 1, productPrice, "Adjust", "Delete" };
+                // Check for existing product in soldProductTableModel
+                int existingRowIndex = getExistingRowIndex(productName);
+                if (existingRowIndex != -1) {
+                    int existingQuantity = (int) soldProductTableModel.getValueAt(existingRowIndex, 1);
+                    soldProductTableModel.setValueAt(existingQuantity + 1, existingRowIndex, 1);
+                } else {
+                    Object[] soldRow = { productName, 1, productPrice, categoryName, "Adjust", "Delete" };
                     soldProductTableModel.addRow(soldRow);
                 }
 
+                // Update product table model
                 boolean foundInProductTable = false;
-
                 for (int i = 0; i < productTableModel.getRowCount(); i++) {
                     if (productTableModel.getValueAt(i, 0).equals(productCode)) {
-                        int totalSoldQuantity = 0;
-                        for (int j = 0; j < soldProductTableModel.getRowCount(); j++) {
-                            if (soldProductTableModel.getValueAt(j, 0).equals(productName)) {
-                                totalSoldQuantity = (int) soldProductTableModel.getValueAt(j, 1);
-                                break;
-                            }
-                        }
+                        int totalSoldQuantity = getTotalSoldQuantity(productName);
                         int newQuantity = productTotalQuantity - totalSoldQuantity;
                         productTableModel.setValueAt(newQuantity, i, 4);
                         foundInProductTable = true;
@@ -345,13 +351,7 @@ public class ScanProduct extends JPanel {
                 }
 
                 if (!foundInProductTable) {
-                    int totalSoldQuantity = 0;
-                    for (int j = 0; j < soldProductTableModel.getRowCount(); j++) {
-                        if (soldProductTableModel.getValueAt(j, 0).equals(productName)) {
-                            totalSoldQuantity = (int) soldProductTableModel.getValueAt(j, 1);
-                            break;
-                        }
-                    }
+                    int totalSoldQuantity = getTotalSoldQuantity(productName);
                     Object[] productRow = { productCode, productName, productSize, productPrice,
                             productTotalQuantity - totalSoldQuantity };
                     productTableModel.addRow(productRow);
@@ -371,6 +371,26 @@ public class ScanProduct extends JPanel {
         }
     }
 
+    private int getExistingRowIndex(String productName) {
+        for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
+            if (soldProductTableModel.getValueAt(i, 0).equals(productName)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int getTotalSoldQuantity(String productName) {
+        int totalSoldQuantity = 0;
+        for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
+            if (soldProductTableModel.getValueAt(i, 0).equals(productName)) {
+                totalSoldQuantity = (int) soldProductTableModel.getValueAt(i, 1);
+                break;
+            }
+        }
+        return totalSoldQuantity;
+    }
+
     private void updateProductTable(int row, int difference) {
         String productName = (String) soldProductTableModel.getValueAt(row, 0);
         for (int i = 0; i < productTableModel.getRowCount(); i++) {
@@ -387,29 +407,41 @@ public class ScanProduct extends JPanel {
 
     private void updateTotals() {
         subtotal = 0.0;
+        double discountableTotal = 0.0;
         int rowCount = soldProductTableModel.getRowCount();
         for (int i = 0; i < rowCount; i++) {
             double price = (double) soldProductTableModel.getValueAt(i, 2);
             int quantity = (int) soldProductTableModel.getValueAt(i, 1);
             subtotal += price * quantity;
+
+            String categoryName = (String) soldProductTableModel.getValueAt(i, 3);
+            if (!categoryName.equals("Snacks") && !categoryName.equals("Other")) {
+                discountableTotal += price * quantity;
+            }
         }
-        subTotalLabel.setText(String.format("Sub Total: %.2f", subtotal));
-        total = subtotal * (1 - discountPercentage / 100);
-        totalLabel.setText(String.format("Total: %.2f", total));
-        discountValueLabel.setText(String.format("%.0f%%", discountPercentage)); // Update discount value label
+
+        discountAmount = discountableTotal * (discountPercentage / 100);
+        vatAmount = (subtotal - discountAmount) * 0.12;
+        total = subtotal - discountAmount + vatAmount;
+
+        subTotalLabel.setText(String.format("%.2f", subtotal));
+        vatLabel.setText(String.format(" %.2f", vatAmount));
+        totalLabel.setText(String.format("%.2f", total));
+        discountValueLabel.setText(String.format("%.2f", discountAmount));
     }
 
     private void applyDiscount() {
-        String[] discountOptions = { "Senior Citizen (20%)", "Person with Disability (20%)" };
-        int selectedOption = JOptionPane.showOptionDialog(null, "Select Discount Type", "Discount",
+        String[] discountOptions = { "Senior Citizen (5%)", "Person with Disability (5%)" };
+        int selectedOption = JOptionPane.showOptionDialog(null,
+                "Select Discount Type\nNote: Snacks and Other items will not be discounted.", "Discount",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, discountOptions, discountOptions[0]);
 
         switch (selectedOption) {
             case 0:
-                discountPercentage = 20.0;
+                discountPercentage = 0.05;
                 break;
             case 1:
-                discountPercentage = 20.0;
+                discountPercentage = 0.05;
                 break;
             default:
                 discountPercentage = 0.0;
@@ -462,18 +494,22 @@ public class ScanProduct extends JPanel {
     }
 
     private void showReceiptUI() {
-        // Generate receipt content
+        String cashierName = getCashierFullName(uniqueUserId);
+
         StringBuilder receipt = new StringBuilder();
         receipt.append(centerText("LAVEGA Store") + "\n");
-        receipt.append("Receipt No. " + receiptNumber + "\n");
-        receipt.append("Store Owner: Amelia Lavega" + "\n");
-        receipt.append("Address: Eastwind Montalban Rizal" + "\n\n");
+        receipt.append(centerText("Receipt No. " + receiptNumber) + "\n");
+        receipt.append(centerText("Owner: Amelia Lavega") + "\n");
+        receipt.append(centerText("Eastwind Montalban Rizal") + "\n");
+        receipt.append(centerText("Cashier: " + cashierName) + "\n");
 
-        receipt.append(String.format("%-15s %15s\n", currentDate, currentTime));
+        receipt.append(String.format("\n" + "%-15s %15s\n", currentDate, currentTime));
         receipt.append("\n");
 
+        receipt.append(String.format("%-17s %2s %10s\n", "PRODUCT NAME", "QTY", "PRICE"));
+
         for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
-            receipt.append(String.format("%-15s %5d x %10.2f\n",
+            receipt.append(String.format("%-16s %2d x %10.2f\n",
                     soldProductTableModel.getValueAt(i, 0),
                     (int) soldProductTableModel.getValueAt(i, 1),
                     (double) soldProductTableModel.getValueAt(i, 2)));
@@ -481,25 +517,28 @@ public class ScanProduct extends JPanel {
 
         receipt.append("\n");
         receipt.append("---------------------------------\n");
-        receipt.append(String.format("%-15s %15.0f%%\n", "Discount", discountPercentage));
+        receipt.append(String.format("%-15s %15.2f\n", "Discount", discountAmount));
         receipt.append(String.format("%-15s %15.2f\n", "VAT (12%)", vatAmount));
+        receipt.append(String.format("%-15s %15.2f\n", "Sub Total", subtotal));
         receipt.append(String.format("%-15s %15.2f\n", "Total", total));
         receipt.append("\n" + centerText("Reference: " + referenceNumber) + "\n");
         receipt.append(centerText("Thank you for shopping with us!") + "\n");
+        receipt.append(centerText("THIS DOCUMENT IS NOT VALID FOR") + "\n");
+        receipt.append(centerText("CLAIMING OF INPUT TAX") + "\n");
 
         JTextArea textArea = new JTextArea(receipt.toString());
-        textArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         textArea.setEditable(false);
-        textArea.setPreferredSize(new Dimension(220, 600)); // Adjusted dimensions for receipt paper width
+        textArea.setPreferredSize(new Dimension(220, 600));
         JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(220, 600)); // Adjusted dimensions for receipt paper width
+        scrollPane.setPreferredSize(new Dimension(220, 600));
 
         JButton printButton = new JButton("Print");
         printButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    textArea.print();
+                    printReceipt(receipt.toString());
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -513,42 +552,94 @@ public class ScanProduct extends JPanel {
         JOptionPane.showMessageDialog(null, receiptPanel, "Receipt", JOptionPane.PLAIN_MESSAGE);
     }
 
-    // Center text method
+    private void printReceipt(String receiptContent) {
+        JTextArea textArea = new JTextArea(receiptContent);
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 7));
+        textArea.setEditable(false);
+
+        PrinterJob job = PrinterJob.getPrinterJob();
+        PageFormat pf = job.defaultPage();
+        Paper paper = pf.getPaper();
+
+        double margin = 0;
+        paper.setImageableArea(margin, margin, paper.getWidth() - 2 * margin, paper.getHeight() - 2 * margin);
+        pf.setPaper(paper);
+
+        job.setPrintable(textArea.getPrintable(null, null), pf);
+
+        try {
+            job.print();
+        } catch (PrinterException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getCashierFullName(String uniqueUserId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        String fullName = "";
+
+        try {
+            conn = DatabaseUtil.getConnection();
+            String sql = "SELECT user_first_name, user_last_name FROM users WHERE unique_user_id = ?";
+            stmt = conn.prepareStatement(sql);
+            stmt.setString(1, uniqueUserId);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String firstName = rs.getString("user_first_name");
+                String lastName = rs.getString("user_last_name");
+                fullName = firstName + " " + lastName;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error retrieving cashier name from the database");
+        } finally {
+            DatabaseUtil.close(rs);
+            DatabaseUtil.close(stmt);
+            DatabaseUtil.close(conn);
+        }
+
+        return fullName;
+    }
+
     private String centerText(String text) {
-        int width = 30; // Adjust this width as necessary
+        int width = 30;
         return String.format("%" + ((width - text.length()) / 2 + text.length()) + "s", text);
     }
 
-    // Method to generate a unique receipt number
     private String generateReceiptNumber() {
         return UUID.randomUUID().toString().substring(0, 8).toUpperCase();
     }
 
-    // Method to generate a unique reference number
     private String generateReferenceNumber() {
         Random random = new Random();
         return String.format("%08d", random.nextInt(100000000));
     }
 
     private void saveTransaction() {
-        // Get the current date and time
         Date now = new Date();
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
         currentDate = dateFormat.format(now);
         currentTime = timeFormat.format(now);
 
-        // Generate unique receipt number and reference number
         receiptNumber = generateReceiptNumber();
         referenceNumber = generateReferenceNumber();
 
-        // Calculate totals
         subtotal = 0.0;
+        double discountableTotal = 0.0;
         List<SoldProduct> soldProducts = new ArrayList<>();
         for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
             double price = (double) soldProductTableModel.getValueAt(i, 2);
             int quantity = (int) soldProductTableModel.getValueAt(i, 1);
             subtotal += price * quantity;
+
+            String categoryName = (String) soldProductTableModel.getValueAt(i, 3);
+            if (!categoryName.equals("Snacks") && !categoryName.equals("Other")) {
+                discountableTotal += price * quantity;
+            }
 
             String productName = (String) soldProductTableModel.getValueAt(i, 0);
             int productId = getProductIdByName(productName);
@@ -560,8 +651,9 @@ public class ScanProduct extends JPanel {
                 System.out.println("Adding SoldProduct: " + productName + ", Quantity: " + quantity);
             }
         }
-        discountAmount = subtotal * (discountPercentage / 100);
-        vatAmount = (subtotal - discountAmount) * 0.12; // VAT is 12%
+
+        discountAmount = discountableTotal * (discountPercentage / 100);
+        vatAmount = (subtotal - discountAmount) * 0.12;
         total = subtotal - discountAmount + vatAmount;
 
         Connection conn = null;
@@ -574,8 +666,8 @@ public class ScanProduct extends JPanel {
             stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, receiptNumber);
             stmt.setString(2, referenceNumber);
-            stmt.setDate(3, java.sql.Date.valueOf(currentDate)); // Using java.sql.Date for date
-            stmt.setTime(4, java.sql.Time.valueOf(currentTime)); // Using java.sql.Time for time
+            stmt.setDate(3, java.sql.Date.valueOf(currentDate));
+            stmt.setTime(4, java.sql.Time.valueOf(currentTime));
             stmt.setDouble(5, subtotal);
             stmt.setDouble(6, discountAmount);
             stmt.setDouble(7, vatAmount);
@@ -617,12 +709,10 @@ public class ScanProduct extends JPanel {
             }
 
             System.out.println("Transaction saved successfully!"); // Debugging statement
-
         } catch (SQLException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error saving transaction to the database: " + e.getMessage());
         } finally {
-            DatabaseUtil.close(generatedKeys);
             DatabaseUtil.close(stmt);
             DatabaseUtil.close(conn);
         }
@@ -669,7 +759,7 @@ public class ScanProduct extends JPanel {
         private JButton minusButton;
 
         public AdjustCellRenderer() {
-            setLayout(new FlowLayout(FlowLayout.CENTER));
+            setLayout(new GridLayout(1, 2));
             plusButton = new JButton("+");
             minusButton = new JButton("-");
             add(plusButton);
@@ -690,7 +780,7 @@ public class ScanProduct extends JPanel {
         private int row;
 
         public AdjustCellEditor() {
-            panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+            panel = new JPanel(new GridLayout(1, 2));
             plusButton = new JButton("+");
             minusButton = new JButton("-");
             plusButton.addActionListener(this);
@@ -716,7 +806,6 @@ public class ScanProduct extends JPanel {
             String productName = (String) soldProductTableModel.getValueAt(row, 0);
             int quantity = (int) soldProductTableModel.getValueAt(row, 1);
 
-            // Find the corresponding product in the left table to check its total quantity
             int totalQuantity = 0;
             for (int i = 0; i < productTableModel.getRowCount(); i++) {
                 if (productTableModel.getValueAt(i, 1).equals(productName)) {
@@ -773,11 +862,15 @@ public class ScanProduct extends JPanel {
                     int response = JOptionPane.showConfirmDialog(null, "Are you sure you want to delete this item?",
                             "Delete Confirmation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                     if (response == JOptionPane.YES_OPTION) {
+                        stopCellEditing();
                         deleteRow(selectedRow);
+                        updateInventoryTable();
+                        updateTotals();
+                        ((JTable) button.getParent().getParent()).revalidate();
+                        ((JTable) button.getParent().getParent()).repaint();
+                    } else {
+                        cancelCellEditing();
                     }
-                    stopCellEditing();
-                    updateInventoryTable();
-                    updateTotals();
                 }
             });
         }

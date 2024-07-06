@@ -69,8 +69,7 @@ public class SalesRecord extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Date", "Hours Open", "Hours Closed", "Products Sold", "Tax", "Return Refund",
-                "Total Sales" };
+        String[] columnNames = { "Date", "Hours Open", "Hours Closed", "Tax", "Total Discount", "Total Sales" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -153,26 +152,16 @@ public class SalesRecord extends JPanel {
 
     private void refreshTable(Connection connection, java.sql.Date startDate, java.sql.Date endDate) {
         try {
-            String query = "SELECT t.date AS sale_date, "
-                    + "SUM(t.subtotal) AS total_sales, "
-                    + "SUM(t.vat) AS tax, "
-                    + "SUM(COALESCE((SELECT SUM(r.return_quantity * p.product_price) "
-                    + "               FROM return_products r "
-                    + "               JOIN products p ON r.product_id = p.product_id "
-                    + "               WHERE DATE(r.return_date) = t.date), 0)) AS return_refund, "
-                    + "SUM(sp.quantity) AS products_sold "
-                    + "FROM transactions t "
-                    + "JOIN sold_products sp ON t.transaction_id = sp.transaction_id ";
+            String query = "SELECT sale_date, hours_open, hours_closed, tax, total_discount, total_sales "
+                    + "FROM sales_summary ";
 
             if (startDate != null && endDate != null) {
-                query += "WHERE t.date BETWEEN ? AND ? ";
+                query += "WHERE sale_date BETWEEN ? AND ? ";
             } else if (startDate != null) {
-                query += "WHERE t.date >= ? ";
+                query += "WHERE sale_date >= ? ";
             } else if (endDate != null) {
-                query += "WHERE t.date <= ? ";
+                query += "WHERE sale_date <= ? ";
             }
-
-            query += "GROUP BY t.date";
 
             PreparedStatement statement = connection.prepareStatement(query);
 
@@ -192,14 +181,14 @@ public class SalesRecord extends JPanel {
 
             while (resultSet.next()) {
                 Date saleDate = resultSet.getDate("sale_date");
-                int productsSold = resultSet.getInt("products_sold");
+                int hoursOpen = resultSet.getInt("hours_open");
+                int hoursClosed = resultSet.getInt("hours_closed");
                 double tax = resultSet.getDouble("tax");
-                double returnRefund = resultSet.getDouble("return_refund");
+                double totalDiscount = resultSet.getDouble("total_discount");
                 double totalSales = resultSet.getDouble("total_sales");
 
-                // Assuming fixed hours open/closed for simplicity
-                tableModel.addRow(new Object[] { saleDate, 8, 16, productsSold, df.format(tax), df.format(returnRefund),
-                        df.format(totalSales) });
+                tableModel.addRow(new Object[] { saleDate, hoursOpen, hoursClosed, df.format(tax),
+                        df.format(totalDiscount), df.format(totalSales) });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -207,5 +196,4 @@ public class SalesRecord extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
-
 }

@@ -8,7 +8,7 @@ public class Sale {
     private int hoursClosed;
     private int productsSold;
     private double tax;
-    private double returnRefund;
+    private double totalDiscount;
     private double totalSales;
 
     // Getters and setters
@@ -52,12 +52,12 @@ public class Sale {
         this.tax = tax;
     }
 
-    public double getReturnRefund() {
-        return returnRefund;
+    public double getTotalDiscount() {
+        return totalDiscount;
     }
 
-    public void setReturnRefund(double returnRefund) {
-        this.returnRefund = returnRefund;
+    public void setTotalDiscount(double totalDiscount) {
+        this.totalDiscount = totalDiscount;
     }
 
     public double getTotalSales() {

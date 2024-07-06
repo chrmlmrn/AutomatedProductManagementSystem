@@ -5,7 +5,6 @@ import java.awt.event.*;
 import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 
 import admin.AdminMenu;
 import database.DatabaseUtil;
@@ -16,9 +15,6 @@ import customcomponents.RoundedPanel;
 public class UserMaintenance extends JPanel {
     private static DefaultTableModel tableModel;
     private static JTable userTable;
-    private static JComboBox<String> roleComboBox;
-    private static JComboBox<String> statusComboBox;
-
     private JFrame mainFrame;
     private String uniqueUserId;
 
@@ -69,8 +65,8 @@ public class UserMaintenance extends JPanel {
         tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                // Make "First Name", "Last Name", and "Status" columns editable
-                return column == 0 || column == 1 || column == 4;
+                // Make all columns non-editable
+                return false;
             }
         };
 
@@ -83,25 +79,45 @@ public class UserMaintenance extends JPanel {
         scrollPane.setBounds(50, 50, 900, 300);
         bluePanel.add(scrollPane);
 
-        // Add JComboBox for Role and Status
-        roleComboBox = new JComboBox<>(new String[] { "Admin", "Cashier" });
-        statusComboBox = new JComboBox<>(new String[] { "Active", "Inactive" });
+        // Add a mouse listener to open a new window on row click
+        userTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && userTable.getSelectedRow() != -1) {
+                    int selectedRow = userTable.getSelectedRow();
+                    String firstName = (String) userTable.getValueAt(selectedRow, 0);
+                    String lastName = (String) userTable.getValueAt(selectedRow, 1);
+                    String username = (String) userTable.getValueAt(selectedRow, 2);
+                    String status = (String) userTable.getValueAt(selectedRow, 4);
 
-        TableColumn roleColumn = userTable.getColumnModel().getColumn(3);
-        roleColumn.setCellEditor(new DefaultCellEditor(roleComboBox));
-
-        TableColumn statusColumn = userTable.getColumnModel().getColumn(4);
-        statusColumn.setCellEditor(new DefaultCellEditor(statusComboBox));
+                    // Open a new window with the user details
+                    openUserDetailsWindow(firstName, lastName, username, status);
+                }
+            }
+        });
 
         // Button Panel
-        RoundedButton updateButton = new RoundedButton("Update");
-        updateButton.setFont(new Font("Arial", Font.BOLD, 16));
-        updateButton.setBackground(Color.WHITE);
-        updateButton.setForeground(Color.BLACK);
-        updateButton.setFocusPainted(false);
-        updateButton.setBounds(200, 400, 150, 40);
-        updateButton.addActionListener(e -> updateUser());
-        bluePanel.add(updateButton);
+        RoundedButton selectButton = new RoundedButton("Select");
+        selectButton.setFont(new Font("Arial", Font.BOLD, 16));
+        selectButton.setBackground(Color.WHITE);
+        selectButton.setForeground(Color.BLACK);
+        selectButton.setFocusPainted(false);
+        selectButton.setBounds(200, 400, 150, 40);
+        selectButton.addActionListener(e -> {
+            if (userTable.getSelectedRow() != -1) {
+                int selectedRow = userTable.getSelectedRow();
+                String firstName = (String) userTable.getValueAt(selectedRow, 0);
+                String lastName = (String) userTable.getValueAt(selectedRow, 1);
+                String username = (String) userTable.getValueAt(selectedRow, 2);
+                String status = (String) userTable.getValueAt(selectedRow, 4);
+
+                // Open a new window with the user details
+                openUserDetailsWindow(firstName, lastName, username, status);
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select a user to update.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        bluePanel.add(selectButton);
 
         RoundedButton cancelButton = new RoundedButton("Cancel");
         cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -126,21 +142,68 @@ public class UserMaintenance extends JPanel {
         }
     }
 
-    private void updateUser() {
-        int selectedRow = userTable.getSelectedRow();
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(null, "Please select a user to update.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+    private void openUserDetailsWindow(String firstName, String lastName, String username, String status) {
+        JDialog userDetailsDialog = new JDialog(mainFrame, "User Details", true);
+        userDetailsDialog.setSize(400, 300);
+        userDetailsDialog.setLocationRelativeTo(mainFrame); // Center on the screen
 
-        String username = (String) userTable.getValueAt(selectedRow, 2);
-        String firstName = (String) userTable.getValueAt(selectedRow, 0);
-        String lastName = (String) userTable.getValueAt(selectedRow, 1);
-        String role = (String) userTable.getValueAt(selectedRow, 3);
-        String status = (String) userTable.getValueAt(selectedRow, 4);
+        // Blue panel for the dialog
+        RoundedPanel dialogPanel = new RoundedPanel(30);
+        dialogPanel.setBackground(new Color(30, 144, 255));
+        dialogPanel.setLayout(new GridBagLayout());
 
-        System.out.println("Selected user: " + username);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
 
+        dialogPanel.add(new JLabel("First Name:"), gbc);
+        gbc.gridx = 1;
+        JTextField firstNameField = new JTextField(firstName, 20);
+        firstNameField.setEditable(false);
+        dialogPanel.add(firstNameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        dialogPanel.add(new JLabel("Last Name:"), gbc);
+        gbc.gridx = 1;
+        JTextField lastNameField = new JTextField(lastName, 20);
+        lastNameField.setEditable(false);
+        dialogPanel.add(lastNameField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        dialogPanel.add(new JLabel("Status:"), gbc);
+        gbc.gridx = 1;
+        JComboBox<String> statusComboBox = new JComboBox<>(new String[] { "Active", "Inactive" });
+        statusComboBox.setSelectedItem(status);
+        dialogPanel.add(statusComboBox, gbc);
+
+        RoundedButton saveButton = new RoundedButton("Save");
+        saveButton.addActionListener(e -> {
+            String updatedFirstName = firstNameField.getText().trim();
+            String updatedLastName = lastNameField.getText().trim();
+            String updatedStatus = (String) statusComboBox.getSelectedItem();
+            updateUserDetails(username, updatedFirstName, updatedLastName, updatedStatus);
+            userDetailsDialog.dispose();
+        });
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        dialogPanel.add(saveButton, gbc);
+
+        RoundedButton cancelButton = new RoundedButton("Cancel");
+        cancelButton.addActionListener(e -> userDetailsDialog.dispose());
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        dialogPanel.add(cancelButton, gbc);
+
+        userDetailsDialog.add(dialogPanel);
+        userDetailsDialog.setVisible(true);
+    }
+
+    private void updateUserDetails(String username, String firstName, String lastName, String status) {
         try (Connection connection = DatabaseUtil.getConnection()) {
             // Get user ID from database based on username
             String userIdQuery = "SELECT user_id FROM users WHERE username = ?";
@@ -157,41 +220,32 @@ public class UserMaintenance extends JPanel {
                 return;
             }
 
-            // Get role_id and status_id from database based on role and status strings
-            String roleIdQuery = "SELECT user_role_id FROM user_level_of_access WHERE user_role_name = ?";
-            PreparedStatement roleIdStatement = connection.prepareStatement(roleIdQuery);
-            roleIdStatement.setString(1, role);
-            ResultSet roleIdResult = roleIdStatement.executeQuery();
-
+            // Get status_id from database based on status string
             String statusIdQuery = "SELECT user_account_status_id FROM user_account_status WHERE account_status = ?";
             PreparedStatement statusIdStatement = connection.prepareStatement(statusIdQuery);
             statusIdStatement.setString(1, status);
             ResultSet statusIdResult = statusIdStatement.executeQuery();
 
-            String userRoleId = null;
             String userAccountStatusId = null;
-
-            if (roleIdResult.next()) {
-                userRoleId = roleIdResult.getString("user_role_id");
-            }
 
             if (statusIdResult.next()) {
                 userAccountStatusId = statusIdResult.getString("user_account_status_id");
             }
 
-            String updateQuery = "UPDATE users SET user_first_name = ?, user_last_name = ?, user_role_id = ?, user_account_status_id = ? WHERE user_id = ?";
+            String updateQuery = "UPDATE users SET user_first_name = ?, user_last_name = ?, user_account_status_id = ? WHERE user_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
             preparedStatement.setString(1, firstName);
             preparedStatement.setString(2, lastName);
-            preparedStatement.setString(3, userRoleId);
-            preparedStatement.setString(4, userAccountStatusId);
-            preparedStatement.setString(5, userId);
+            preparedStatement.setString(3, userAccountStatusId);
+            preparedStatement.setString(4, userId);
 
             int rowsUpdated = preparedStatement.executeUpdate();
             if (rowsUpdated > 0) {
                 JOptionPane.showMessageDialog(null, "User updated successfully.", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-                refreshTable(connection); // Refresh table after update
+                try (Connection conn = DatabaseUtil.getConnection()) {
+                    refreshTable(conn); // Refresh table after update
+                }
                 // Log user action
                 UserLogUtil.logUserAction(uniqueUserId, "Updated user: " + username);
             } else {
@@ -208,10 +262,9 @@ public class UserMaintenance extends JPanel {
     private void refreshTable(Connection connection) {
         try {
             String query = "SELECT u.user_first_name, u.user_last_name, u.username, r.user_role_name, s.account_status "
-                    +
-                    "FROM users u " +
-                    "INNER JOIN user_level_of_access r ON u.user_role_id = r.user_role_id " +
-                    "INNER JOIN user_account_status s ON u.user_account_status_id = s.user_account_status_id";
+                    + "FROM users u "
+                    + "INNER JOIN user_level_of_access r ON u.user_role_id = r.user_role_id "
+                    + "INNER JOIN user_account_status s ON u.user_account_status_id = s.user_account_status_id";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 

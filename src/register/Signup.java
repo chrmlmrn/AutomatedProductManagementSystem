@@ -25,9 +25,10 @@ import java.sql.Statement;
 public class Signup extends JPanel {
         private JPanel mainPanel, formPanel;
         private JLabel registerLabel, detailsLabel, firstNameLabel, lastNameLabel, usernameLabel, passwordLabel,
-                        termsLabel, securityQuestionLabel, securityAnswerLabel, haveAccountLabel, clickHereLabel;
+                        confirmPasswordLabel, termsLabel, securityQuestionLabel, securityAnswerLabel, haveAccountLabel,
+                        clickHereLabel;
         private JTextField firstNameField, lastNameField, usernameField, securityAnswerField;
-        private JPasswordField passwordField;
+        private JPasswordField passwordField, confirmPasswordField;
         private JButton cashierButton, signInButton, adminButton;
         private JCheckBox termsCheckBox;
         private JComboBox<String> securityQuestionComboBox;
@@ -44,19 +45,24 @@ public class Signup extends JPanel {
         }
 
         private void initComponents() {
-                // Initialize main panel
+                // Initialize main panel with GridBagLayout
                 mainPanel = new JPanel(new GridBagLayout());
-                formPanel = createFormPanel();
-
                 GridBagConstraints gbc = new GridBagConstraints();
                 gbc.gridx = 0;
                 gbc.gridy = 0;
                 gbc.anchor = GridBagConstraints.CENTER;
-                gbc.insets = new Insets(100, 0, 0, 0); // Add space at the top
+                gbc.insets = new Insets(0, 0, 0, 0); // Remove extra space at the top
 
+                formPanel = createFormPanel();
                 mainPanel.add(formPanel, gbc);
 
-                add(mainPanel);
+                // Add mainPanel to the Signup panel
+                setLayout(new GridBagLayout());
+                GridBagConstraints mainGbc = new GridBagConstraints();
+                mainGbc.gridx = 0;
+                mainGbc.gridy = 0;
+                mainGbc.anchor = GridBagConstraints.CENTER;
+                add(mainPanel, mainGbc);
         }
 
         private JPanel createFormPanel() {
@@ -77,6 +83,8 @@ public class Signup extends JPanel {
                 usernameLabel.setForeground(Color.WHITE);
                 passwordLabel = createLabel("Password", new Font("Arial", Font.PLAIN, 12));
                 passwordLabel.setForeground(Color.WHITE);
+                confirmPasswordLabel = createLabel("Confirm Password", new Font("Arial", Font.PLAIN, 12));
+                confirmPasswordLabel.setForeground(Color.WHITE);
                 securityQuestionLabel = createLabel("Security Question", new Font("Arial", Font.PLAIN, 12));
                 securityQuestionLabel.setForeground(Color.WHITE);
                 securityAnswerLabel = createLabel("Answer", new Font("Arial", Font.PLAIN, 12));
@@ -91,6 +99,7 @@ public class Signup extends JPanel {
                 lastNameField = new JTextField();
                 usernameField = new JTextField();
                 passwordField = new JPasswordField();
+                confirmPasswordField = new JPasswordField();
                 securityAnswerField = new JTextField();
                 termsCheckBox = new JCheckBox("I accept the");
                 termsCheckBox.setOpaque(false); // Make the checkbox non-opaque
@@ -119,22 +128,28 @@ public class Signup extends JPanel {
 
                 // Create buttons
                 cashierButton = new RoundedButton("Cashier");
+                adminButton = new RoundedButton("Admin");
 
-                // Action listener for the cashier button
+                // Add action listeners to change button color
                 cashierButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                                 isAdminSelected = false;
                                 isCashierSelected = true;
+                                cashierButton.setBackground(new Color(169, 169, 169)); // Set darker color
+                                cashierButton.setForeground(Color.WHITE);
+                                adminButton.setBackground(new Color(240, 240, 240)); // Reset other button color
+                                adminButton.setForeground(Color.BLACK);
                         }
                 });
 
-                adminButton = new RoundedButton("Admin");
-
-                // Action listener for the admin button
                 adminButton.addActionListener(new ActionListener() {
                         public void actionPerformed(ActionEvent e) {
                                 isAdminSelected = true;
                                 isCashierSelected = false;
+                                adminButton.setBackground(new Color(169, 169, 169)); // Set darker color
+                                adminButton.setForeground(Color.WHITE);
+                                cashierButton.setBackground(new Color(240, 240, 240)); // Reset other button color
+                                cashierButton.setForeground(Color.BLACK);
                         }
                 });
 
@@ -186,7 +201,7 @@ public class Signup extends JPanel {
                                                                                                                                 Short.MAX_VALUE)
                                                                                                                 .addComponent(firstNameField,
                                                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                                                175,
+                                                                                                                                170,
                                                                                                                                 GroupLayout.PREFERRED_SIZE))
                                                                                                 .addPreferredGap(
                                                                                                                 LayoutStyle.ComponentPlacement.RELATED)
@@ -195,39 +210,44 @@ public class Signup extends JPanel {
                                                                                                                 .addComponent(lastNameLabel)
                                                                                                                 .addComponent(lastNameField,
                                                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                                                180,
+                                                                                                                                168,
                                                                                                                                 GroupLayout.PREFERRED_SIZE)))
                                                                                 .addComponent(usernameLabel)
                                                                                 .addComponent(usernameField,
                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                368,
+                                                                                                350,
                                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                                 .addComponent(passwordLabel)
                                                                                 .addComponent(passwordField,
                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                368,
+                                                                                                350,
+                                                                                                GroupLayout.PREFERRED_SIZE)
+                                                                                .addComponent(confirmPasswordLabel)
+                                                                                .addComponent(confirmPasswordField,
+                                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                                350,
                                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                                 .addComponent(securityQuestionLabel)
                                                                                 .addComponent(securityQuestionComboBox,
                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                368,
+                                                                                                350,
                                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                                 .addComponent(securityAnswerLabel)
                                                                                 .addComponent(securityAnswerField,
                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                368,
+                                                                                                350,
                                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                                 .addComponent(roleSelectionLabel)
                                                                                 .addGroup(layout.createSequentialGroup()
                                                                                                 .addComponent(adminButton,
                                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                                160,
+                                                                                                                165,
                                                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                                                 .addPreferredGap(
-                                                                                                                LayoutStyle.ComponentPlacement.RELATED)
+                                                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
                                                                                                 .addComponent(cashierButton,
                                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                                160,
+                                                                                                                165,
                                                                                                                 GroupLayout.PREFERRED_SIZE))
                                                                                 .addGroup(layout.createSequentialGroup()
                                                                                                 .addComponent(termsCheckBox)
@@ -236,7 +256,7 @@ public class Signup extends JPanel {
                                                                                                 .addComponent(termsLabel))
                                                                                 .addComponent(signInButton,
                                                                                                 GroupLayout.PREFERRED_SIZE,
-                                                                                                326,
+                                                                                                350,
                                                                                                 GroupLayout.PREFERRED_SIZE)
                                                                                 .addGroup(layout.createSequentialGroup()
                                                                                                 .addComponent(haveAccountLabel)
@@ -248,11 +268,11 @@ public class Signup extends JPanel {
                 layout.setVerticalGroup(
                                 layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                                                 .addGroup(layout.createSequentialGroup()
-                                                                .addGap(56, 56, 56)
+                                                                .addGap(20, 20, 20)
                                                                 .addComponent(registerLabel)
                                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(detailsLabel)
-                                                                .addGap(18, 18, 18)
+                                                                .addGap(10, 10, 10)
                                                                 .addGroup(layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.BASELINE)
                                                                                 .addComponent(firstNameLabel)
@@ -268,38 +288,40 @@ public class Signup extends JPanel {
                                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                                 GroupLayout.DEFAULT_SIZE,
                                                                                                 GroupLayout.PREFERRED_SIZE))
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(usernameLabel)
                                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(usernameField, GroupLayout.PREFERRED_SIZE,
                                                                                 GroupLayout.DEFAULT_SIZE,
                                                                                 GroupLayout.PREFERRED_SIZE)
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(passwordLabel)
                                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(passwordField, GroupLayout.PREFERRED_SIZE,
                                                                                 GroupLayout.DEFAULT_SIZE,
                                                                                 GroupLayout.PREFERRED_SIZE)
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(confirmPasswordLabel)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                                                .addComponent(confirmPasswordField,
+                                                                                GroupLayout.PREFERRED_SIZE,
+                                                                                GroupLayout.DEFAULT_SIZE,
+                                                                                GroupLayout.PREFERRED_SIZE)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(securityQuestionLabel)
                                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(securityQuestionComboBox,
                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                 GroupLayout.DEFAULT_SIZE,
                                                                                 GroupLayout.PREFERRED_SIZE)
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(securityAnswerLabel)
                                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(securityAnswerField,
                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                 GroupLayout.DEFAULT_SIZE,
                                                                                 GroupLayout.PREFERRED_SIZE)
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(roleSelectionLabel)
                                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addGroup(layout.createParallelGroup(
@@ -312,22 +334,20 @@ public class Signup extends JPanel {
                                                                                                 GroupLayout.PREFERRED_SIZE,
                                                                                                 40,
                                                                                                 GroupLayout.PREFERRED_SIZE))
-                                                                .addPreferredGap(
-                                                                                LayoutStyle.ComponentPlacement.UNRELATED)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addGroup(layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.BASELINE)
                                                                                 .addComponent(termsCheckBox)
                                                                                 .addComponent(termsLabel))
-                                                                .addGap(18, 18, 18)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(signInButton, GroupLayout.PREFERRED_SIZE,
                                                                                 40, GroupLayout.PREFERRED_SIZE)
-                                                                .addGap(18, 18, 18)
+                                                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addGroup(layout.createParallelGroup(
                                                                                 GroupLayout.Alignment.BASELINE)
                                                                                 .addComponent(haveAccountLabel)
                                                                                 .addComponent(clickHereLabel))
-                                                                .addContainerGap(31, Short.MAX_VALUE)));
-
+                                                                .addContainerGap(15, Short.MAX_VALUE)));
         }
 
         private JLabel createLabel(String text, Font font) {
@@ -344,8 +364,19 @@ public class Signup extends JPanel {
         }
 
         private void showTermsAndConditions() {
-                JOptionPane.showMessageDialog(this, "Here are the terms and conditions...", "Terms and Conditions",
-                                JOptionPane.INFORMATION_MESSAGE);
+                String terms = "Terms and Conditions:\n\n"
+                                + "1. User must provide accurate and truthful information.\n"
+                                + "2. Password must be 8 to 12 characters long and contain numbers, and be case-sensitive.\n"
+                                + "3. User is responsible for maintaining the confidentiality of their password.\n"
+                                + "4. The use of this application is subject to the approval of the administrator.\n"
+                                + "5. Any misuse of the system will face severe consequences from the Business Owner.\n"
+                                + "6. User agrees to comply with all applicable laws and regulations.\n"
+                                + "7. The administrator reserves the right to update the terms and conditions at any time.\n"
+                                + "8. User must not share their account with others.\n"
+                                + "9. User should report any suspicious activity immediately.\n"
+                                + "10. User agrees to the data privacy policy outlined by the system.";
+
+                JOptionPane.showMessageDialog(this, terms, "Terms and Conditions", JOptionPane.INFORMATION_MESSAGE);
         }
 
         private void goToLoginPage() {
@@ -385,6 +416,7 @@ public class Signup extends JPanel {
                 System.out.println("Last Name: " + lastNameField.getText().trim());
                 System.out.println("Username: " + usernameField.getText().trim());
                 System.out.println("Password: " + new String(passwordField.getPassword()).trim());
+                System.out.println("Confirm Password: " + new String(confirmPasswordField.getPassword()).trim());
                 System.out.println("Security Answer: " + securityAnswerField.getText().trim());
                 System.out.println("Terms Accepted: " + termsCheckBox.isSelected());
                 System.out.println("Admin Selected: " + isAdminSelected);
@@ -395,6 +427,7 @@ public class Signup extends JPanel {
                                 lastNameField.getText().trim().isEmpty() ||
                                 usernameField.getText().trim().isEmpty() ||
                                 new String(passwordField.getPassword()).trim().isEmpty() ||
+                                new String(confirmPasswordField.getPassword()).trim().isEmpty() ||
                                 securityAnswerField.getText().trim().isEmpty() ||
                                 !termsCheckBox.isSelected() ||
                                 (!isAdminSelected && !isCashierSelected)) {
@@ -410,6 +443,7 @@ public class Signup extends JPanel {
                 String lastName = lastNameField.getText().trim();
                 String username = usernameField.getText().trim();
                 String password = new String(passwordField.getPassword()).trim();
+                String confirmPassword = new String(confirmPasswordField.getPassword()).trim();
                 String securityAnswer = securityAnswerField.getText().trim();
                 String userRoleId = isAdminSelected ? "A" : "C"; // Assuming "A" for Admin and "C" for Cashier
 
@@ -425,6 +459,13 @@ public class Signup extends JPanel {
                         JOptionPane.showMessageDialog(this,
                                         "Password must be 8 to 12 characters long and contain numbers, and be case-sensitive.",
                                         "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                }
+
+                // Check if passwords match
+                if (!password.equals(confirmPassword)) {
+                        JOptionPane.showMessageDialog(this, "Passwords do not match.", "Error",
+                                        JOptionPane.ERROR_MESSAGE);
                         return;
                 }
 
@@ -462,7 +503,7 @@ public class Signup extends JPanel {
                                 insertUserStatement.setString(5, username); // username
                                 insertUserStatement.setString(6, encryptedPassword); // password_hash
                                 insertUserStatement.setString(7, "ACT"); // Set the default value for
-                                                                         // user_account_status_id
+                                // user_account_status_id
 
                                 insertUserStatement.executeUpdate();
 

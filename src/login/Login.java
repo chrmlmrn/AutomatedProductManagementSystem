@@ -230,6 +230,7 @@ public class Login extends JPanel {
         private void signInButtonActionPerformed(ActionEvent evt) {
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
+
                 boolean isAuthenticated = authenticateUser(username, password);
 
                 if (isAuthenticated) {
@@ -257,12 +258,10 @@ public class Login extends JPanel {
                                 }
                                 signInButton.setEnabled(false);
                         } else {
-                                JOptionPane.showMessageDialog(this, "Invalid username or password",
-                                                "Authentication Error", JOptionPane.ERROR_MESSAGE);
+                                String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id again
+                                                                                           // for logging failure
+                                UserLogUtil.logUserAction(uniqueUserId, "User login failed");
                         }
-                        String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id again for
-                                                                                   // logging failure
-                        UserLogUtil.logUserAction(uniqueUserId, "User login failed");
                 }
         }
 
@@ -275,7 +274,18 @@ public class Login extends JPanel {
                         statement.setString(2, Sha256Util.hash(password));
 
                         try (ResultSet resultSet = statement.executeQuery()) {
-                                return resultSet.next();
+                                if (resultSet.next()) {
+                                        String status = resultSet.getString("user_account_status_id");
+                                        if ("INA".equals(status)) {
+                                                JOptionPane.showMessageDialog(this,
+                                                                "User is Inactive, Please Activate it Using an Admin Account...",
+                                                                "Authentication Error", JOptionPane.ERROR_MESSAGE);
+                                                return false;
+                                        }
+                                        return true;
+                                } else {
+                                        return false;
+                                }
                         }
                 } catch (SQLException e) {
                         e.printStackTrace();
