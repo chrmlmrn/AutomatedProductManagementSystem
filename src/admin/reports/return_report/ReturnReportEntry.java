@@ -4,12 +4,13 @@ import java.sql.Date;
 
 public class ReturnReportEntry {
     private Date returnDate;
-    private String productId;
+    private String productCode;
     private String productName;
     private int returnQuantity;
     private String returnReason;
 
-    // Getters and Setters
+    // Existing getters and setters
+
     public Date getReturnDate() {
         return returnDate;
     }
@@ -18,12 +19,12 @@ public class ReturnReportEntry {
         this.returnDate = returnDate;
     }
 
-    public String getProductId() {
-        return productId;
+    public String getProductCode() {
+        return productCode;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setProductCode(String productCode) {
+        this.productCode = productCode;
     }
 
     public String getProductName() {

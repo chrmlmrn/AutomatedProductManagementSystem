@@ -231,7 +231,7 @@ CREATE TABLE sales_summary (
     hours_open INT NOT NULL,
     hours_closed INT NOT NULL,
     tax DECIMAL(10, 2) NOT NULL,
-    return_refund DECIMAL(10, 2) NOT NULL,
+    total_discount DECIMAL(10, 2) NOT NULL,
     total_sales DECIMAL(10, 2) NOT NULL
 );
 --@block

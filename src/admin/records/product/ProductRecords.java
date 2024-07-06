@@ -1,7 +1,6 @@
 package admin.records.product;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -38,7 +37,6 @@ public class ProductRecords extends JPanel {
         backButton.setForeground(new Color(24, 26, 78));
         backButton.setFocusPainted(false);
         backButton.setBounds(20, 20, 50, 50);
-        backButton.setBounds(20, 20, 50, 50);
         add(backButton);
 
         backButton.addActionListener(e -> {
@@ -61,8 +59,8 @@ public class ProductRecords extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Product ID", "Product Code", "Barcode", "Product Name", "Price", "Size",
-                "Category ID", "Supplier ID" };
+        String[] columnNames = { "Product Code", "Barcode", "Product Name", "Price", "Size",
+                "Category Name", "Supplier Name" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -120,14 +118,18 @@ public class ProductRecords extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
-                        +
-                        "FROM products p";
-                statement = connection.prepareStatement(query);
-            } else {
-                query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+                query = "SELECT p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, c.category_name, s.supplier_name "
                         +
                         "FROM products p " +
+                        "JOIN category c ON p.category_id = c.category_id " +
+                        "JOIN supplier s ON p.supplier_id = s.supplier_id";
+                statement = connection.prepareStatement(query);
+            } else {
+                query = "SELECT p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, c.category_name, s.supplier_name "
+                        +
+                        "FROM products p " +
+                        "JOIN category c ON p.category_id = c.category_id " +
+                        "JOIN supplier s ON p.supplier_id = s.supplier_id " +
                         "WHERE p.barcode LIKE ? OR p.product_name LIKE ?";
                 statement = connection.prepareStatement(query);
                 statement.setString(1, "%" + searchText + "%");
@@ -138,16 +140,15 @@ public class ProductRecords extends JPanel {
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int productId = resultSet.getInt("product_id");
                 String productCode = resultSet.getString("product_code");
                 String barcode = resultSet.getString("barcode");
                 String productName = resultSet.getString("product_name");
                 double price = resultSet.getDouble("product_price");
                 String size = resultSet.getString("product_size");
-                String categoryId = resultSet.getString("category_id");
-                int supplierId = resultSet.getInt("supplier_id");
-                tableModel.addRow(new Object[] { productId, productCode, barcode, productName, price, size, categoryId,
-                        supplierId });
+                String categoryName = resultSet.getString("category_name");
+                String supplierName = resultSet.getString("supplier_name");
+                tableModel.addRow(
+                        new Object[] { productCode, barcode, productName, price, size, categoryName, supplierName });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -158,25 +159,26 @@ public class ProductRecords extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT p.product_id, p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, p.category_id, p.supplier_id "
+            String query = "SELECT p.product_code, p.barcode, p.product_name, p.product_price, p.product_size, c.category_name, s.supplier_name "
                     +
-                    "FROM products p";
+                    "FROM products p " +
+                    "JOIN category c ON p.category_id = c.category_id " +
+                    "JOIN supplier s ON p.supplier_id = s.supplier_id";
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery(query);
 
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int productId = resultSet.getInt("product_id");
                 String productCode = resultSet.getString("product_code");
                 String barcode = resultSet.getString("barcode");
                 String productName = resultSet.getString("product_name");
                 double price = resultSet.getDouble("product_price");
                 String size = resultSet.getString("product_size");
-                String categoryId = resultSet.getString("category_id");
-                int supplierId = resultSet.getInt("supplier_id");
-                tableModel.addRow(new Object[] { productId, productCode, barcode, productName, price, size, categoryId,
-                        supplierId });
+                String categoryName = resultSet.getString("category_name");
+                String supplierName = resultSet.getString("supplier_name");
+                tableModel.addRow(
+                        new Object[] { productCode, barcode, productName, price, size, categoryName, supplierName });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

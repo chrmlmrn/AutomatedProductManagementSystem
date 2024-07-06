@@ -1,7 +1,6 @@
 package admin.records.user;
 
 import java.awt.*;
-import java.awt.event.*;
 import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -70,7 +69,7 @@ public class UserRecords extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "User ID", "First Name", "Last Name", "Username", "Role", "Status" };
+        String[] columnNames = { "Unique User ID", "First Name", "Last Name", "Username", "Role", "Status" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -128,14 +127,14 @@ public class UserRecords extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT u.user_id, u.user_first_name, u.user_last_name, u.username, l.user_role_name, s.account_status "
+                query = "SELECT u.unique_user_id, u.user_first_name, u.user_last_name, u.username, l.user_role_name, s.account_status "
                         +
                         "FROM users u " +
                         "JOIN user_level_of_access l ON u.user_role_id = l.user_role_id " +
                         "JOIN user_account_status s ON u.user_account_status_id = s.user_account_status_id";
                 statement = connection.prepareStatement(query);
             } else {
-                query = "SELECT u.user_id, u.user_first_name, u.user_last_name, u.username, l.user_role_name, s.account_status "
+                query = "SELECT u.unique_user_id, u.user_first_name, u.user_last_name, u.username, l.user_role_name, s.account_status "
                         +
                         "FROM users u " +
                         "JOIN user_level_of_access l ON u.user_role_id = l.user_role_id " +
@@ -151,13 +150,14 @@ public class UserRecords extends JPanel {
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int userId = resultSet.getInt("user_id");
+                String uniqueUserId = resultSet.getString("unique_user_id");
                 String firstName = resultSet.getString("user_first_name");
                 String lastName = resultSet.getString("user_last_name");
                 String username = resultSet.getString("username");
                 String roleName = resultSet.getString("user_role_name");
                 String accountStatus = resultSet.getString("account_status");
-                tableModel.addRow(new Object[] { userId, firstName, lastName, username, roleName, accountStatus });
+                tableModel
+                        .addRow(new Object[] { uniqueUserId, firstName, lastName, username, roleName, accountStatus });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -168,7 +168,7 @@ public class UserRecords extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT u.user_id, u.user_first_name, u.user_last_name, u.username, l.user_role_name, s.account_status "
+            String query = "SELECT u.unique_user_id, u.user_first_name, u.user_last_name, u.username, l.user_role_name, s.account_status "
                     +
                     "FROM users u " +
                     "JOIN user_level_of_access l ON u.user_role_id = l.user_role_id " +
@@ -179,13 +179,14 @@ public class UserRecords extends JPanel {
             tableModel.setRowCount(0); // Clear existing rows
 
             while (resultSet.next()) {
-                int userId = resultSet.getInt("user_id");
+                String uniqueUserId = resultSet.getString("unique_user_id");
                 String firstName = resultSet.getString("user_first_name");
                 String lastName = resultSet.getString("user_last_name");
                 String username = resultSet.getString("username");
                 String roleName = resultSet.getString("user_role_name");
                 String accountStatus = resultSet.getString("account_status");
-                tableModel.addRow(new Object[] { userId, firstName, lastName, username, roleName, accountStatus });
+                tableModel
+                        .addRow(new Object[] { uniqueUserId, firstName, lastName, username, roleName, accountStatus });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();

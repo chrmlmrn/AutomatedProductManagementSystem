@@ -12,7 +12,8 @@ import java.util.List;
 public class ReturnReportDAO {
     public List<ReturnReportEntry> getReturnReports() {
         List<ReturnReportEntry> returnReports = new ArrayList<>();
-        String sql = "SELECT rp.return_date, p.product_id, p.product_name, rp.return_quantity, rr.return_reason_name " +
+        String sql = "SELECT rp.return_date, p.product_code, p.product_name, rp.return_quantity, rr.return_reason_name "
+                +
                 "FROM return_products rp " +
                 "JOIN products p ON rp.product_id = p.product_id " +
                 "JOIN return_reason rr ON rp.return_reason_id = rr.return_reason_id";
@@ -24,7 +25,7 @@ public class ReturnReportDAO {
             while (rs.next()) {
                 ReturnReportEntry entry = new ReturnReportEntry();
                 entry.setReturnDate(rs.getDate("return_date"));
-                entry.setProductId(rs.getString("product_id"));
+                entry.setProductCode(rs.getString("product_code")); // Retrieve product_code from product_id
                 entry.setProductName(rs.getString("product_name"));
                 entry.setReturnQuantity(rs.getInt("return_quantity"));
                 entry.setReturnReason(rs.getString("return_reason_name"));
@@ -37,6 +38,6 @@ public class ReturnReportDAO {
     }
 
     public String getFullName(String userUniqueId) {
-        return "John Doe";
+        return userUniqueId;
     }
 }

@@ -18,6 +18,8 @@ import customcomponents.RoundedTextField;
 public class UpdateProduct extends JPanel {
     private DefaultTableModel tableModel;
     private JTable productTable;
+    private JTextField searchProductCodeField;
+    private JTextField searchProductNameField;
     private JFrame mainFrame;
     private String uniqueUserId;
 
@@ -64,6 +66,34 @@ public class UpdateProduct extends JPanel {
 
         outerPanel.add(headerPanel, BorderLayout.NORTH);
 
+        // Search Panel
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.setBackground(Color.WHITE);
+        searchPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
+
+        JLabel searchProductCodeLabel = new JLabel("Product Code:");
+        searchProductCodeLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        searchPanel.add(searchProductCodeLabel);
+
+        searchProductCodeField = new JTextField(10);
+        searchPanel.add(searchProductCodeField);
+
+        JLabel searchProductNameLabel = new JLabel("Product Name:");
+        searchProductNameLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        searchPanel.add(searchProductNameLabel);
+
+        searchProductNameField = new JTextField(10);
+        searchPanel.add(searchProductNameField);
+
+        JButton searchButton = new JButton("Search");
+        searchButton.setFont(new Font("Arial", Font.BOLD, 16));
+        searchButton.setBackground(new Color(30, 144, 255));
+        searchButton.setForeground(Color.WHITE);
+        searchButton.addActionListener(e -> loadProducts());
+        searchPanel.add(searchButton);
+
+        outerPanel.add(searchPanel, BorderLayout.CENTER);
+
         // Product Table
         String[] columnNames = { "Product Code", "Name", "Category", "Price", "Stock Quantity", "Supplier", "Status",
                 "Expiration Date" };
@@ -93,7 +123,7 @@ public class UpdateProduct extends JPanel {
 
         JScrollPane scrollPane = new JScrollPane(productTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        outerPanel.add(scrollPane, BorderLayout.CENTER);
+        outerPanel.add(scrollPane, BorderLayout.SOUTH);
         scrollPane.setBackground(Color.WHITE);
 
         // Load products into the table
@@ -134,6 +164,9 @@ public class UpdateProduct extends JPanel {
     }
 
     private void loadProducts() {
+        String searchProductCode = searchProductCodeField.getText().trim();
+        String searchProductName = searchProductNameField.getText().trim();
+
         String query = "SELECT p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_id, s.supplier_name, ps.product_status_name, MAX(pe.product_expiration_date) AS product_expiration_date, SUM(pe.product_quantity) AS total_quantity "
                 +
                 "FROM products p " +
@@ -142,13 +175,19 @@ public class UpdateProduct extends JPanel {
                 "JOIN supplier s ON p.supplier_id = s.supplier_id " +
                 "JOIN product_status ps ON p.product_status_id = ps.product_status_id " +
                 "LEFT JOIN product_expiration pe ON p.product_id = pe.product_id " +
+                "WHERE p.product_code LIKE ? AND p.product_name LIKE ? " +
                 "GROUP BY p.product_id, p.product_code, p.product_name, c.category_name, p.product_price, i.product_total_quantity, s.supplier_id, s.supplier_name, ps.product_status_name "
                 +
                 "ORDER BY p.product_id ASC";
 
         try (Connection conn = DatabaseUtil.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, "%" + searchProductCode + "%");
+            stmt.setString(2, "%" + searchProductName + "%");
+
+            ResultSet rs = stmt.executeQuery();
+            tableModel.setRowCount(0); // Clear existing rows
 
             while (rs.next()) {
                 int productId = rs.getInt("product_id");

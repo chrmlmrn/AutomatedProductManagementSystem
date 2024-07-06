@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -68,7 +67,7 @@ public class ReturnReport extends JPanel {
         add(titleLabel);
 
         // Table Data
-        String[] columnNames = { "Date of Return", "Product Number", "Product Name", "Quantity Returned",
+        String[] columnNames = { "Date of Return", "Product Code", "Product Name", "Quantity Returned",
                 "Reason for Return" };
         model = new DefaultTableModel(new Object[0][0], columnNames);
 
@@ -118,7 +117,7 @@ public class ReturnReport extends JPanel {
         for (ReturnReportEntry entry : returnReports) {
             model.addRow(new Object[] {
                     entry.getReturnDate(),
-                    entry.getProductId(),
+                    entry.getProductCode(),
                     entry.getProductName(),
                     entry.getReturnQuantity(),
                     entry.getReturnReason()

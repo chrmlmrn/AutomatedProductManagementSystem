@@ -217,7 +217,7 @@ public class ReturnPage extends JPanel {
 
         public boolean processReturn(String productId, int quantity, String reason) {
             String sqlUpdateInventory = "UPDATE inventory SET product_total_quantity = product_total_quantity + ? WHERE product_id = ?";
-            String sqlInsertReturn = "INSERT INTO return_products (product_id, return_quantity, return_reason_id, return_date, return_status_id) VALUES (?, ?, ?, NOW(), 'PRO')";
+            String sqlInsertReturn = "INSERT INTO return_products (product_id, return_quantity, return_reason_id, return_date) VALUES (?, ?, ?, NOW())";
             String reasonId = getReasonId(reason);
 
             try (Connection conn = DatabaseUtil.getConnection();

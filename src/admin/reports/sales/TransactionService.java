@@ -4,10 +4,6 @@ import java.util.List;
 
 public class TransactionService {
     public void handleNewTransaction(Transaction transaction, List<SoldProduct> soldProducts) {
-        System.out.println("Handling new transaction...");
-        System.out.println("Transaction Date: " + transaction.getDate());
-        System.out.println("Transaction Time: " + transaction.getTime());
-        System.out.println("Sold Products:");
         for (SoldProduct soldProduct : soldProducts) {
             System.out
                     .println("Product ID: " + soldProduct.getProductId() + ", Quantity: " + soldProduct.getQuantity());

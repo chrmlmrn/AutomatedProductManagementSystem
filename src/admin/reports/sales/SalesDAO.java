@@ -18,8 +18,7 @@ public class SalesDAO {
                 "SUM(COALESCE((SELECT SUM(r.return_quantity * p.product_price) " +
                 "               FROM return_products r " +
                 "               JOIN products p ON r.product_id = p.product_id " +
-                "               WHERE DATE(r.return_date) = t.date), 0)) AS return_refund, " +
-                "COUNT(*) AS products_sold " +
+                "               WHERE DATE(r.return_date) = t.date), 0)) AS return_refund " +
                 "FROM transactions t " +
                 "WHERE t.date BETWEEN ? AND ? " +
                 "GROUP BY t.date";
@@ -34,7 +33,6 @@ public class SalesDAO {
                 while (rs.next()) {
                     Sale sale = new Sale();
                     sale.setSaleDate(rs.getDate("sale_date"));
-                    sale.setProductsSold(rs.getInt("products_sold"));
                     sale.setTax(rs.getDouble("tax"));
                     sale.setReturnRefund(rs.getDouble("return_refund"));
                     sale.setTotalSales(rs.getDouble("total_sales"));
@@ -55,15 +53,13 @@ public class SalesDAO {
         String sqlSelect = "SELECT date AS sale_date, "
                 + "SUM(subtotal) AS total_sales, "
                 + "SUM(vat) AS tax, "
-                + "SUM(discount) AS return_refund, "
-                + "COUNT(*) AS products_sold "
+                + "SUM(discount) AS return_refund "
                 + "FROM transactions "
                 + "GROUP BY date";
 
-        String sqlInsert = "INSERT INTO sales_summary (sale_date, hours_open, hours_closed, products_sold, tax, return_refund, total_sales) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?) "
+        String sqlInsert = "INSERT INTO sales_summary (sale_date, hours_open, hours_closed, tax, return_refund, total_sales) "
+                + "VALUES (?, ?, ?, ?, ?, ?) "
                 + "ON DUPLICATE KEY UPDATE "
-                + "products_sold = VALUES(products_sold), "
                 + "tax = VALUES(tax), "
                 + "return_refund = VALUES(return_refund), "
                 + "total_sales = VALUES(total_sales)";
@@ -75,7 +71,6 @@ public class SalesDAO {
 
             while (rs.next()) {
                 java.sql.Date saleDate = rs.getDate("sale_date");
-                int productsSold = rs.getInt("products_sold");
                 double tax = rs.getDouble("tax");
                 double returnRefund = rs.getDouble("return_refund");
                 double totalSales = rs.getDouble("total_sales");
@@ -83,10 +78,9 @@ public class SalesDAO {
                 pstmtInsertOrUpdate.setDate(1, saleDate);
                 pstmtInsertOrUpdate.setInt(2, 8); // Example hours_open value
                 pstmtInsertOrUpdate.setInt(3, 16); // Example hours_closed value
-                pstmtInsertOrUpdate.setInt(4, productsSold);
-                pstmtInsertOrUpdate.setDouble(5, tax);
-                pstmtInsertOrUpdate.setDouble(6, returnRefund);
-                pstmtInsertOrUpdate.setDouble(7, totalSales);
+                pstmtInsertOrUpdate.setDouble(4, tax);
+                pstmtInsertOrUpdate.setDouble(5, returnRefund);
+                pstmtInsertOrUpdate.setDouble(6, totalSales);
 
                 pstmtInsertOrUpdate.executeUpdate();
             }

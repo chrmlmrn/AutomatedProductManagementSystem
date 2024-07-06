@@ -6,6 +6,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import admin.reports.sales.SalesDAO;
 import admin.reports.sales.SoldProduct;
 import admin.reports.sales.Transaction;
 import admin.reports.sales.TransactionService;
@@ -609,6 +610,10 @@ public class ScanProduct extends JPanel {
 
                 TransactionService transactionService = new TransactionService();
                 transactionService.handleNewTransaction(transaction, soldProducts);
+
+                // Update sales_summary table
+                SalesDAO salesDAO = new SalesDAO();
+                salesDAO.updateSalesSummary();
             }
 
             System.out.println("Transaction saved successfully!"); // Debugging statement
