@@ -140,11 +140,14 @@ public class SalesReport extends JPanel {
 
     private void fetchData() {
         DecimalFormat df = new DecimalFormat("0.00");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String currentDate = dateFormat.format(new Date());
 
         try (Connection connection = DatabaseUtil.getConnection()) {
-            String query = "SELECT receipt_number, reference_number, date, subtotal, discount, vat, total FROM transactions";
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
+            String query = "SELECT receipt_number, reference_number, date, subtotal, discount, vat, total FROM transactions WHERE DATE(date) = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, currentDate);
+            ResultSet resultSet = preparedStatement.executeQuery();
 
             model.setRowCount(0); // Clear existing rows
 

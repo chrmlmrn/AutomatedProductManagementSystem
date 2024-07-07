@@ -75,10 +75,11 @@ public class UpdateProduct extends JPanel {
         };
         productTable = new JTable(tableModel);
         productTable.setFillsViewportHeight(true);
-        productTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        productTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
         productTable.getTableHeader().setBackground(new Color(30, 144, 255));
         productTable.getTableHeader().setForeground(Color.WHITE);
-        productTable.setRowHeight(25);
+        productTable.setFont(new Font("Arial", Font.PLAIN, 16));
+        productTable.setRowHeight(30);
 
         // Set column widths
         TableColumnModel columnModel = productTable.getColumnModel();
@@ -355,7 +356,9 @@ public class UpdateProduct extends JPanel {
             String updatedStatus = (String) statusComboBox.getSelectedItem();
             String updatedStatusId = getStatusIDByName(updatedStatus);
             java.util.Date updatedExpirationDate = expirationDateChooser.getDate();
-            java.sql.Date sqlExpirationDate = new java.sql.Date(updatedExpirationDate.getTime());
+            java.sql.Date sqlExpirationDate = updatedExpirationDate != null
+                    ? new java.sql.Date(updatedExpirationDate.getTime())
+                    : null;
 
             // Display confirmation dialog
             int confirmOption = JOptionPane.showConfirmDialog(null, "Are you sure you want to update this product?",
@@ -490,12 +493,14 @@ public class UpdateProduct extends JPanel {
                 }
 
                 // Insert new expiration date if changed
-                try (PreparedStatement insertExpirationStmt = conn.prepareStatement(
-                        "INSERT INTO product_expiration (product_id, product_expiration_date, product_quantity) VALUES (?, ?, ?)")) {
-                    insertExpirationStmt.setInt(1, productId);
-                    insertExpirationStmt.setDate(2, sqlExpirationDate);
-                    insertExpirationStmt.setInt(3, updatedQuantity);
-                    insertExpirationStmt.executeUpdate();
+                if (sqlExpirationDate != null) {
+                    try (PreparedStatement insertExpirationStmt = conn.prepareStatement(
+                            "INSERT INTO product_expiration (product_id, product_expiration_date, product_quantity) VALUES (?, ?, ?)")) {
+                        insertExpirationStmt.setInt(1, productId);
+                        insertExpirationStmt.setDate(2, sqlExpirationDate);
+                        insertExpirationStmt.setInt(3, updatedQuantity);
+                        insertExpirationStmt.executeUpdate();
+                    }
                 }
 
                 JOptionPane.showMessageDialog(this, "Product updated successfully.", "Success",

@@ -268,6 +268,8 @@ public class ScanProduct extends JPanel {
                     showReceiptUI();
                     resetPOS();
                     UserLogUtil.logUserAction(uniqueUserId, "Printed a receipt");
+                    UserLogUtil.logUserAction(uniqueUserId, "Transaction Done");
+
                 } else if (response == JOptionPane.NO_OPTION) {
                     resetPOS();
                 }
@@ -476,7 +478,6 @@ public class ScanProduct extends JPanel {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error updating inventory in the database");
         } finally {
             DatabaseUtil.close(stmt);
             DatabaseUtil.close(conn);

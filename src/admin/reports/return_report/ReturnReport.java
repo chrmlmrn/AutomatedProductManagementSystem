@@ -147,14 +147,19 @@ public class ReturnReport extends JPanel {
 
     private void fetchData() {
         List<ReturnReportEntry> returnReports = returnReportDAO.getReturnReports();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String currentDate = dateFormat.format(new Date());
+
         for (ReturnReportEntry entry : returnReports) {
-            model.addRow(new Object[] {
-                    entry.getReturnDate(),
-                    entry.getProductCode(),
-                    entry.getProductName(),
-                    entry.getReturnQuantity(),
-                    entry.getReturnReason()
-            });
+            if (dateFormat.format(entry.getReturnDate()).equals(currentDate)) {
+                model.addRow(new Object[] {
+                        entry.getReturnDate(),
+                        entry.getProductCode(),
+                        entry.getProductName(),
+                        entry.getReturnQuantity(),
+                        entry.getReturnReason()
+                });
+            }
         }
     }
 

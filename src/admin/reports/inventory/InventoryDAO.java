@@ -55,6 +55,33 @@ public class InventoryDAO {
         return products;
     }
 
+    public List<Product> getNearExpirationProducts() {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT p.product_code, p.product_name, pe.product_expiration_date, i.product_total_quantity "
+                + "FROM products p "
+                + "JOIN product_expiration pe ON p.product_id = pe.product_id "
+                + "JOIN inventory i ON p.product_id = i.product_id "
+                + "WHERE pe.product_expiration_date <= CURDATE() + INTERVAL 2 DAY "
+                + "AND pe.product_expiration_date > CURDATE()";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                ResultSet rs = pstmt.executeQuery()) {
+
+            while (rs.next()) {
+                Product product = new Product();
+                product.setProductCode(rs.getString("product_code"));
+                product.setProductName(rs.getString("product_name"));
+                product.setProductExpirationDate(rs.getDate("product_expiration_date"));
+                product.setProductTotalQuantity(rs.getInt("product_total_quantity"));
+                products.add(product);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return products;
+    }
+
     private void removeExpiredProducts() {
         String sql = "DELETE FROM inventory WHERE product_id IN (SELECT p.product_id FROM products p "
                 + "JOIN product_expiration pe ON p.product_id = pe.product_id "

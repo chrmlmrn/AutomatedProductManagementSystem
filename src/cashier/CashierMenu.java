@@ -1,6 +1,7 @@
 package cashier;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -162,10 +163,11 @@ public class CashierMenu extends JPanel {
     private void showCriticalInventory() {
         InventoryDAO inventoryDAO = new InventoryDAO();
         List<Product> criticalProducts = inventoryDAO.getCriticalInventory();
+        List<Product> nearExpirationProducts = inventoryDAO.getNearExpirationProducts();
 
-        if (!criticalProducts.isEmpty()) {
+        if (!criticalProducts.isEmpty() || !nearExpirationProducts.isEmpty()) {
             notificationButton.setBackground(new Color(255, 69, 0)); // Red for notifications
-            notificationButton.setText("Ask Admin to Re-stock!");
+            notificationButton.setText("Inventory Alerts!");
         } else {
             notificationButton.setBackground(new Color(144, 238, 144)); // Green for no notifications
             notificationButton.setText("No Critical Inventory");
@@ -175,78 +177,104 @@ public class CashierMenu extends JPanel {
     private void displayNotificationDetails() {
         InventoryDAO inventoryDAO = new InventoryDAO();
         List<Product> criticalProducts = inventoryDAO.getCriticalInventory();
+        List<Product> nearExpirationProducts = inventoryDAO.getNearExpirationProducts();
 
-        // Create custom popup dialog
-        JDialog dialog = new JDialog(mainFrame, "Critical Inventory Details", true);
-        dialog.setSize(500, 400);
+        // Create custom popup dialog with tabs
+        JDialog dialog = new JDialog(mainFrame, "Inventory Alerts", true);
+        dialog.setSize(600, 500);
         dialog.setLocationRelativeTo(mainFrame);
         dialog.setLayout(new BorderLayout());
 
-        // Styled panel
-        JPanel panel = new JPanel();
-        panel.setBackground(new Color(30, 144, 255));
-        panel.setLayout(new BorderLayout());
+        JTabbedPane tabbedPane = new JTabbedPane();
 
-        // Table for critical products
-        String[] columnNames = { "Product Code", "Product Name", "Stock Quantity" };
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
+        // Critical Level Alerts Tab
+        JPanel criticalPanel = new JPanel(new BorderLayout());
+        criticalPanel.setBackground(new Color(245, 245, 245));
+        String[] criticalColumnNames = { "Product Code", "Product Name", "Stock Quantity" };
+        DefaultTableModel criticalModel = new DefaultTableModel(criticalColumnNames, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false; // Make table cells not editable
             }
         };
-        JTable table = new JTable(model);
-        table.setFillsViewportHeight(true);
-        table.setFont(new Font("Arial", Font.PLAIN, 14));
-        table.setRowHeight(30);
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
-        table.getTableHeader().setBackground(new Color(24, 26, 78));
-        table.getTableHeader().setForeground(Color.WHITE);
-        table.setBackground(new Color(30, 144, 255));
-        table.setForeground(Color.WHITE);
+        JTable criticalTable = new JTable(criticalModel);
+        criticalTable.setRowHeight(30);
+        criticalTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        criticalTable.getTableHeader().setBackground(new Color(30, 144, 255));
+        criticalTable.getTableHeader().setForeground(Color.WHITE);
+        criticalTable.setFont(new Font("Arial", Font.PLAIN, 14));
+        criticalTable.setBackground(Color.WHITE);
+        criticalTable.setForeground(Color.BLACK);
+        criticalTable.getTableHeader().setReorderingAllowed(false); // Disable column reordering
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+        centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        for (int i = 0; i < criticalTable.getColumnCount(); i++) {
+            criticalTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
 
-        dialog.add(panel, BorderLayout.CENTER);
+        JScrollPane criticalScrollPane = new JScrollPane(criticalTable);
+        criticalPanel.add(criticalScrollPane, BorderLayout.CENTER);
+        tabbedPane.addTab("Critical Level Products", criticalPanel);
+
+        // Nearly Expired Products Tab
+        JPanel nearExpirationPanel = new JPanel(new BorderLayout());
+        nearExpirationPanel.setBackground(new Color(245, 245, 245));
+        String[] nearExpirationColumnNames = { "Product Code", "Product Name", "Expiration Date" };
+        DefaultTableModel nearExpirationModel = new DefaultTableModel(nearExpirationColumnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table cells not editable
+            }
+        };
+        JTable nearExpirationTable = new JTable(nearExpirationModel);
+        nearExpirationTable.setRowHeight(30);
+        nearExpirationTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        nearExpirationTable.getTableHeader().setBackground(new Color(30, 144, 255));
+        nearExpirationTable.getTableHeader().setForeground(Color.WHITE);
+        nearExpirationTable.setFont(new Font("Arial", Font.PLAIN, 14));
+        nearExpirationTable.setBackground(Color.WHITE);
+        nearExpirationTable.setForeground(Color.BLACK);
+        nearExpirationTable.getTableHeader().setReorderingAllowed(false); // Disable column reordering
+
+        for (int i = 0; i < nearExpirationTable.getColumnCount(); i++) {
+            nearExpirationTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+        }
+
+        JScrollPane nearExpirationScrollPane = new JScrollPane(nearExpirationTable);
+        nearExpirationPanel.add(nearExpirationScrollPane, BorderLayout.CENTER);
+        tabbedPane.addTab("Nearly Expired Products", nearExpirationPanel);
+
+        dialog.add(tabbedPane, BorderLayout.CENTER);
 
         // Custom buttons and message
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setBackground(new Color(30, 144, 255));
-        buttonPanel.setLayout(new BorderLayout());
+        buttonPanel.setBackground(new Color(245, 245, 245));
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
         RoundedButton okButton = new RoundedButton("OK");
         okButton.setFont(new Font("Arial", Font.BOLD, 14));
-        okButton.setForeground(new Color(24, 26, 78));
-        okButton.setBackground(Color.WHITE);
+        okButton.setForeground(Color.WHITE);
+        okButton.setBackground(new Color(30, 144, 255));
         okButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 dialog.dispose();
             }
         });
-        JPanel okButtonPanel = new JPanel();
-        okButtonPanel.setBackground(new Color(30, 144, 255));
-        okButtonPanel.add(okButton);
+        buttonPanel.add(okButton);
 
-        if (!criticalProducts.isEmpty()) {
-            JLabel messageLabel = new JLabel("Ask admin to re-stock immediately!", JLabel.CENTER);
-            messageLabel.setForeground(Color.RED);
-            messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
-            buttonPanel.add(messageLabel, BorderLayout.NORTH);
-            for (Product product : criticalProducts) {
-                model.addRow(new Object[] { product.getProductCode(), product.getProductName(),
-                        product.getProductTotalQuantity() });
-            }
-        } else {
-            JLabel noCriticalLabel = new JLabel("No products in critical level", JLabel.CENTER);
-            noCriticalLabel.setForeground(Color.WHITE);
-            noCriticalLabel.setFont(new Font("Arial", Font.BOLD, 16));
-            buttonPanel.add(noCriticalLabel, BorderLayout.NORTH);
-        }
-
-        buttonPanel.add(okButtonPanel, BorderLayout.SOUTH);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Populate tables
+        for (Product product : criticalProducts) {
+            criticalModel.addRow(new Object[] { product.getProductCode(), product.getProductName(),
+                    product.getProductTotalQuantity() });
+        }
+        for (Product product : nearExpirationProducts) {
+            nearExpirationModel.addRow(new Object[] { product.getProductCode(), product.getProductName(),
+                    product.getProductExpirationDate().toString() });
+        }
 
         dialog.setVisible(true);
     }

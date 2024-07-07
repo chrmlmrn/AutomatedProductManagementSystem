@@ -411,16 +411,6 @@ public class Signup extends JPanel {
         }
 
         private void saveUserDetails() {
-                // Debug print statements
-                System.out.println("First Name: " + firstNameField.getText().trim());
-                System.out.println("Last Name: " + lastNameField.getText().trim());
-                System.out.println("Username: " + usernameField.getText().trim());
-                System.out.println("Password: " + new String(passwordField.getPassword()).trim());
-                System.out.println("Confirm Password: " + new String(confirmPasswordField.getPassword()).trim());
-                System.out.println("Security Answer: " + securityAnswerField.getText().trim());
-                System.out.println("Terms Accepted: " + termsCheckBox.isSelected());
-                System.out.println("Admin Selected: " + isAdminSelected);
-                System.out.println("Cashier Selected: " + isCashierSelected);
 
                 // Validation checks
                 if (firstNameField.getText().trim().isEmpty() ||
