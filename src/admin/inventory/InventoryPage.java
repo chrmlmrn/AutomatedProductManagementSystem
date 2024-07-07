@@ -1,16 +1,15 @@
 package admin.inventory;
 
+import admin.AdminMenu;
+import admin.reports.inventory.InventoryDAO;
+import admin.reports.inventory.Product;
 import java.awt.*;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import java.util.Timer;
-import java.util.TimerTask;
-
-import admin.reports.inventory.InventoryDAO;
-import admin.reports.inventory.Product;
-import admin.AdminMenu;
 
 public class InventoryPage extends JPanel {
 

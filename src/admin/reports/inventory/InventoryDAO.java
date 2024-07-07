@@ -48,7 +48,24 @@ public class InventoryDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
+        // Remove expired products
+        removeExpiredProducts();
+
         return products;
+    }
+
+    private void removeExpiredProducts() {
+        String sql = "DELETE FROM inventory WHERE product_id IN (SELECT p.product_id FROM products p "
+                + "JOIN product_expiration pe ON p.product_id = pe.product_id "
+                + "WHERE pe.product_expiration_date <= CURDATE())";
+
+        try (Connection conn = DatabaseUtil.getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public List<Product> getCriticalInventory() {

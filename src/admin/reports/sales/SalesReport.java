@@ -229,10 +229,6 @@ public class SalesReport extends JPanel {
                 float maxHeight = rowHeight; // Default row height
                 // Check if a new page is needed
                 if (yPosition - maxHeight < margin + 50) { // Adjust margin to ensure footer space
-                    drawFooter(contentStream, margin, margin + 20, page.getMediaBox().getHeight(), uniqueUserId); // Move
-                                                                                                                  // footer
-                                                                                                                  // text
-                                                                                                                  // up
                     contentStream.close();
                     page = new PDPage(PDRectangle.A4);
                     page.setRotation(90);
@@ -272,25 +268,23 @@ public class SalesReport extends JPanel {
             }
 
             // Add totals row inside the table
-            yPosition -= rowHeight;
+            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 8);
+            float maxHeight = rowHeight; // Default row height for totals row
+
+            // Draw totals row cells and calculate the height
             for (int col = 0; col < numCols; col++) {
                 float cellWidth = tableWidth / numCols;
-                contentStream.beginText();
-                contentStream.newLineAtOffset(margin + col * cellWidth + cellMargin, yPosition - 12);
-                if (col == 0) {
-                    contentStream.showText("Total");
-                } else if (col == 6) {
-                    contentStream.showText(String.format("%.2f", totalTotal));
-                } else {
-                    contentStream.showText("");
-                }
-                contentStream.endText();
+                String cellText = (col == 0) ? "Total" : (col == 6) ? String.format("%.2f", totalTotal) : "";
+                float textHeight = drawCellText(contentStream, cellText, margin + col * cellWidth, yPosition - 15,
+                        cellWidth, cellMargin, PDType1Font.HELVETICA_BOLD, 8);
+                maxHeight = Math.max(maxHeight, textHeight); // Update row height if necessary
             }
+            yPosition -= maxHeight;
 
             // Draw table borders for totals row
             for (int col = 0; col <= numCols; col++) {
                 float cellWidth = tableWidth / numCols;
-                contentStream.moveTo(margin + col * cellWidth, yPosition + rowHeight);
+                contentStream.moveTo(margin + col * cellWidth, yPosition + maxHeight);
                 contentStream.lineTo(margin + col * cellWidth, yPosition);
                 contentStream.stroke();
             }
@@ -455,7 +449,6 @@ public class SalesReport extends JPanel {
             pstmt.setBinaryStream(5, fis, (int) new File(filePath).length());
 
             pstmt.executeUpdate();
-            System.out.println("PDF report stored in the database successfully.");
 
         } catch (SQLException | IOException e) {
             e.printStackTrace();
@@ -463,10 +456,11 @@ public class SalesReport extends JPanel {
     }
 
     private int getReportTypeId(String reportType) {
-        return 1;
+        return 1; // Replace with actual logic to get report type ID
     }
 
     private float getStringWidth(String text, PDType1Font font, int fontSize) throws IOException {
         return font.getStringWidth(text) / 1000 * fontSize;
     }
+
 }
