@@ -231,41 +231,56 @@ public class Login extends JPanel {
                 String username = usernameField.getText();
                 String password = new String(passwordField.getPassword());
 
-                boolean isAuthenticated = authenticateUser(username, password);
+                // Check if username or password is empty
+                if (username.isEmpty() || password.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "Please enter both username and password.",
+                                        "Input Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                }
 
-                if (isAuthenticated) {
-                        String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id
-                        String role = getUserRole(username);
+                int authResult = authenticateUser(username, password);
 
-                        if ("A".equals(role)) {
-                                openAdminPage(uniqueUserId);
-                        } else if ("C".equals(role)) {
-                                openCashierPage(uniqueUserId);
-                        }
-
-                        loginAttempts = 0;
-                        UserLogUtil.logUserAction(uniqueUserId, "User logged in");
-                        timerLabel.setText("");
-                        if (loginTimer.isRunning()) {
-                                loginTimer.stop();
-                        }
-                } else {
-                        loginAttempts++;
-                        if (loginAttempts >= maxAttempts) {
-                                timerLabel.setVisible(true);
-                                if (!loginTimer.isRunning()) {
-                                        loginTimer.start();
+                switch (authResult) {
+                        case 1: // Success
+                                String uniqueUserId = getUserUniqueIdByUsername(username);
+                                String role = getUserRole(username);
+                                if ("A".equals(role)) {
+                                        openAdminPage(uniqueUserId);
+                                } else if ("C".equals(role)) {
+                                        openCashierPage(uniqueUserId);
                                 }
-                                signInButton.setEnabled(false);
-                        } else {
-                                String uniqueUserId = getUserUniqueIdByUsername(username); // Fetch unique_user_id again
-                                                                                           // for logging failure
-                                UserLogUtil.logUserAction(uniqueUserId, "User login failed");
-                        }
+                                loginAttempts = 0;
+                                UserLogUtil.logUserAction(uniqueUserId, "User logged in");
+                                timerLabel.setText("");
+                                if (loginTimer.isRunning()) {
+                                        loginTimer.stop();
+                                }
+                                break;
+                        case 0: // Invalid credentials
+                                loginAttempts++;
+                                if (loginAttempts >= maxAttempts) {
+                                        timerLabel.setVisible(true);
+                                        if (!loginTimer.isRunning()) {
+                                                loginTimer.start();
+                                        }
+                                        signInButton.setEnabled(false);
+                                } else {
+                                        JOptionPane.showMessageDialog(this, "Invalid username or password",
+                                                        "Authentication Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                                UserLogUtil.logUserAction(getUserUniqueIdByUsername(username), "User login failed");
+                                break;
+                        case -1: // Inactive user
+                                JOptionPane.showMessageDialog(this,
+                                                "User is Inactive, Please Activate it Using an Admin Account...",
+                                                "Authentication Error", JOptionPane.ERROR_MESSAGE);
+                                UserLogUtil.logUserAction(getUserUniqueIdByUsername(username),
+                                                "Inactive user login attempt");
+                                break;
                 }
         }
 
-        private boolean authenticateUser(String username, String password) {
+        private int authenticateUser(String username, String password) {
                 String query = "SELECT * FROM users WHERE username = ? AND password_hash = ?";
 
                 try (Connection connection = DatabaseUtil.getConnection();
@@ -277,19 +292,16 @@ public class Login extends JPanel {
                                 if (resultSet.next()) {
                                         String status = resultSet.getString("user_account_status_id");
                                         if ("INA".equals(status)) {
-                                                JOptionPane.showMessageDialog(this,
-                                                                "User is Inactive, Please Activate it Using an Admin Account...",
-                                                                "Authentication Error", JOptionPane.ERROR_MESSAGE);
-                                                return false;
+                                                return -1; // Inactive user
                                         }
-                                        return true;
+                                        return 1; // Success
                                 } else {
-                                        return false;
+                                        return 0; // Invalid credentials
                                 }
                         }
                 } catch (SQLException e) {
                         e.printStackTrace();
-                        return false;
+                        return 0; // Invalid credentials
                 }
         }
 

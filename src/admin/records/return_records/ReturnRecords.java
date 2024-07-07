@@ -70,7 +70,7 @@ public class ReturnRecords extends JPanel {
         add(bluePanel);
 
         // Table Setup
-        String[] columnNames = { "Product Name", "Return Quantity", "Return Reason", "Date" };
+        String[] columnNames = { "Product Name", "Return Quantity", "Return Reason", "Return Date" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {

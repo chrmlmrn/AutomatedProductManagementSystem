@@ -71,7 +71,7 @@ public class InventoryRecords extends JPanel {
 
         // Table Setup
         String[] columnNames = { "Product Code", "Product Name", "Supplier Name", "Product Type",
-                "Critical Stock Level", "Stock Quantity", "Product Status" };
+                "Critical Stock Level", "Stock Quantity", "Product Status", "Last Updated" };
         Object[][] data = {}; // Sample data
 
         tableModel = new DefaultTableModel(data, columnNames) {
@@ -129,7 +129,7 @@ public class InventoryRecords extends JPanel {
             PreparedStatement statement;
 
             if (searchText.isEmpty()) {
-                query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
+                query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status, i.last_updated "
                         +
                         "FROM inventory i " +
                         "JOIN products p ON i.product_id = p.product_id " +
@@ -140,7 +140,7 @@ public class InventoryRecords extends JPanel {
                         "ORDER BY p.product_code DESC";
                 statement = connection.prepareStatement(query);
             } else {
-                query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
+                query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status, i.last_updated "
                         +
                         "FROM inventory i " +
                         "JOIN products p ON i.product_id = p.product_id " +
@@ -167,8 +167,9 @@ public class InventoryRecords extends JPanel {
                 int criticalStockLevel = resultSet.getInt("critical_stock_level");
                 int stockQuantity = resultSet.getInt("stock_quantity");
                 String productStatus = resultSet.getString("product_status");
+                Timestamp lastUpdated = resultSet.getTimestamp("last_updated");
                 tableModel.addRow(new Object[] { productCode, productName, supplierName, productType,
-                        criticalStockLevel, stockQuantity, productStatus });
+                        criticalStockLevel, stockQuantity, productStatus, lastUpdated });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -179,7 +180,7 @@ public class InventoryRecords extends JPanel {
 
     private void refreshTable(Connection connection) {
         try {
-            String query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status "
+            String query = "SELECT p.product_code, p.product_name, s.supplier_name, pt.product_type_name AS product_type, i.critical_stock_level, i.product_total_quantity AS stock_quantity, ps.product_inventory_status_name AS product_status, i.last_updated "
                     +
                     "FROM inventory i " +
                     "JOIN products p ON i.product_id = p.product_id " +
@@ -201,8 +202,9 @@ public class InventoryRecords extends JPanel {
                 int criticalStockLevel = resultSet.getInt("critical_stock_level");
                 int stockQuantity = resultSet.getInt("stock_quantity");
                 String productStatus = resultSet.getString("product_status");
+                Timestamp lastUpdated = resultSet.getTimestamp("last_updated");
                 tableModel.addRow(new Object[] { productCode, productName, supplierName, productType,
-                        criticalStockLevel, stockQuantity, productStatus });
+                        criticalStockLevel, stockQuantity, productStatus, lastUpdated });
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
