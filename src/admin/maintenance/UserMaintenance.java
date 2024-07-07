@@ -6,7 +6,6 @@ import java.sql.*;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
-import admin.AdminMenu;
 import database.DatabaseUtil;
 import admin.records.userlogs.UserLogUtil;
 import customcomponents.RoundedButton;
@@ -144,8 +143,12 @@ public class UserMaintenance extends JPanel {
 
     private void openUserDetailsWindow(String firstName, String lastName, String username, String status) {
         JDialog userDetailsDialog = new JDialog(mainFrame, "User Details", true);
-        userDetailsDialog.setSize(400, 300);
+        userDetailsDialog.setSize(400, 250); // Make the dialog smaller
         userDetailsDialog.setLocationRelativeTo(mainFrame); // Center on the screen
+
+        // Remove the 'X' button
+        userDetailsDialog.setUndecorated(true);
+        userDetailsDialog.getRootPane().setWindowDecorationStyle(JRootPane.NONE);
 
         // Blue panel for the dialog
         RoundedPanel dialogPanel = new RoundedPanel(30);
@@ -153,7 +156,7 @@ public class UserMaintenance extends JPanel {
         dialogPanel.setLayout(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.gridx = 0;
         gbc.gridy = 0;
 
@@ -179,7 +182,12 @@ public class UserMaintenance extends JPanel {
         statusComboBox.setSelectedItem(status);
         dialogPanel.add(statusComboBox, gbc);
 
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        buttonPanel.setBackground(new Color(30, 144, 255)); // Set the background color to match the dialog panel
         RoundedButton saveButton = new RoundedButton("Save");
+        saveButton.setFont(new Font("Arial", Font.BOLD, 16));
+        saveButton.setBackground(Color.WHITE);
+        saveButton.setForeground(Color.BLACK);
         saveButton.addActionListener(e -> {
             String updatedFirstName = firstNameField.getText().trim();
             String updatedLastName = lastNameField.getText().trim();
@@ -187,17 +195,19 @@ public class UserMaintenance extends JPanel {
             updateUserDetails(username, updatedFirstName, updatedLastName, updatedStatus);
             userDetailsDialog.dispose();
         });
+        buttonPanel.add(saveButton);
+
+        RoundedButton cancelButton = new RoundedButton("Cancel");
+        cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
+        cancelButton.setBackground(Color.WHITE);
+        cancelButton.setForeground(Color.BLACK);
+        cancelButton.addActionListener(e -> userDetailsDialog.dispose());
+        buttonPanel.add(cancelButton);
+
         gbc.gridx = 0;
         gbc.gridy = 3;
         gbc.gridwidth = 2;
-        dialogPanel.add(saveButton, gbc);
-
-        RoundedButton cancelButton = new RoundedButton("Cancel");
-        cancelButton.addActionListener(e -> userDetailsDialog.dispose());
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        gbc.gridwidth = 2;
-        dialogPanel.add(cancelButton, gbc);
+        dialogPanel.add(buttonPanel, gbc);
 
         userDetailsDialog.add(dialogPanel);
         userDetailsDialog.setVisible(true);
