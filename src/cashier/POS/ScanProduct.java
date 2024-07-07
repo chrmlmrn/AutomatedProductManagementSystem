@@ -64,6 +64,7 @@ public class ScanProduct extends JPanel {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
         initComponents();
+        centerScreen();
     }
 
     private void initComponents() {
@@ -103,7 +104,7 @@ public class ScanProduct extends JPanel {
         add(backButton);
 
         barcodeField = new JTextField();
-        barcodeField.setBounds(50, 80, 300, 50);
+        barcodeField.setBounds(50, 80, 400, 50);
         barcodeField.setFont(new Font("Arial", Font.PLAIN, 30));
         barcodeField.addActionListener(new ActionListener() {
             @Override
@@ -117,7 +118,7 @@ public class ScanProduct extends JPanel {
         add(barcodeField);
 
         RoundedButton clearBarcodeButton = new RoundedButton("Clear Barcode");
-        clearBarcodeButton.setBounds(360, 80, 200, 50);
+        clearBarcodeButton.setBounds(460, 80, 200, 50);
         clearBarcodeButton.setBackground(new Color(30, 144, 255));
         clearBarcodeButton.setForeground(Color.WHITE);
         clearBarcodeButton.setFont(new Font("Arial", Font.BOLD, 16));
@@ -168,7 +169,7 @@ public class ScanProduct extends JPanel {
         add(summaryScrollPane);
 
         JPanel totalPanel = new JPanel(null); // Changed to null layout
-        totalPanel.setBounds(800, 450, 500, 150);
+        totalPanel.setBounds(800, 470, 500, 180);
         totalPanel.setBackground(Color.WHITE);
 
         JLabel discountLabel = new JLabel("Discount:");
@@ -176,7 +177,7 @@ public class ScanProduct extends JPanel {
         discountLabel.setBounds(0, 0, 150, 30); // Adjusted bounds
         totalPanel.add(discountLabel);
 
-        discountValueLabel.setBounds(300, 0, 150, 30); // Adjusted bounds
+        discountValueLabel.setBounds(350, 0, 150, 30); // Adjusted bounds
         totalPanel.add(discountValueLabel);
 
         JLabel vatLabelText = new JLabel("VAT (12%):");
@@ -184,7 +185,7 @@ public class ScanProduct extends JPanel {
         vatLabelText.setBounds(0, 30, 150, 30); // Adjusted bounds
         totalPanel.add(vatLabelText);
 
-        vatLabel.setBounds(300, 30, 150, 30); // Adjusted bounds
+        vatLabel.setBounds(350, 30, 150, 30); // Adjusted bounds
         totalPanel.add(vatLabel);
 
         JLabel subTotalLabelText = new JLabel("Sub Total:");
@@ -192,7 +193,7 @@ public class ScanProduct extends JPanel {
         subTotalLabelText.setBounds(0, 60, 150, 30); // Adjusted bounds
         totalPanel.add(subTotalLabelText);
 
-        subTotalLabel.setBounds(300, 60, 150, 30); // Adjusted bounds
+        subTotalLabel.setBounds(350, 60, 150, 30); // Adjusted bounds
         totalPanel.add(subTotalLabel);
 
         // Add a separator line
@@ -206,7 +207,7 @@ public class ScanProduct extends JPanel {
         totalLabelText.setBounds(0, 100, 150, 30); // Adjusted bounds
         totalPanel.add(totalLabelText);
 
-        totalLabel.setBounds(300, 100, 150, 30); // Adjusted bounds
+        totalLabel.setBounds(350, 100, 150, 30); // Adjusted bounds
         totalPanel.add(totalLabel);
 
         add(totalPanel);
@@ -217,7 +218,7 @@ public class ScanProduct extends JPanel {
 
         discountButton.setBounds(50, 680, 200, 50);
         productCodeButton.setBounds(275, 680, 200, 50);
-        checkoutButton.setBounds(800, 600, 480, 50);
+        checkoutButton.setBounds(800, 660, 500, 50);
 
         discountButton.setBackground(new Color(30, 144, 255));
         discountButton.setForeground(Color.WHITE);
@@ -325,6 +326,12 @@ public class ScanProduct extends JPanel {
                 double productPrice = rs.getDouble("product_price");
                 int productTotalQuantity = rs.getInt("product_total_quantity");
                 String categoryName = rs.getString("category_name");
+
+                if (productTotalQuantity <= 0) {
+                    JOptionPane.showMessageDialog(null,
+                            "Product " + productName + " is out of stock and cannot be added.");
+                    return;
+                }
 
                 originalStockMap.put(productCode, productTotalQuantity);
 
@@ -897,5 +904,12 @@ public class ScanProduct extends JPanel {
             }
             soldProductTableModel.removeRow(row);
         }
+    }
+
+    private void centerScreen() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int centerX = (screenSize.width - mainFrame.getWidth()) / 2;
+        int centerY = (screenSize.height - mainFrame.getHeight()) / 2;
+        mainFrame.setLocation(centerX, centerY);
     }
 }

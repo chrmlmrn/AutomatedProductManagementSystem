@@ -1,9 +1,13 @@
 package admin;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.List;
 
 import admin.about.AboutMainPage;
@@ -23,13 +27,14 @@ import login.Login;
 public class AdminMenu extends JPanel {
     private JFrame mainFrame;
     private String uniqueUserId;
+    private RoundedButton notificationButton;
 
     public AdminMenu(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
 
         initComponents();
-
+        showCriticalInventory(); // Call this method to show notifications on startup
     }
 
     private void initComponents() {
@@ -42,6 +47,20 @@ public class AdminMenu extends JPanel {
         titleLabel.setBounds(70, 30, 200, 30);
         titleLabel.setForeground(new Color(24, 26, 78));
         add(titleLabel);
+
+        // Notification Button
+        notificationButton = new RoundedButton("No Critical Inventory");
+        notificationButton.setBounds(getWidth() - 250, 30, 200, 30);
+        notificationButton.setBackground(new Color(144, 238, 144)); // Green for no notifications
+        notificationButton.setForeground(Color.WHITE);
+        notificationButton.setFont(new Font("Arial", Font.BOLD, 14));
+        notificationButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                displayNotificationDetails();
+            }
+        });
+        add(notificationButton);
 
         // Buttons
         String[] buttonLabels = { "Product", "Inventory", "Reports", "Records", "Return", "Maintenance", "Help",
@@ -118,6 +137,8 @@ public class AdminMenu extends JPanel {
                         button.setBounds(newCenterX, button.getY(), buttonWidth, buttonHeight);
                     }
                 }
+                notificationButton.setBounds(getWidth() - 250, 30, 200, 30); // Adjust notification button width and
+                                                                             // position
             }
 
         });
@@ -191,22 +212,91 @@ public class AdminMenu extends JPanel {
         InventoryDAO inventoryDAO = new InventoryDAO();
         List<Product> criticalProducts = inventoryDAO.getCriticalInventory();
 
-        if (criticalProducts.isEmpty()) {
-            JOptionPane.showMessageDialog(mainFrame, "No products are at critical level.", "Inventory Notification",
-                    JOptionPane.INFORMATION_MESSAGE);
+        if (!criticalProducts.isEmpty()) {
+            notificationButton.setBackground(new Color(255, 69, 0)); // Red for notifications
+            notificationButton.setText("Critical Inventory!");
         } else {
-            StringBuilder message = new StringBuilder("The following products are at critical level:\n\n");
-            for (Product product : criticalProducts) {
-                message.append("Product Code: ").append(product.getProductCode()).append("\n");
-                message.append("Product Name: ").append(product.getProductName()).append("\n");
-                message.append("Stock Quantity: ").append(product.getProductTotalQuantity()).append("\n\n");
-
-                // Update status to REO (Reordering)
-                inventoryDAO.updateProductStatusToReordering(product.getProductCode());
-            }
-            JOptionPane.showMessageDialog(mainFrame, message.toString(), "Critical Inventory Notification",
-                    JOptionPane.WARNING_MESSAGE);
+            notificationButton.setBackground(new Color(144, 238, 144)); // Green for no notifications
+            notificationButton.setText("No Critical Inventory");
         }
     }
 
+    private void displayNotificationDetails() {
+        InventoryDAO inventoryDAO = new InventoryDAO();
+        List<Product> criticalProducts = inventoryDAO.getCriticalInventory();
+
+        // Create custom popup dialog
+        JDialog dialog = new JDialog(mainFrame, "Critical Inventory Details", true);
+        dialog.setSize(500, 400);
+        dialog.setLocationRelativeTo(mainFrame);
+        dialog.setLayout(new BorderLayout());
+
+        // Styled panel
+        JPanel panel = new JPanel();
+        panel.setBackground(new Color(30, 144, 255));
+        panel.setLayout(new BorderLayout());
+
+        // Table for critical products
+        String[] columnNames = { "Product Code", "Product Name", "Stock Quantity" };
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make table cells not editable
+            }
+        };
+        JTable table = new JTable(model);
+        table.setFillsViewportHeight(true);
+        table.setFont(new Font("Arial", Font.PLAIN, 14));
+        table.setRowHeight(30);
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 14));
+        table.getTableHeader().setBackground(new Color(24, 26, 78));
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.setBackground(new Color(30, 144, 255));
+        table.setForeground(Color.WHITE);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        dialog.add(panel, BorderLayout.CENTER);
+
+        // Custom buttons and message
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setBackground(new Color(30, 144, 255));
+        buttonPanel.setLayout(new BorderLayout());
+
+        RoundedButton okButton = new RoundedButton("OK");
+        okButton.setFont(new Font("Arial", Font.BOLD, 14));
+        okButton.setForeground(new Color(24, 26, 78));
+        okButton.setBackground(Color.WHITE);
+        okButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        okButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dialog.dispose();
+            }
+        });
+        JPanel okButtonPanel = new JPanel();
+        okButtonPanel.setBackground(new Color(30, 144, 255));
+        okButtonPanel.add(okButton);
+
+        if (!criticalProducts.isEmpty()) {
+            JLabel messageLabel = new JLabel("Please re-stock immediately!", JLabel.CENTER);
+            messageLabel.setForeground(Color.RED);
+            messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            buttonPanel.add(messageLabel, BorderLayout.NORTH);
+            for (Product product : criticalProducts) {
+                model.addRow(new Object[] { product.getProductCode(), product.getProductName(),
+                        product.getProductTotalQuantity() });
+            }
+        } else {
+            JLabel noCriticalLabel = new JLabel("No products in critical level", JLabel.CENTER);
+            noCriticalLabel.setForeground(Color.WHITE);
+            noCriticalLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            buttonPanel.add(noCriticalLabel, BorderLayout.NORTH);
+        }
+
+        buttonPanel.add(okButtonPanel, BorderLayout.SOUTH);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialog.setVisible(true);
+    }
 }

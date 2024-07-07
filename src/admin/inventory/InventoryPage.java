@@ -63,10 +63,14 @@ public class InventoryPage extends JPanel {
 
         // Table Data
         String[] columnNames = { "Product Code", "Product Name", "Supplier Name", "Product Type",
-                "Critical Stock Level",
-                "Stock Quantity", "Product Status" };
+                "Critical Stock Level", "Stock Quantity", "Product Status" };
         Object[][] data = {};
-        model = new DefaultTableModel(data, columnNames);
+        model = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make all cells non-editable
+            }
+        };
 
         table = new JTable(model);
         table.setRowHeight(30);
@@ -101,6 +105,13 @@ public class InventoryPage extends JPanel {
         List<Product> products = inventoryDAO.getInventory();
         model.setRowCount(0); // Clear existing data
         for (Product product : products) {
+            String status = "In Stock";
+            if (product.getProductTotalQuantity() <= 0) {
+                status = "Out of Stock";
+            } else if (product.getProductTotalQuantity() <= product.getCriticalLevel()) {
+                status = "Re-ordering";
+            }
+
             model.addRow(new Object[] {
                     product.getProductCode(),
                     product.getProductName(),
@@ -108,7 +119,7 @@ public class InventoryPage extends JPanel {
                     product.getProductType(),
                     product.getCriticalLevel(),
                     product.getProductTotalQuantity(),
-                    product.getProductStatus()
+                    status
             });
         }
     }

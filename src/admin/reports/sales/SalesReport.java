@@ -271,13 +271,13 @@ public class SalesReport extends JPanel {
                 contentStream.stroke();
             }
 
-            // Add totals row
+            // Add totals row inside the table
             yPosition -= rowHeight;
             for (int col = 0; col < numCols; col++) {
                 float cellWidth = tableWidth / numCols;
                 contentStream.beginText();
-                contentStream.newLineAtOffset(margin + col * cellWidth + cellMargin, yPosition - 15);
-                if (col == 5) {
+                contentStream.newLineAtOffset(margin + col * cellWidth + cellMargin, yPosition - 12);
+                if (col == 0) {
                     contentStream.showText("Total");
                 } else if (col == 6) {
                     contentStream.showText(String.format("%.2f", totalTotal));
