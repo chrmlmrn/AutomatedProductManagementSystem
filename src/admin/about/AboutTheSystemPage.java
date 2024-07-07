@@ -4,11 +4,12 @@ import javax.swing.*;
 
 import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
-import login.Login;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 public class AboutTheSystemPage extends JPanel {
     private JFrame mainFrame;
@@ -54,7 +55,7 @@ public class AboutTheSystemPage extends JPanel {
         RoundedPanel contentPanel = new RoundedPanel(15);
         contentPanel.setLayout(null);
         contentPanel.setBackground(new Color(30, 144, 255));
-        contentPanel.setBounds((1350 - 700) / 2, (800 - 400) / 2, 700, 400); // Center the panel
+        contentPanel.setBounds(0, 0, 700, 400); // Initial size, will be centered later
         add(contentPanel);
 
         // Add About Us title inside content panel
@@ -97,5 +98,14 @@ public class AboutTheSystemPage extends JPanel {
             }
         });
         contentPanel.add(returnButton);
+
+        // Add resize listener to center content panel
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Dimension size = getSize();
+                contentPanel.setBounds((size.width - 700) / 2, (size.height - 400) / 2, 700, 400);
+            }
+        });
     }
 }
