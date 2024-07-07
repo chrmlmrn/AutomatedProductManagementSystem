@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -188,33 +187,9 @@ public class InventoryReport extends JPanel {
             // Move down to start table
             yPosition = tableTopY;
 
-            // Draw the table header
-            contentStream.setFont(PDType1Font.HELVETICA_BOLD, 8);
-            contentStream.setLineWidth(0.5f);
-
             // Draw table header
-            for (int col = 0; col < numCols; col++) {
-                float cellWidth = tableWidth / numCols;
-                contentStream.beginText();
-                contentStream.newLineAtOffset(margin + col * cellWidth + cellMargin, yPosition - 12);
-                contentStream.showText(model.getColumnName(col));
-                contentStream.endText();
-            }
+            drawTableHeader(contentStream, margin, yPosition, tableWidth, rowHeight, numCols, cellMargin);
             yPosition -= rowHeight;
-
-            // Draw table borders for header
-            for (int col = 0; col <= numCols; col++) {
-                float cellWidth = tableWidth / numCols;
-                contentStream.moveTo(margin + col * cellWidth, yPosition + rowHeight);
-                contentStream.lineTo(margin + col * cellWidth, yPosition);
-                contentStream.stroke();
-            }
-            contentStream.moveTo(margin, yPosition + rowHeight);
-            contentStream.lineTo(margin + tableWidth, yPosition + rowHeight);
-            contentStream.stroke();
-            contentStream.moveTo(margin, yPosition);
-            contentStream.lineTo(margin + tableWidth, yPosition);
-            contentStream.stroke();
 
             contentStream.setFont(PDType1Font.HELVETICA, 8);
             int rowCount = 0;
@@ -231,46 +206,24 @@ public class InventoryReport extends JPanel {
                     yPosition = tableTopY;
 
                     // Draw the table header on the new page
-                    contentStream.setFont(PDType1Font.HELVETICA_BOLD, 8);
+                    drawTableHeader(contentStream, margin, yPosition, tableWidth, rowHeight, numCols, cellMargin);
                     yPosition -= rowHeight;
-                    for (int col = 0; col < numCols; col++) {
-                        float cellWidth = tableWidth / numCols;
-                        contentStream.beginText();
-                        contentStream.newLineAtOffset(margin + col * cellWidth + cellMargin, yPosition - 5);
-                        contentStream.showText(model.getColumnName(col));
-                        contentStream.endText();
-                    }
-                    yPosition -= rowHeight;
-
-                    // Draw table borders for header
-                    for (int col = 0; col <= numCols; col++) {
-                        float cellWidth = tableWidth / numCols;
-                        contentStream.moveTo(margin + col * cellWidth, yPosition + rowHeight);
-                        contentStream.lineTo(margin + col * cellWidth, yPosition);
-                        contentStream.stroke();
-                    }
-                    contentStream.moveTo(margin, yPosition + rowHeight);
-                    contentStream.lineTo(margin + tableWidth, yPosition + rowHeight);
-                    contentStream.stroke();
-                    contentStream.moveTo(margin, yPosition);
-                    contentStream.lineTo(margin + tableWidth, yPosition);
-                    contentStream.stroke();
                 }
 
-                // Draw table rows
+                // Draw table rows and handle text wrapping
+                float maxHeight = rowHeight;
                 for (int col = 0; col < numCols; col++) {
                     float cellWidth = tableWidth / numCols;
-                    contentStream.beginText();
-                    contentStream.newLineAtOffset(margin + col * cellWidth + cellMargin, yPosition - 15);
-                    contentStream.showText(model.getValueAt(row, col).toString());
-                    contentStream.endText();
+                    float textHeight = drawCellText(contentStream, model.getValueAt(row, col).toString(),
+                            margin + col * cellWidth, yPosition - 15, cellWidth, cellMargin, PDType1Font.HELVETICA, 8);
+                    maxHeight = Math.max(maxHeight, textHeight);
                 }
-                yPosition -= rowHeight;
+                yPosition -= maxHeight;
 
                 // Draw table borders for row
                 for (int col = 0; col <= numCols; col++) {
                     float cellWidth = tableWidth / numCols;
-                    contentStream.moveTo(margin + col * cellWidth, yPosition + rowHeight);
+                    contentStream.moveTo(margin + col * cellWidth, yPosition + maxHeight);
                     contentStream.lineTo(margin + col * cellWidth, yPosition);
                     contentStream.stroke();
                 }
@@ -304,8 +257,7 @@ public class InventoryReport extends JPanel {
             // Save the document with the specified filename format
             String fileName = uniqueUserId + "_" + new SimpleDateFormat("yyyyMMdd").format(new Date())
                     + "_INVENTORY_REPORT.pdf";
-            String filePath = "generated_reports/inventory/"
-                    + fileName;
+            String filePath = "generated_reports/inventory/" + fileName;
             document.save(new File(filePath));
             JOptionPane.showMessageDialog(this, "Inventory report generated successfully!");
 
@@ -323,6 +275,91 @@ public class InventoryReport extends JPanel {
                 e.printStackTrace();
             }
         }
+    }
+
+    // Method to draw the table header
+    private void drawTableHeader(PDPageContentStream contentStream, float margin, float yPosition, float tableWidth,
+            float rowHeight, int numCols, float cellMargin) throws IOException {
+        contentStream.setFont(PDType1Font.HELVETICA_BOLD, 8);
+        contentStream.setLineWidth(0.5f);
+
+        // Draw table header text
+        for (int col = 0; col < numCols; col++) {
+            float cellWidth = tableWidth / numCols;
+            contentStream.beginText();
+            contentStream.newLineAtOffset(margin + col * cellWidth + cellMargin, yPosition - 10);
+            contentStream.showText(model.getColumnName(col));
+            contentStream.endText();
+        }
+
+        // Draw table header borders
+        contentStream.moveTo(margin, yPosition + rowHeight);
+        contentStream.lineTo(margin + tableWidth, yPosition + rowHeight);
+        contentStream.stroke();
+        contentStream.moveTo(margin, yPosition);
+        contentStream.lineTo(margin + tableWidth, yPosition);
+        contentStream.stroke();
+        for (int col = 0; col <= numCols; col++) {
+            float cellWidth = tableWidth / numCols;
+            contentStream.moveTo(margin + col * cellWidth, yPosition + rowHeight);
+            contentStream.lineTo(margin + col * cellWidth, yPosition);
+            contentStream.stroke();
+        }
+    }
+
+    private float drawCellText(PDPageContentStream contentStream, String text, float x, float y, float cellWidth,
+            float cellMargin, PDType1Font font, int fontSize) throws IOException {
+        float textWidth = font.getStringWidth(text) / 1000 * fontSize;
+        float textHeight = fontSize + 2; // Initial height including margin
+
+        if (textWidth < cellWidth - 2 * cellMargin) {
+            contentStream.beginText();
+            contentStream.setFont(font, fontSize);
+            contentStream.newLineAtOffset(x + cellMargin, y);
+            contentStream.showText(text);
+            contentStream.endText();
+        } else {
+            String[] words = text.split(" ");
+            StringBuilder line = new StringBuilder();
+            for (String word : words) {
+                if (font.getStringWidth(line + " " + word) / 1000 * fontSize < cellWidth - 2 * cellMargin) {
+                    if (line.length() > 0) {
+                        line.append(" ");
+                    }
+                    line.append(word);
+                } else {
+                    contentStream.beginText();
+                    contentStream.setFont(font, fontSize);
+                    contentStream.newLineAtOffset(x + cellMargin, y);
+                    contentStream.showText(line.toString());
+                    contentStream.endText();
+                    y -= fontSize + 2;
+                    textHeight += fontSize + 2;
+                    line = new StringBuilder(word);
+                }
+            }
+            if (line.length() > 0) {
+                contentStream.beginText();
+                contentStream.setFont(font, fontSize);
+                contentStream.newLineAtOffset(x + cellMargin, y);
+                contentStream.showText(line.toString());
+                contentStream.endText();
+            }
+        }
+        return textHeight;
+    }
+
+    // Centered text utility function
+    private void centerText(PDPageContentStream contentStream, String text, PDType1Font font, int fontSize,
+            float pageWidth, float yPosition) throws IOException {
+        float x = getCenterX(text, font, fontSize, pageWidth);
+        contentStream.newLineAtOffset(x, yPosition);
+        contentStream.showText(text);
+    }
+
+    private float getCenterX(String text, PDType1Font font, int fontSize, float pageWidth) throws IOException {
+        float stringWidth = font.getStringWidth(text) / 1000 * fontSize;
+        return (pageWidth - stringWidth) / 2;
     }
 
     private void storePDFInDatabase(String filePath, String fileName) {
@@ -354,18 +391,5 @@ public class InventoryReport extends JPanel {
 
     private float getStringWidth(String text, PDType1Font font, int fontSize) throws IOException {
         return font.getStringWidth(text) / 1000 * fontSize;
-    }
-
-    // Centered text utility function
-    private float getCenterX(String text, PDType1Font font, int fontSize, float pageWidth) throws IOException {
-        float stringWidth = font.getStringWidth(text) / 1000 * fontSize;
-        return (pageWidth - stringWidth) / 2;
-    }
-
-    private void centerText(PDPageContentStream contentStream, String text, PDType1Font font, int fontSize,
-            float pageWidth, float yPosition) throws IOException {
-        float x = getCenterX(text, font, fontSize, pageWidth);
-        contentStream.newLineAtOffset(x, yPosition);
-        contentStream.showText(text);
     }
 }
