@@ -22,6 +22,8 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SalesReport extends JPanel {
 
@@ -29,12 +31,14 @@ public class SalesReport extends JPanel {
     private JTable salesTable;
     private JFrame mainFrame;
     private String uniqueUserId;
+    private Timer timer;
 
     public SalesReport(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
         initComponents();
         fetchData();
+        startAutoRefresh();
     }
 
     private void initComponents() {
@@ -53,6 +57,7 @@ public class SalesReport extends JPanel {
             mainFrame.setContentPane(new ReportsPage(mainFrame, uniqueUserId)); // Pass userUniqueId
             mainFrame.revalidate();
             mainFrame.repaint();
+            stopAutoRefresh(); // Stop auto-refresh when navigating away
         });
         add(backButton);
 
@@ -171,6 +176,24 @@ public class SalesReport extends JPanel {
         }
     }
 
+    private void startAutoRefresh() {
+        timer = new Timer(true); // Run timer as a daemon thread
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> {
+                    fetchData();
+                });
+            }
+        }, 0, 5000); // Refresh every 5 seconds
+    }
+
+    private void stopAutoRefresh() {
+        if (timer != null) {
+            timer.cancel();
+        }
+    }
+
     private void generatePDF() {
         PDDocument document = new PDDocument();
         try {
@@ -186,7 +209,7 @@ public class SalesReport extends JPanel {
 
             int numRows = model.getRowCount();
             int numCols = model.getColumnCount();
-            float tableTopY = yStart - 60; // Adjust starting position of the table
+            float tableTopY = yPosition - 60; // Adjust starting position of the table
 
             PDPageContentStream contentStream = new PDPageContentStream(document, page);
 

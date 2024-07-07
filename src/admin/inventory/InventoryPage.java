@@ -1,15 +1,16 @@
 package admin.inventory;
 
-import admin.AdminMenu;
-import admin.reports.inventory.InventoryDAO;
-import admin.reports.inventory.Product;
 import java.awt.*;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import admin.reports.inventory.InventoryDAO;
+import admin.reports.inventory.Product;
+import admin.AdminMenu;
 
 public class InventoryPage extends JPanel {
 
@@ -62,14 +63,10 @@ public class InventoryPage extends JPanel {
 
         // Table Data
         String[] columnNames = { "Product Code", "Product Name", "Supplier Name", "Product Type",
-                "Critical Stock Level", "Stock Quantity", "Product Status" };
+                "Critical Stock Level",
+                "Stock Quantity", "Product Status" };
         Object[][] data = {};
-        model = new DefaultTableModel(data, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Make all cells non-editable
-            }
-        };
+        model = new DefaultTableModel(data, columnNames);
 
         table = new JTable(model);
         table.setRowHeight(30);
@@ -104,13 +101,6 @@ public class InventoryPage extends JPanel {
         List<Product> products = inventoryDAO.getInventory();
         model.setRowCount(0); // Clear existing data
         for (Product product : products) {
-            String status = "In Stock";
-            if (product.getProductTotalQuantity() <= 0) {
-                status = "Out of Stock";
-            } else if (product.getProductTotalQuantity() <= product.getCriticalLevel()) {
-                status = "Re-ordering";
-            }
-
             model.addRow(new Object[] {
                     product.getProductCode(),
                     product.getProductName(),
@@ -118,7 +108,7 @@ public class InventoryPage extends JPanel {
                     product.getProductType(),
                     product.getCriticalLevel(),
                     product.getProductTotalQuantity(),
-                    status
+                    product.getProductStatus()
             });
         }
     }

@@ -10,6 +10,9 @@ import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import database.DatabaseUtil;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class ProductRecords extends JPanel {
     private DefaultTableModel tableModel;
     private JTable productTable;
@@ -17,12 +20,14 @@ public class ProductRecords extends JPanel {
 
     private JFrame mainFrame;
     private String uniqueUserId;
+    private Timer timer;
 
     public ProductRecords(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
         this.uniqueUserId = uniqueUserId;
 
         initComponents();
+        startAutoRefresh();
     }
 
     private void initComponents() {
@@ -43,6 +48,7 @@ public class ProductRecords extends JPanel {
             mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
+            stopAutoRefresh(); // Stop auto-refresh when navigating away
         });
 
         JLabel titleLabel = new JLabel("Product Records");
@@ -130,10 +136,11 @@ public class ProductRecords extends JPanel {
                         "FROM products p " +
                         "JOIN category c ON p.category_id = c.category_id " +
                         "JOIN supplier s ON p.supplier_id = s.supplier_id " +
-                        "WHERE p.barcode LIKE ? OR p.product_name LIKE ?";
+                        "WHERE p.product_code LIKE ? OR p.barcode LIKE ? OR p.product_name LIKE ?";
                 statement = connection.prepareStatement(query);
                 statement.setString(1, "%" + searchText + "%");
                 statement.setString(2, "%" + searchText + "%");
+                statement.setString(3, "%" + searchText + "%");
             }
 
             ResultSet resultSet = statement.executeQuery();
@@ -184,6 +191,30 @@ public class ProductRecords extends JPanel {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void startAutoRefresh() {
+        timer = new Timer(true); // Run timer as a daemon thread
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> {
+                    try (Connection connection = DatabaseUtil.getConnection()) {
+                        refreshTable(connection);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }
+        }, 0, 5000); // Refresh every 5 seconds
+    }
+
+    private void stopAutoRefresh() {
+        if (timer != null) {
+            timer.cancel();
         }
     }
 }

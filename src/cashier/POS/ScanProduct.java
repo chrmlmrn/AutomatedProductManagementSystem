@@ -307,15 +307,17 @@ public class ScanProduct extends JPanel {
             conn = DatabaseUtil.getConnection();
             String sql;
             if (type.equals("barcode")) {
-                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity, category_name "
-                        + "FROM products JOIN inventory ON products.product_id = inventory.product_id "
-                        + "JOIN category ON products.category_id = category.category_id "
-                        + "WHERE barcode = ?";
+                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity, category_name, product_status_id "
+                        +
+                        "FROM products JOIN inventory ON products.product_id = inventory.product_id " +
+                        "JOIN category ON products.category_id = category.category_id " +
+                        "WHERE barcode = ?";
             } else {
-                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity, category_name "
-                        + "FROM products JOIN inventory ON products.product_id = inventory.product_id "
-                        + "JOIN category ON products.category_id = category.category_id "
-                        + "WHERE product_code = ?";
+                sql = "SELECT product_code, product_name, product_size, product_price, product_total_quantity, category_name, product_status_id "
+                        +
+                        "FROM products JOIN inventory ON products.product_id = inventory.product_id " +
+                        "JOIN category ON products.category_id = category.category_id " +
+                        "WHERE product_code = ?";
             }
             stmt = conn.prepareStatement(sql);
             stmt.setString(1, code);
@@ -328,6 +330,19 @@ public class ScanProduct extends JPanel {
                 double productPrice = rs.getDouble("product_price");
                 int productTotalQuantity = rs.getInt("product_total_quantity");
                 String categoryName = rs.getString("category_name");
+                String productStatusId = rs.getString("product_status_id");
+
+                if (!productStatusId.equals("ACT")) {
+                    String statusMessage = "Product " + productName + " is ";
+                    if (productStatusId.equals("INA")) {
+                        statusMessage += "inactive";
+                    } else if (productStatusId.equals("DIS")) {
+                        statusMessage += "discontinued";
+                    }
+                    statusMessage += " and cannot be added.";
+                    JOptionPane.showMessageDialog(null, statusMessage);
+                    return;
+                }
 
                 if (productTotalQuantity <= 0) {
                     JOptionPane.showMessageDialog(null,

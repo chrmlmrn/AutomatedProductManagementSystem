@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ReturnReport extends JPanel {
 
@@ -32,6 +34,7 @@ public class ReturnReport extends JPanel {
     private ReturnReportDAO returnReportDAO;
     private JFrame mainFrame;
     private String uniqueUserId;
+    private Timer timer;
 
     public ReturnReport(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
@@ -39,6 +42,7 @@ public class ReturnReport extends JPanel {
         returnReportDAO = new ReturnReportDAO();
         initComponents();
         fetchData();
+        startAutoRefresh();
     }
 
     private void initComponents() {
@@ -57,6 +61,7 @@ public class ReturnReport extends JPanel {
             mainFrame.setContentPane(new ReportsPage(mainFrame, uniqueUserId)); // Pass userUniqueId
             mainFrame.revalidate();
             mainFrame.repaint();
+            stopAutoRefresh(); // Stop auto-refresh when navigating away
         });
         add(backButton);
 
@@ -150,6 +155,9 @@ public class ReturnReport extends JPanel {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String currentDate = dateFormat.format(new Date());
 
+        // Clear existing data
+        model.setRowCount(0);
+
         for (ReturnReportEntry entry : returnReports) {
             if (dateFormat.format(entry.getReturnDate()).equals(currentDate)) {
                 model.addRow(new Object[] {
@@ -160,6 +168,24 @@ public class ReturnReport extends JPanel {
                         entry.getReturnReason()
                 });
             }
+        }
+    }
+
+    private void startAutoRefresh() {
+        timer = new Timer(true); // Run timer as a daemon thread
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> {
+                    fetchData();
+                });
+            }
+        }, 0, 5000); // Refresh every 5 seconds
+    }
+
+    private void stopAutoRefresh() {
+        if (timer != null) {
+            timer.cancel();
         }
     }
 

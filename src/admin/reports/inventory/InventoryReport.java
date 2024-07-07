@@ -25,6 +25,8 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class InventoryReport extends JPanel {
 
@@ -32,6 +34,7 @@ public class InventoryReport extends JPanel {
     private InventoryDAO inventoryDAO;
     private JFrame mainFrame;
     private String uniqueUserId;
+    private Timer timer;
 
     public InventoryReport(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
@@ -39,6 +42,7 @@ public class InventoryReport extends JPanel {
         inventoryDAO = new InventoryDAO();
         initComponents();
         fetchData();
+        startAutoRefresh();
     }
 
     private void initComponents() {
@@ -57,6 +61,7 @@ public class InventoryReport extends JPanel {
             mainFrame.setContentPane(new ReportsPage(mainFrame, uniqueUserId)); // Pass userUniqueId
             mainFrame.revalidate();
             mainFrame.repaint();
+            stopAutoRefresh(); // Stop auto-refresh when navigating away
         });
         add(backButton);
 
@@ -146,7 +151,12 @@ public class InventoryReport extends JPanel {
     }
 
     private void fetchData() {
-        List<Product> products = inventoryDAO.getInventory();
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        List<Product> products = inventoryDAO.getInventoryByDate(currentDate);
+
+        // Clear existing data
+        model.setRowCount(0);
+
         for (Product product : products) {
             model.addRow(new Object[] {
                     product.getProductCode(),
@@ -157,6 +167,24 @@ public class InventoryReport extends JPanel {
                     product.getProductTotalQuantity(),
                     product.getProductStatus()
             });
+        }
+    }
+
+    private void startAutoRefresh() {
+        timer = new Timer(true); // Run timer as a daemon thread
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> {
+                    fetchData();
+                });
+            }
+        }, 0, 5000); // Refresh every 5 seconds
+    }
+
+    private void stopAutoRefresh() {
+        if (timer != null) {
+            timer.cancel();
         }
     }
 

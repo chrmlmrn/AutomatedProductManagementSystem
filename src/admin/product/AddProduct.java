@@ -293,9 +293,8 @@ public class AddProduct extends JPanel {
                     clearFields(barcodeTextField, productNameTextField, productPriceTextField,
                             productSizeTextField, productQuantityTextField, expirationDateChooser,
                             supplierNameTextField);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Please fill out all fields correctly.");
                 }
+
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Error generating product code: " + ex.getMessage());
                 ex.printStackTrace();

@@ -1,5 +1,9 @@
 package admin.product;
 
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.*;
 import java.awt.geom.RoundRectangle2D;
 import java.math.BigDecimal;
@@ -8,7 +12,6 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.table.*;
 import com.toedter.calendar.JDateChooser;
-
 import admin.records.userlogs.UserLogUtil;
 import database.DatabaseUtil;
 import customcomponents.RoundedButton;
@@ -254,6 +257,50 @@ public class UpdateProduct extends JPanel {
         priceField.setText(productPrice.toString());
         priceField.setPreferredSize(new Dimension(500, 30));
         priceField.setEnabled(false);
+        ((AbstractDocument) priceField.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                    throws BadLocationException {
+                if (string == null)
+                    return;
+                String newString = fb.getDocument().getText(0, fb.getDocument().getLength()) + string;
+                if (isValidPrice(newString)) {
+                    super.insertString(fb, offset, string, attr);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                if (text == null)
+                    return;
+                String newString = fb.getDocument().getText(0, fb.getDocument().getLength()).substring(0, offset) +
+                        text + fb.getDocument().getText(0, fb.getDocument().getLength()).substring(offset + length);
+                if (isValidPrice(newString)) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+
+            @Override
+            public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+                String newString = fb.getDocument().getText(0, fb.getDocument().getLength()).substring(0, offset) +
+                        fb.getDocument().getText(0, fb.getDocument().getLength()).substring(offset + length);
+                if (isValidPrice(newString)) {
+                    super.remove(fb, offset, length);
+                }
+            }
+
+            private boolean isValidPrice(String text) {
+                try {
+                    if (text.isEmpty())
+                        return true;
+                    BigDecimal price = new BigDecimal(text);
+                    return price.signum() >= 0;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+        });
         gbc.gridx = 0;
         gbc.gridy = 6;
         gbc.gridwidth = 2;
@@ -270,6 +317,50 @@ public class UpdateProduct extends JPanel {
         quantityField.setText(String.valueOf(productQuantity));
         quantityField.setPreferredSize(new Dimension(500, 30));
         quantityField.setEnabled(false);
+        ((AbstractDocument) quantityField.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr)
+                    throws BadLocationException {
+                if (string == null)
+                    return;
+                String newString = fb.getDocument().getText(0, fb.getDocument().getLength()) + string;
+                if (isValidQuantity(newString)) {
+                    super.insertString(fb, offset, string, attr);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
+                    throws BadLocationException {
+                if (text == null)
+                    return;
+                String newString = fb.getDocument().getText(0, fb.getDocument().getLength()).substring(0, offset) +
+                        text + fb.getDocument().getText(0, fb.getDocument().getLength()).substring(offset + length);
+                if (isValidQuantity(newString)) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+
+            @Override
+            public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+                String newString = fb.getDocument().getText(0, fb.getDocument().getLength()).substring(0, offset) +
+                        fb.getDocument().getText(0, fb.getDocument().getLength()).substring(offset + length);
+                if (isValidQuantity(newString)) {
+                    super.remove(fb, offset, length);
+                }
+            }
+
+            private boolean isValidQuantity(String text) {
+                try {
+                    if (text.isEmpty())
+                        return true;
+                    int quantity = Integer.parseInt(text);
+                    return quantity >= 0;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+        });
         gbc.gridx = 0;
         gbc.gridy = 8;
         gbc.gridwidth = 2;
@@ -356,9 +447,7 @@ public class UpdateProduct extends JPanel {
             String updatedStatus = (String) statusComboBox.getSelectedItem();
             String updatedStatusId = getStatusIDByName(updatedStatus);
             java.util.Date updatedExpirationDate = expirationDateChooser.getDate();
-            java.sql.Date sqlExpirationDate = updatedExpirationDate != null
-                    ? new java.sql.Date(updatedExpirationDate.getTime())
-                    : null;
+            java.sql.Date sqlExpirationDate = new java.sql.Date(updatedExpirationDate.getTime());
 
             // Display confirmation dialog
             int confirmOption = JOptionPane.showConfirmDialog(null, "Are you sure you want to update this product?",
@@ -493,14 +582,12 @@ public class UpdateProduct extends JPanel {
                 }
 
                 // Insert new expiration date if changed
-                if (sqlExpirationDate != null) {
-                    try (PreparedStatement insertExpirationStmt = conn.prepareStatement(
-                            "INSERT INTO product_expiration (product_id, product_expiration_date, product_quantity) VALUES (?, ?, ?)")) {
-                        insertExpirationStmt.setInt(1, productId);
-                        insertExpirationStmt.setDate(2, sqlExpirationDate);
-                        insertExpirationStmt.setInt(3, updatedQuantity);
-                        insertExpirationStmt.executeUpdate();
-                    }
+                try (PreparedStatement insertExpirationStmt = conn.prepareStatement(
+                        "INSERT INTO product_expiration (product_id, product_expiration_date, product_quantity) VALUES (?, ?, ?)")) {
+                    insertExpirationStmt.setInt(1, productId);
+                    insertExpirationStmt.setDate(2, sqlExpirationDate);
+                    insertExpirationStmt.setInt(3, updatedQuantity);
+                    insertExpirationStmt.executeUpdate();
                 }
 
                 JOptionPane.showMessageDialog(this, "Product updated successfully.", "Success",

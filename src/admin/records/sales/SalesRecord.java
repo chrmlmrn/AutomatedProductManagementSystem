@@ -11,6 +11,9 @@ import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 import database.DatabaseUtil;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class SalesRecord extends JPanel {
     private DefaultTableModel tableModel;
     private JTable salesTable;
@@ -18,6 +21,7 @@ public class SalesRecord extends JPanel {
     private JDateChooser endDateChooser;
     private JFrame mainFrame;
     private String uniqueUserId;
+    private Timer timer;
 
     public SalesRecord(JFrame mainFrame, String uniqueUserId) {
         this.mainFrame = mainFrame;
@@ -33,6 +37,8 @@ public class SalesRecord extends JPanel {
             JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
+
+        startAutoRefresh();
     }
 
     private void initComponents() {
@@ -53,6 +59,7 @@ public class SalesRecord extends JPanel {
             mainFrame.setContentPane(new RecordsMainPage(mainFrame, uniqueUserId));
             mainFrame.revalidate();
             mainFrame.repaint();
+            stopAutoRefresh(); // Stop auto-refresh when navigating away
         });
 
         JLabel titleLabel = new JLabel("Sales Records");
@@ -194,6 +201,30 @@ public class SalesRecord extends JPanel {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void startAutoRefresh() {
+        timer = new Timer(true); // Run timer as a daemon thread
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(() -> {
+                    try (Connection connection = DatabaseUtil.getConnection()) {
+                        refreshTable(connection, null, null);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(null, "Database connection error: " + ex.getMessage(), "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                });
+            }
+        }, 0, 5000); // Refresh every 5 seconds
+    }
+
+    private void stopAutoRefresh() {
+        if (timer != null) {
+            timer.cancel();
         }
     }
 }

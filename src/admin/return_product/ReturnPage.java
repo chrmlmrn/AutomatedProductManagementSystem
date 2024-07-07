@@ -3,6 +3,7 @@ package admin.return_product;
 import admin.AdminMenu;
 import database.DatabaseUtil;
 import admin.records.userlogs.UserLogUtil;
+import customcomponents.RoundedButton;
 import customcomponents.RoundedPanel;
 
 import javax.swing.*;
@@ -74,7 +75,7 @@ public class ReturnPage extends JPanel {
         productCodeField.setBounds(250, 30, 200, 30);
         bluePanel.add(productCodeField);
 
-        JButton verifyButton = new JButton("Verify");
+        RoundedButton verifyButton = new RoundedButton("Verify");
         verifyButton.setFont(new Font("Arial", Font.BOLD, 14));
         verifyButton.setBackground(Color.WHITE);
         verifyButton.setForeground(Color.BLACK);
@@ -106,7 +107,7 @@ public class ReturnPage extends JPanel {
         bluePanel.add(reasonComboBox);
 
         // Confirm and Cancel buttons
-        JButton confirmButton = new JButton("Confirm");
+        RoundedButton confirmButton = new RoundedButton("Confirm");
         confirmButton.setFont(new Font("Arial", Font.BOLD, 16));
         confirmButton.setBackground(Color.WHITE);
         confirmButton.setForeground(Color.BLACK);
@@ -115,7 +116,7 @@ public class ReturnPage extends JPanel {
         confirmButton.addActionListener(e -> processReturn());
         bluePanel.add(confirmButton);
 
-        JButton cancelButton = new JButton("Cancel");
+        RoundedButton cancelButton = new RoundedButton("Cancel");
         cancelButton.setFont(new Font("Arial", Font.BOLD, 16));
         cancelButton.setBackground(Color.WHITE);
         cancelButton.setForeground(Color.BLACK);
@@ -129,7 +130,7 @@ public class ReturnPage extends JPanel {
         bluePanel.add(cancelButton);
 
         // Add Return Policy button inside the blue panel
-        JButton returnPolicyButton = new JButton("Return Policy");
+        RoundedButton returnPolicyButton = new RoundedButton("Return Policy");
         returnPolicyButton.setFont(new Font("Arial", Font.BOLD, 16));
         returnPolicyButton.setBackground(Color.WHITE);
         returnPolicyButton.setForeground(Color.BLACK);

@@ -1,6 +1,7 @@
 package admin.reports.inventory;
 
 import java.util.Date;
+import java.sql.Timestamp;
 
 public class Product {
     private String productCode;
@@ -13,6 +14,7 @@ public class Product {
     private Date productExpirationDate;
     private String productType;
     private String supplierName;
+    private Timestamp lastUpdated;
 
     // Getters and setters
     public String getProductCode() {
@@ -93,5 +95,13 @@ public class Product {
 
     public String getSupplierName() {
         return supplierName;
+    }
+
+    public Timestamp getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Timestamp lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 }
