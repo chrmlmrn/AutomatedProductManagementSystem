@@ -60,7 +60,7 @@ public class ReturnPage extends JPanel {
         // Rounded Blue Panel
         RoundedPanel bluePanel = new RoundedPanel(30);
         bluePanel.setBackground(new Color(30, 144, 255));
-        bluePanel.setBounds(100, 120, 600, 350); // Increased the height to fit the Return Policy button
+        bluePanel.setBounds(380, 160, 600, 350); // Increased the height to fit the Return Policy button
         bluePanel.setLayout(null); // Use absolute positioning within the panel
         add(bluePanel);
 
