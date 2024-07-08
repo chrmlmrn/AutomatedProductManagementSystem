@@ -48,6 +48,8 @@ public class Signup extends JPanel {
                 // Initialize main panel with GridBagLayout
                 mainPanel = new JPanel(new GridBagLayout());
                 GridBagConstraints gbc = new GridBagConstraints();
+                setBackground(Color.WHITE);
+
                 gbc.gridx = 0;
                 gbc.gridy = 0;
                 gbc.anchor = GridBagConstraints.CENTER;

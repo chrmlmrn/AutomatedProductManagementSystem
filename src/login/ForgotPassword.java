@@ -40,6 +40,8 @@ public class ForgotPassword extends JPanel {
         // Initialize main panel
         mainPanel = new JPanel(new GridBagLayout());
         formPanel = createFormPanel();
+        mainPanel.setBackground(Color.WHITE);
+        setBackground(Color.WHITE);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;

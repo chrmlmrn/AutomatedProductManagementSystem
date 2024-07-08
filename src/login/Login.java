@@ -45,6 +45,7 @@ public class Login extends JPanel {
 
         private void initComponents() {
                 setLayout(new GridBagLayout());
+                setBackground(Color.WHITE);
                 centerPanel = createCenterPanel();
 
                 GridBagConstraints gbc = new GridBagConstraints();
