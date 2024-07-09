@@ -158,6 +158,8 @@ public class InventoryReport extends JPanel {
         model.setRowCount(0);
 
         for (Product product : products) {
+            String productStatus = determineProductStatus(product.getProductTotalQuantity(),
+                    product.getCriticalLevel());
             model.addRow(new Object[] {
                     product.getProductCode(),
                     product.getProductName(),
@@ -165,8 +167,18 @@ public class InventoryReport extends JPanel {
                     product.getProductType(),
                     product.getCriticalLevel(),
                     product.getProductTotalQuantity(),
-                    product.getProductStatus()
+                    productStatus
             });
+        }
+    }
+
+    private String determineProductStatus(int stockQuantity, int criticalStockLevel) {
+        if (stockQuantity == 0) {
+            return "Out of Stock";
+        } else if (stockQuantity <= criticalStockLevel) {
+            return "Re-ordering";
+        } else {
+            return "In Stock";
         }
     }
 

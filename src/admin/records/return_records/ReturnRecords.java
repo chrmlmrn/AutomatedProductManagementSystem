@@ -127,6 +127,8 @@ public class ReturnRecords extends JPanel {
     }
 
     private void searchReturns() {
+        stopAutoRefresh(); // Stop auto-refresh when navigating away
+
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {

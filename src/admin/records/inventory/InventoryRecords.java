@@ -129,6 +129,7 @@ public class InventoryRecords extends JPanel {
     }
 
     private void searchInventory() {
+        stopAutoRefresh(); // Stop auto-refresh when navigating away
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {
@@ -173,7 +174,7 @@ public class InventoryRecords extends JPanel {
                 String productType = resultSet.getString("product_type");
                 int criticalStockLevel = resultSet.getInt("critical_stock_level");
                 int stockQuantity = resultSet.getInt("stock_quantity");
-                String productStatus = resultSet.getString("product_status");
+                String productStatus = determineProductStatus(stockQuantity, criticalStockLevel);
                 Timestamp lastUpdated = resultSet.getTimestamp("last_updated");
                 tableModel.addRow(new Object[] { productCode, productName, supplierName, productType,
                         criticalStockLevel, stockQuantity, productStatus, lastUpdated });
@@ -208,7 +209,7 @@ public class InventoryRecords extends JPanel {
                 String productType = resultSet.getString("product_type");
                 int criticalStockLevel = resultSet.getInt("critical_stock_level");
                 int stockQuantity = resultSet.getInt("stock_quantity");
-                String productStatus = resultSet.getString("product_status");
+                String productStatus = determineProductStatus(stockQuantity, criticalStockLevel);
                 Timestamp lastUpdated = resultSet.getTimestamp("last_updated");
                 tableModel.addRow(new Object[] { productCode, productName, supplierName, productType,
                         criticalStockLevel, stockQuantity, productStatus, lastUpdated });
@@ -217,6 +218,16 @@ public class InventoryRecords extends JPanel {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Database error: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private String determineProductStatus(int stockQuantity, int criticalStockLevel) {
+        if (stockQuantity == 0) {
+            return "Out of Stock";
+        } else if (stockQuantity <= criticalStockLevel) {
+            return "Re-ordering";
+        } else {
+            return "In Stock";
         }
     }
 

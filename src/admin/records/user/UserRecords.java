@@ -120,6 +120,7 @@ public class UserRecords extends JPanel {
     }
 
     private void searchUsers() {
+
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {

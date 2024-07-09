@@ -117,6 +117,8 @@ public class ProductRecords extends JPanel {
     }
 
     private void searchProducts() {
+        stopAutoRefresh(); // Stop auto-refresh when navigating away
+
         String searchText = searchField.getText().trim();
 
         try (Connection connection = DatabaseUtil.getConnection()) {

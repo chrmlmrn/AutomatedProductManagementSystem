@@ -135,6 +135,8 @@ public class SalesRecord extends JPanel {
     }
 
     private void searchSalesByDate() {
+        stopAutoRefresh(); // Stop auto-refresh when navigating away
+
         java.util.Date startDate = startDateChooser.getDate();
         java.util.Date endDate = endDateChooser.getDate();
 
