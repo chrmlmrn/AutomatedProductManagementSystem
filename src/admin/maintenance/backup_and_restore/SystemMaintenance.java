@@ -78,7 +78,7 @@ public class SystemMaintenance extends JPanel {
 
             if (confirmed == JOptionPane.YES_OPTION) {
                 String dateStr = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date());
-                String backupFilePath = "C:\\Users\\ismai\\OneDrive\\Desktop\\backup\\backup_lavega_store_db_"
+                String backupFilePath = "C:\\Users\\ADMIN\\OneDrive\\Desktop\\backup\\backup_lavega_store_db_"
                         + dateStr + ".sql";
 
                 Backup.backupDatabase("root", "root", "lavega_store_db", backupFilePath);
@@ -114,7 +114,7 @@ public class SystemMaintenance extends JPanel {
 
             if (confirmed == JOptionPane.YES_OPTION) {
                 JFileChooser fileChooser = new JFileChooser(
-                        "C:\\Users\\ismai\\OneDrive\\Desktop\\backup");
+                        "C:\\Users\\ADMIN\\OneDrive\\Desktop\\backup");
                 int returnValue = fileChooser.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     String backupFilePath = fileChooser.getSelectedFile().getPath();
