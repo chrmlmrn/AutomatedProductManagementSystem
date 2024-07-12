@@ -165,11 +165,11 @@ public class ScanProduct extends JPanel {
         summaryTable.getColumn("DELETE")
                 .setCellEditor(new DeleteButtonEditor(new JCheckBox(), soldProductTableModel, productTableModel));
         JScrollPane summaryScrollPane = new JScrollPane(summaryTable);
-        summaryScrollPane.setBounds(800, 150, 500, 300);
+        summaryScrollPane.setBounds(970, 150, 500, 300);
         add(summaryScrollPane);
 
         JPanel totalPanel = new JPanel(null); // Changed to null layout
-        totalPanel.setBounds(800, 470, 500, 180);
+        totalPanel.setBounds(970, 470, 500, 180);
         totalPanel.setBackground(Color.WHITE);
 
         JLabel discountLabel = new JLabel("Discount:");
@@ -218,7 +218,7 @@ public class ScanProduct extends JPanel {
 
         discountButton.setBounds(50, 680, 200, 50);
         productCodeButton.setBounds(275, 680, 200, 50);
-        checkoutButton.setBounds(800, 660, 500, 50);
+        checkoutButton.setBounds(970, 660, 500, 50);
 
         discountButton.setBackground(new Color(30, 144, 255));
         discountButton.setForeground(Color.WHITE);
@@ -260,18 +260,22 @@ public class ScanProduct extends JPanel {
         checkoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                saveTransaction();
-                updateInventory();
-                int response = JOptionPane.showConfirmDialog(null, "Would you like to print the receipt?",
-                        "Print Receipt", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-                if (response == JOptionPane.YES_OPTION) {
-                    showReceiptUI();
-                    resetPOS();
-                    UserLogUtil.logUserAction(uniqueUserId, "Printed a receipt");
-                    UserLogUtil.logUserAction(uniqueUserId, "Transaction Done");
-
-                } else if (response == JOptionPane.NO_OPTION) {
-                    resetPOS();
+                if (soldProductTableModel.getRowCount() == 0) {
+                    JOptionPane.showMessageDialog(null, "No products scanned. Please scan products before checkout.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    saveTransaction();
+                    updateInventory();
+                    int response = JOptionPane.showConfirmDialog(null, "Would you like to print the receipt?",
+                            "Print Receipt", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    if (response == JOptionPane.YES_OPTION) {
+                        showReceiptUI();
+                        resetPOS();
+                        UserLogUtil.logUserAction(uniqueUserId, "Printed a receipt");
+                        UserLogUtil.logUserAction(uniqueUserId, "Transaction Done");
+                    } else if (response == JOptionPane.NO_OPTION) {
+                        resetPOS();
+                    }
                 }
             }
         });
@@ -532,8 +536,9 @@ public class ScanProduct extends JPanel {
         receipt.append(String.format("%-17s %2s %10s\n", "PRODUCT NAME", "QTY", "PRICE"));
 
         for (int i = 0; i < soldProductTableModel.getRowCount(); i++) {
+            String productName = truncateProductName((String) soldProductTableModel.getValueAt(i, 0));
             receipt.append(String.format("%-16s %2d x %10.2f\n",
-                    soldProductTableModel.getValueAt(i, 0),
+                    productName,
                     (int) soldProductTableModel.getValueAt(i, 1),
                     (double) soldProductTableModel.getValueAt(i, 2)));
         }
@@ -573,6 +578,13 @@ public class ScanProduct extends JPanel {
         receiptPanel.add(printButton, BorderLayout.SOUTH);
 
         JOptionPane.showMessageDialog(null, receiptPanel, "Receipt", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    private String truncateProductName(String productName) {
+        if (productName.length() > 14) {
+            return productName.substring(0, 14) + "..";
+        }
+        return productName;
     }
 
     private void printReceipt(String receiptContent) {
